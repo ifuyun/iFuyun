@@ -1,0 +1,71 @@
+<? include ../common/header.html ?>
+<? include ../elements/pageHeader.html ?>
+<section class="g-container f-clearfix">
+    <div class="m-content-wrap">
+        <div class="m-content">
+            <? include ../elements/crumb.html ?>
+            <header class="m-article-header">
+                <h1 class="m-article-title">
+                    <a rel="bookmark" title="<?- post.post.post_title ?>" href="<?= post.post.post_guid ?>"><?- post.post.post_title ?></a>
+                </h1>
+                <div class="m-article-meta">
+                    <span title="写作时间: <?= post.post.display_date ?>"><i class="glyphicon glyphicons-calendar"></i><?= post.post.display_date ?></span>
+                    <span class="m-meta-dynamic"><i class="glyphicon glyphicons-folder-closed"></i><? post.category.forEach(function(category){ ?><a title="查看 <?- category.name ?> 中的全部文章" rel="category" href="/category/<?= category.slug ? category.slug : category.name ?>"><?- category.name ?></a><? }) ?></span>
+                    <span title="作者： <?- post.author.user.user_display_name ?>"><i class="glyphicon glyphicons-user"></i><?- post.author.user.user_display_name ?></span>
+                    <? if(post.post.post_original === 1){ ?>
+                    <span class="m-meta-dynamic" title="<?- post.author.user.user_display_name ?>原创"><i class="glyphicon glyphicons-pencil"></i>原创</span>
+                    <span class="m-meta-dynamic" title="禁止转载"><i class="glyphicon glyphicons-ban-circle"></i>禁止转载</span>
+                    <? } else { ?>
+                    <span class="m-meta-dynamic" title="转载"><i class="glyphicon glyphicons-unshare"></i>转载</span>
+                    <? } ?>
+                    <!-- <? if(post.post.comment_flag !== 'closed'){ ?>
+                    <span title="《<?= post.post.post_title ?>》上的评论"><i class="glyphicon glyphicons-conversation"></i><a href="<?= post.post.post_guid ?>#<?= post.comments.length > 0 ? 'comments' : 'respond' ?>"><?= post.comments.length ?> 条评论</a></span>
+                    <? } ?> -->
+                </div>
+            </header>
+            <div class="m-diag">&nbsp;</div>
+            <article class="m-article-content" id="postContent">
+                <?- post.post.post_content ?>
+                <span class="u-article-end">🔚</span>
+            </article>
+            <footer class="m-article-footer">
+                <div class="m-article-meta m-article-tag m-meta-dynamic">
+                    <div class="f-float-left"><i class="glyphicon glyphicons-folder-closed"></i></div>
+                    <ul class="f-clearfix"><? post.category.forEach(function(category){ ?><li><a title="查看 <?- category.name ?> 中的全部文章" rel="category" href="/category/<?= category.slug ? category.slug : category.name ?>"><?- category.name ?></a></li><? }) ?></ul>
+                </div>
+                <? if(post.tag.length > 0){ ?>
+                <div class="m-article-meta m-article-tag">
+                    <div class="f-float-left"><i class="glyphicon glyphicons-tag"></i></div>
+                    <ul class="f-clearfix"><? post.tag.forEach(function(tag){ ?><li><a title="查看 <?= tag.name ?> 中的全部文章" rel="category" href="/tag/<?= tag.slug || tag.name ?>"><?= tag.name ?></a></li><? }) ?></ul>
+                </div>
+                <? } ?>
+                <div class="m-article-meta">
+                    <i class="glyphicon glyphicons-clock"></i>
+                    <span title="更新于: <?= post.post.display_full_date ?>">最后更新：<?= post.post.display_full_date ?></span>
+                </div>
+                <div class="m-article-qrcode f-clearfix">
+                    <div class="m-article-qrcode-img m-article-qrcode-share" id="qrcodeShare" data-url="<?= options.site_url.option_value + post.post.post_guid ?>">&nbsp;</div>
+                    <div class="m-article-qrcode-img m-article-qrcode-reward" id="qrcodeReward">&nbsp;</div>
+                    <div class="m-article-qrcode-item m-article-share" id="btnShare">分享</div>
+                    <div class="m-article-qrcode-item m-article-reward" id="btnReward">打赏</div>
+                </div>
+                <div class="m-article-link f-clearfix">
+                    <? if(prevPost.length > 0){ ?>
+                    <div class="m-article-link-prev"><a href="<?= prevPost[0].post_guid ?>" title="<?= prevPost[0].post_title ?>"><span>&lt;&nbsp;上一篇：</span><span class="m-article-link-text"><?= prevPost[0].post_title ?></span></a></div>
+                    <? } ?>
+                    <? if(nextPost.length > 0){ ?>
+                    <div class="m-article-link-next"><a href="<?= nextPost[0].post_guid ?>" title="<?= nextPost[0].post_title ?>"><span>下一篇：</span><span class="m-article-link-text"><?= nextPost[0].post_title ?></span><span>&nbsp;&gt;</span></a></div>
+                    <? } ?>
+                </div>
+            </footer>
+            <!-- <? include ../elements/comment.html ?> -->
+        </div>
+    </div>
+    <? include ../elements/sidebar.html ?>
+</section>
+<? include ../elements/pageFooter.html ?>
+<? include ../common/js.html ?>
+<script type="text/javascript">
+    seajs.use('module/web/post');
+</script>
+<? include ../common/footer.html ?>

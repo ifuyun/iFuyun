@@ -1,0 +1,31 @@
+<? include ../common/header.html ?>
+<? include ../elements/pageHeader.html ?>
+<section class="g-container f-clearfix">
+    <div class="m-content-wrap">
+        <div class="m-content m-page">
+            <header class="m-article-header">
+                <h1 class="m-article-title">
+                    <a rel="bookmark" title="<?- post.post.post_title ?>" href="<?= post.post.post_guid ?>"><?- post.post.post_title ?></a>
+                </h1>
+            </header>
+            <div class="m-diag">&nbsp;</div>
+            <article class="m-article-content">
+                <?- post.post.post_content ?>
+            </article>
+            <footer class="m-article-footer">
+                <div class="m-article-meta">
+                    <i class="glyphicon glyphicons-clock"></i>
+                    <span title="更新于: <?= post.post.display_full_date ?>">最后更新：<?= post.post.display_full_date ?></span>
+                </div>
+            </footer>
+            <? include ../elements/comment.html ?>
+        </div>
+    </div>
+    <? include ../elements/sidebar.html ?>
+</section>
+<? include ../elements/pageFooter.html ?>
+<? include ../common/js.html ?>
+<script type="text/javascript">
+    seajs.use('module/web/post');
+</script>
+<? include ../common/footer.html ?>

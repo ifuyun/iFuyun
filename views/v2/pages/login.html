@@ -1,0 +1,37 @@
+<? include ../common/header.html ?>
+<div class="g-doc-login">
+    <div class="g-view-login">
+        <form class="m-form-login">
+            <p>
+                <label for="userLogin">
+                    <span>用户名</span>
+                    <br />
+                    <input type="text" name="username" class="u-input-login" id="userLogin" tabindex="10" size="20" maxlength="20"/>
+                </label>
+            </p>
+            <p>
+                <label for="userPass">
+                    <span>密码</span>
+                    <br />
+                    <input type="password" name="password" class="u-input-login" id="userPass" tabindex="20" size="20" maxlength="20"/>
+                </label>
+            </p>
+            <p class="m-rememberme">
+                <label for="rememberMe">
+                    <input type="checkbox" name="rememberMe" class="u-checkbox" id="rememberMe" tabindex="90" value="1"/>
+                    <input type="hidden" name="_csrf" id="csrfToken" value="<?- token ?>" />
+                    <span>记住我的登录信息</span>
+                </label>
+            </p>
+            <p>
+                <input type="submit" name="submit" class="u-btn-login" id="userSubmit" tabindex="100" value="登录"/>
+            </p>
+        </form>
+    </div>
+    <div class="m-stat-cnzz"><span id="cnzz_stat_icon_1257388214">&nbsp;</span></div>
+</div>
+<? include ../common/js.html ?>
+<script type="text/javascript">
+    seajs.use('module/web/login');
+</script>
+<? include ../common/footer.html ?>

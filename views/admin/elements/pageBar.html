@@ -1,0 +1,15 @@
+<? if(paginator) { ?>
+<div class="pageBar">
+    <ul class="pageList">
+        <? if(paginator.curPage > 1){ ?><li><a title="上一页" href="<?= paginator.linkUrl + paginator.prevPage + paginator.linkParam ?>">Prev</a></li><? } ?>
+        <? for(var page = paginator.startPage; page <= paginator.endPage; page += 1){ ?>
+            <? if(page === paginator.curPage){ ?>
+                <li><span class="curPage"><?= page ?></span></li>
+            <? } else { ?>
+                <li><a title="第<?= page ?>页(<?= ((page - 1) * paginator.pageLimit + 1) + '-' + (page * paginator.pageLimit > paginator.total ? paginator.total : page * paginator.pageLimit) ?>)" href="<?= paginator.linkUrl + page + paginator.linkParam ?>"><?= page ?></a></li>
+            <? } ?>
+        <? } ?>
+        <? if(paginator.curPage < paginator.endPage){ ?><li><a title="下一页" href="<?= paginator.linkUrl + paginator.nextPage + paginator.linkParam ?>">Next</a></li><? } ?>
+    </ul>
+</div>
+<? } ?>

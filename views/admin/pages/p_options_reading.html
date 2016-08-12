@@ -1,0 +1,26 @@
+<? include ../common/header.html ?>
+<div id="body-wrapper">
+    <? include ../elements/leftNav.html ?>
+    <div id="content">
+        <? include ../elements/topBar.html ?>
+        <div id="control-panel">
+            <h2>阅读设置</h2>
+            <div class="split-line"><div class="split-corner">&nbsp;</div></div>
+            <form>
+                <table class="form-table">
+                    <tbody>
+                        <tr>
+                            <th><label for="site-title">博客页面至多显示</label></th>
+                            <td><select class="input" id="writing-taxonomy"><option value="1">1</option><option value="2">2</option></select>&nbsp;篇文章</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"><input type="submit" class="submit" id="btn-submit" value="保存" /></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </form>
+        </div>
+    </div>
+    <? include ../elements/pageFooter.html ?>
+</div>
+<? include ../common/footer.html ?>

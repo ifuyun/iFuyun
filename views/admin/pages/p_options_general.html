@@ -1,0 +1,58 @@
+<? include ../common/header.html ?>
+<div id="body-wrapper">
+    <? include ../elements/leftNav.html ?>
+    <div id="content">
+        <? include ../elements/topBar.html ?>
+        <div id="control-panel">
+            <div id="control-body">
+                <h2>常规选项</h2>
+                <div class="split-line"><div class="split-corner">&nbsp;</div></div>
+                <form id="form-settings" method="post" action="/admin/options/general">
+                    <div class="form-wrap">
+                        <form>
+                            <div class="form-field">
+                                <label class="form-label-left" for="cat-name">站点标题</label>
+                                <input type="text" class="input form-input" id="site-title" name="siteTitle" value="<?= options.site_name.option_value ?>" />
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label-left" for="cat-slug">站点描述</label>
+                                <input type="text" class="input form-input" id="site-desc" name="siteDesc" value="<?= options.site_description.option_value ?>" />
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label-left" for="cat-slug">口号</label>
+                                <input type="text" class="input form-input" id="site-slogan" name="siteSlogan" value="<?= options.site_slogan.option_value ?>" />
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label-left" for="cat-slug">站点地址</label>
+                                <input type="text" class="input form-input" id="site-url" name="siteUrl" value="<?= options.site_url.option_value ?>" />
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label-left" for="cat-slug">关键词</label>
+                                <input type="text" class="input form-input" id="site-keywords" name="siteKeywords" value="<?= options.site_keywords.option_value ?>" />
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label-left" for="cat-description">电子邮件地址</label>
+                                <input type="text" class="input form-input" id="admin-email" name="adminEmail" value="<?= options.admin_email.option_value ?>" />
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label-left" for="cat-description">ICP备案号</label>
+                                <input type="text" class="input form-input" id="icp-num" name="icpNum" value="<?= options.icp_num.option_value ?>" />
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label-left" for="cat-description">版权信息</label>
+                                <input type="text" class="input form-input" id="copy-notice" name="copyNotice" value="<?= options.copyright_notice.option_value ?>" />
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label-left">&nbsp;</label>
+                                <input type="submit" class="submit" value="保存" />
+                            </div>
+                            <input type="hidden" name="_csrf" id="csrfToken" value="<?- token ?>" />
+                        </form>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <? include ../elements/pageFooter.html ?>
+</div>
+<? include ../common/footer.html ?>
