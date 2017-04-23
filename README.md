@@ -14,6 +14,10 @@ iFuyun是基于Node.js和MySQL开发的博客系统。在线体验，请访问�
 1. 执行npm install
 2. 修改/config/core.js、/config/database.js和/config/redis.js等相关配置信息
 
+### 文档生成
+1. 执行npm install -g yuidocjs
+2. 执行yuidoc -c yuidoc.json
+
 ## 注意事项
 1. 百度、谷歌等帐号验证和静态文件存放在/public/page目录下
 2. favicon.ico存放在/public目录

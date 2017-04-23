@@ -5,25 +5,21 @@
  * @static
  * @requires async, sanitizer, moment, c_base, m_base, util, m_link, m_term_taxonomy
  * @author Fuyun
- * @version 1.2.0
+ * @version 3.0.0
  * @since 1.2.0
  */
-var async = require('async'),
-    xss = require('sanitizer'),
-    moment = require('moment'),
-
-    base = require('./base'),
-    pool = require('../model/base').pool,
-    util = require('../helper/util'),
-
-    LinkModel = require('../model/link'),
-    TaxonomyModel = require('../model/termTaxonomy'),
-
-    link = new LinkModel(pool),
-    taxonomy = new TaxonomyModel(pool),
-
-    pagesOut = 9,
-    idReg = /^[0-9a-fA-F]{16}$/i;
+const async = require('async');
+const xss = require('sanitizer');
+const moment = require('moment');
+const base = require('./base');
+const pool = require('../model/base').pool;
+const util = require('../helper/util');
+const LinkModel = require('../model/link');
+const TaxonomyModel = require('../model/termTaxonomy');
+const link = new LinkModel(pool);
+const taxonomy = new TaxonomyModel(pool);
+const pagesOut = 9;
+const idReg = /^[0-9a-fA-F]{16}$/i;
 
 module.exports = {
     /**
@@ -39,7 +35,6 @@ module.exports = {
      * @since 1.2.0
      */
     listLink: function (req, res, next) {
-        'use strict';
         var page = parseInt(req.params.page, 10) || 1,
             resData;
 
@@ -97,7 +92,6 @@ module.exports = {
      * @since 1.2.0
      */
     newLink: function (req, res, next) {
-        'use strict';
         var resData;
 
         resData = {
@@ -145,7 +139,6 @@ module.exports = {
      * @since 1.2.0
      */
     editLink: function (req, res, next) {
-        'use strict';
         var resData,
             linkId = req.params.linkId || '';
 
@@ -210,7 +203,6 @@ module.exports = {
      * @since 1.2.0
      */
     saveLink: function (req, res, next) {
-        'use strict';
         var params = req.body,
             referer = req.session.referer;
 
@@ -292,7 +284,6 @@ module.exports = {
      * @since 1.2.0
      */
     removeLink: function (req, res, next) {
-        'use strict';
         var params = req.body,
             referer = req.session.referer;
 

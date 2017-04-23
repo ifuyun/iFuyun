@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>model\post.js - YUIDoc Tool for iFuyun</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
+    <link rel="icon" href="../assets/favicon.ico">
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body class="yui3-skin-sam">
+
+<div id="doc">
+    <div id="hd" class="yui3-g header">
+        <div class="yui3-u-3-4">
+                <h1><img src="../assets/css/logo.png" title="YUIDoc Tool for iFuyun" width="117" height="52"></h1>
+        </div>
+        <div class="yui3-u-1-4 version">
+            <em>API Docs for: 1.0.0</em>
+        </div>
+    </div>
+    <div id="bd" class="yui3-g">
+
+        <div class="yui3-u-1-4">
+            <div id="docs-sidebar" class="sidebar apidocs">
+                <div id="api-list">
+                    <h2 class="off-left">APIs</h2>
+                    <div id="api-tabview" class="tabview">
+                        <ul class="tabs">
+                            <li><a href="#api-classes">Classes</a></li>
+                            <li><a href="#api-modules">Modules</a></li>
+                        </ul>
+                
+                        <div id="api-tabview-filter">
+                            <input type="search" id="api-filter" placeholder="Type to filter APIs">
+                        </div>
+                
+                        <div id="api-tabview-panel">
+                            <ul id="api-classes" class="apis classes">
+                                <li><a href="../classes/C_Admin.html">C_Admin</a></li>
+                                <li><a href="../classes/C_Base.html">C_Base</a></li>
+                                <li><a href="../classes/C_Comment.html">C_Comment</a></li>
+                                <li><a href="../classes/C_Link.html">C_Link</a></li>
+                                <li><a href="../classes/C_Post.html">C_Post</a></li>
+                                <li><a href="../classes/C_Taxonomy.html">C_Taxonomy</a></li>
+                                <li><a href="../classes/C_User.html">C_User</a></li>
+                                <li><a href="../classes/Logger.html">Logger</a></li>
+                                <li><a href="../classes/M_Comment.html">M_Comment</a></li>
+                                <li><a href="../classes/M_Link.html">M_Link</a></li>
+                                <li><a href="../classes/M_Option.html">M_Option</a></li>
+                                <li><a href="../classes/M_Post.html">M_Post</a></li>
+                                <li><a href="../classes/M_TermRelationship.html">M_TermRelationship</a></li>
+                                <li><a href="../classes/M_TermTaxonomy.html">M_TermTaxonomy</a></li>
+                                <li><a href="../classes/M_User.html">M_User</a></li>
+                                <li><a href="../classes/M_Vote.html">M_Vote</a></li>
+                                <li><a href="../classes/Util.html">Util</a></li>
+                            </ul>
+                
+                
+                            <ul id="api-modules" class="apis modules">
+                                <li><a href="../modules/c_admin.html">c_admin</a></li>
+                                <li><a href="../modules/c_base.html">c_base</a></li>
+                                <li><a href="../modules/c_comment.html">c_comment</a></li>
+                                <li><a href="../modules/c_link.html">c_link</a></li>
+                                <li><a href="../modules/c_post.html">c_post</a></li>
+                                <li><a href="../modules/c_taxonomy.html">c_taxonomy</a></li>
+                                <li><a href="../modules/c_user.html">c_user</a></li>
+                                <li><a href="../modules/cfg_core.html">cfg_core</a></li>
+                                <li><a href="../modules/cfg_database.html">cfg_database</a></li>
+                                <li><a href="../modules/cfg_redis.html">cfg_redis</a></li>
+                                <li><a href="../modules/cfg_routes.html">cfg_routes</a></li>
+                                <li><a href="../modules/cfg_routes_admin.html">cfg_routes_admin</a></li>
+                                <li><a href="../modules/index.html">index</a></li>
+                                <li><a href="../modules/logger.html">logger</a></li>
+                                <li><a href="../modules/m_base.html">m_base</a></li>
+                                <li><a href="../modules/m_comment.html">m_comment</a></li>
+                                <li><a href="../modules/m_link.html">m_link</a></li>
+                                <li><a href="../modules/m_option.html">m_option</a></li>
+                                <li><a href="../modules/m_post.html">m_post</a></li>
+                                <li><a href="../modules/m_term_relationship.html">m_term_relationship</a></li>
+                                <li><a href="../modules/m_term_taxonomy.html">m_term_taxonomy</a></li>
+                                <li><a href="../modules/m_user.html">m_user</a></li>
+                                <li><a href="../modules/m_vote.html">m_vote</a></li>
+                                <li><a href="../modules/util.html">util</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="yui3-u-3-4">
+                <div id="api-options">
+                    Show:
+                    <label for="api-show-inherited">
+                        <input type="checkbox" id="api-show-inherited" checked>
+                        Inherited
+                    </label>
+            
+                    <label for="api-show-protected">
+                        <input type="checkbox" id="api-show-protected">
+                        Protected
+                    </label>
+            
+                    <label for="api-show-private">
+                        <input type="checkbox" id="api-show-private">
+                        Private
+                    </label>
+                    <label for="api-show-deprecated">
+                        <input type="checkbox" id="api-show-deprecated">
+                        Deprecated
+                    </label>
+            
+                </div>
+            
+            <div class="apidocs">
+                <div id="docs-main">
+                    <div class="content">
+<h1 class="file-heading">File: model\post.js</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+/**
+ * 文章(Post)模型
+ * @module m_post
+ * @requires m_term_taxonomy, m_term_relationship, m_user, m_comment, moment, async, util, logger
+ * @author Fuyun
+ * @version 2.2.0
+ * @since 1.0.0(2014-03-08)
+ */
+var TaxonomyModel = require(&#x27;../model/termTaxonomy&#x27;),
+    TermRelModel = require(&#x27;../model/termRelationship&#x27;),
+    UserModel = require(&#x27;../model/user&#x27;),
+    CommentModel = require(&#x27;../model/comment&#x27;),
+
+    moment = require(&#x27;moment&#x27;),
+    async = require(&#x27;async&#x27;),
+
+    util = require(&#x27;../helper/util&#x27;),
+    Logger = require(&#x27;../helper/logger&#x27;),
+    logger = Logger.sysLog;
+
+/**
+ * 文章(Post)模型：封装文章查询操作
+ * @class M_Post
+ * @constructor
+ * @uses Taxonomy, TermRel, Term, User
+ * @param {Object} pool 连接池对象
+ * @return {void}
+ * @author Fuyun
+ * @version 1.0.0(2014-06-01)
+ * @since 1.0.0(2014-03-08)
+ */
+var Post = function Post(pool) {
+    &#x27;use strict&#x27;;
+    /**
+     * 分类模型实例
+     * @attribute taxonomy
+     * @writeOnce
+     * @type {Object}
+     */
+    this.taxonomy = new TaxonomyModel(pool);
+    /**
+     * 分类关系模型实例
+     * @attribute termRel
+     * @writeOnce
+     * @type {Object}
+     */
+    this.termRel = new TermRelModel(pool);
+    /**
+     * 用户模型实例
+     * @attribute user
+     * @writeOnce
+     * @type {Object}
+     */
+    this.user = new UserModel(pool);
+    /**
+     * 评论模型实例
+     * @attribute comment
+     * @writeOnce
+     * @type {Object}
+     */
+    this.comment = new CommentModel(pool);
+
+    /**
+     * 连接池对象
+     * @attribute pool
+     * @writeOnce
+     * @type {Object}
+     */
+    this.pool = pool;
+    /**
+     * 单页显示数量
+     * @attribute pageLimit
+     * @type {Number}
+     * @default 10
+     */
+    this.pageLimit = 10;
+    /**
+     * 数据库默认日期
+     * @attribute nullDate
+     * @type {String}
+     * @default &#x27;0000-00-00 00:00:00&#x27;
+     */
+    this.nullDate = &#x27;0000-00-00 00:00:00&#x27;;
+};
+
+//共用方法
+var common = {
+    /**
+     * 遍历分类关系获取分类名信息
+     * @method getTerms
+     * @static
+     * @param {Function} cb 回调函数
+     * @param {Object} that post实例
+     * @param {Array} termRels 分类关系结果集(单篇文章)
+     * @return {void}
+     * @author Fuyun
+     * @version 1.0.0(2014-03-08)
+     * @since 1.0.0(2014-03-08)
+     */
+    getTerms: function (cb, that, termRels) {
+        &#x27;use strict&#x27;;
+        async.map(termRels, function (termRel, fn) {
+            that.taxonomy.getTermByTaxonomyId(termRel.term_taxonomy_id, fn);
+        }, function (err, results) {
+            cb(err, results);
+        });
+    },
+    /**
+     * 遍历文章获取作者信息
+     * @method getAllUsers
+     * @static
+     * @param {Function} cb 回调函数
+     * @param {Object} that post实例
+     * @param {Array} posts 文章结果集
+     * @return {void}
+     * @author Fuyun
+     * @version 1.0.0(2014-03-08)
+     * @since 1.0.0(2014-03-08)
+     */
+    getAllUsers: function (cb, that, posts) {
+        &#x27;use strict&#x27;;
+        async.map(posts, function (post, fn) {
+            that.user.getUserById(post.posts.post_author, fn);
+        }, function (err, data) {
+            cb(err, data);
+        });
+    },
+    /**
+     * 遍历文章获取分类关系信息(分类目录、标签)
+     * @method getAllTermRels
+     * @static
+     * @param {Function} cb 回调函数
+     * @param {Object} that post实例
+     * @param {Array} posts 文章结果集
+     * @return {void}
+     * @author Fuyun
+     * @version 1.0.0(2014-03-08)
+     * @since 1.0.0(2014-03-08)
+     */
+    getAllTermRels: function (cb, that, posts) {
+        &#x27;use strict&#x27;;
+        async.map(posts, function (post, fn) {
+            that.termRel.getTermRelsByObjId(post.posts.post_id, fn);
+        }, function (err, data) {
+            cb(err, data);
+        });
+    },
+    /**
+     * 遍历所有分类关系获取分类名信息
+     * @method getAllTerms
+     * @static
+     * @param {Function} cb 回调函数
+     * @param {Object} that post实例
+     * @param {Array} termRels 分类关系结果集(多篇文章)
+     * @return {void}
+     * @author Fuyun
+     * @version 1.0.0(2014-03-08)
+     * @since 1.0.0(2014-03-08)
+     */
+    getAllTerms: function (cb, that, termRels) {
+        &#x27;use strict&#x27;;
+        async.map(termRels, function (termRel, fn) {
+            common.getTerms(fn, that, termRel);
+        }, function (err, results) {
+            cb(err, results);
+        });
+    },
+    /**
+     * 获取所有评论数
+     * @method getAllCommentCount
+     * @static
+     * @param {Function} cb 回调函数
+     * @param {Object} that post实例
+     * @param {Array} posts 文章结果集
+     * @return {void}
+     * @author Fuyun
+     * @version 1.0.0
+     * @since 1.0.0
+     */
+    getAllCommentCount: function (cb, that, posts) {
+        &#x27;use strict&#x27;;
+        async.map(posts, function (post, fn) {
+            that.comment.getCommentCountByPostId(post.posts.post_id, fn);
+        }, function (err, data) {
+            cb(err, data);
+        });
+    },
+    /**
+     * 根据状态名获取对应含义
+     * @method getDisplayStatus
+     * @static
+     * @param {String} status 状态名
+     * @return {String} 状态描述
+     * @author Fuyun
+     * @version 1.0.0
+     * @since 1.0.0
+     */
+    getDisplayStatus: function (status) {
+        &#x27;use strict&#x27;;
+        var statusArr = {
+            &#x27;publish&#x27;: &#x27;已发布&#x27;,
+            &#x27;private&#x27;: &#x27;私密&#x27;,
+            &#x27;draft&#x27;: &#x27;草稿&#x27;,
+            &#x27;auto-draft&#x27;: &#x27;自动草稿&#x27;,
+            &#x27;trash&#x27;: &#x27;回收站&#x27;
+        };
+        return statusArr[status] || &#x27;未知&#x27;;
+    }
+};
+
+Post.prototype = {
+    /**
+     * 查询post数量
+     * @method p_getPostCount
+     * @private
+     * @param {String} sql 查询条件
+     * @param {Array} params 查询参数
+     * @param {Function} callback 回调函数
+     * @return {void}
+     * @author Fuyun
+     * @version 1.0.0(2014-06-01)
+     * @since 1.0.0(2014-03-08)
+     */
+    p_getPostCount: function (sql, params, callback) {
+        &#x27;use strict&#x27;;
+        var that = this;
+        this.pool.getConnection(function (err, conn) {
+            if (err) {
+                return callback(err);
+            }
+            conn.query(sql, params, function (err, result) {
+                conn.release();
+                if (err) {
+                    return callback(err);
+                }
+                var data = {};
+                data.total = result[0].total;
+                data.pages = Math.ceil(data.total / that.pageLimit);
+                callback(null, data);
+            });
+        });
+    },
+    /**
+     * 查询post数量
+     * @method getPostCount
+     * @param {Array} param 查询参数
+     * @param {String} type 文章类型
+     * @param {Function} callback 回调函数
+     * @return {void}
+     * @author Fuyun
+     * @version 1.0.0
+     * @since 1.0.0
+     */
+    getPostCount: function (param, type, callback) {
+        &#x27;use strict&#x27;;
+        var where;
+
+        where = &#x27;where post_type = ? and post_status = ?&#x27;;
+
+        if (util.isArray(param) &amp;&amp; param.length &gt; 1) {
+            if (param.length &gt; 1) {
+                where = &#x27;where post_status in (?)&#x27;;
+                param = [param];//转成二维数组，否则将只查询第一个参数
+            } else {
+                param = param[0];
+            }
+            // } else if ( typeof param !== &#x27;string&#x27;) {
+            // param = param.toString();
+        } else if (typeof param === &#x27;string&#x27;) {
+            param = [param];
+        }
+        param.unshift(type);
+
+        this.p_getPostCount(&#x27;select count(1) total from posts &#x27; + where, param, callback);
+    },
+    /**
+     * 查询posts
+     * @method p_getPosts
+     * @private
+     * @param {String} sql 查询条件
+     * @param {Array} params 查询参数
+     * @param {Number} [page=1] 请求页
+     * @param {Function} countFn post数量查询函数
+     * @param {Array} crumb 面包屑
+     * @param {Function} callback 回调函数
+     * @return {void}
+     * @author Fuyun
+     * @version 1.0.0(2014-06-03)
+     * @since 1.0.0(2014-06-01)
+     */
+    p_getPosts: function (sql, params, page, countFn, crumb, callback) {
+        &#x27;use strict&#x27;;
+        var that = this;
+        async.auto({
+            count: countFn,
+            //@formatter:off
+            posts: [&#x27;count&#x27;,
+                function (cb, results) {
+                    that.pool.getConnection(function (err, conn) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        var postSql = {
+                            sql: sql,
+                            nestTables: true
+                        }, postQuery;
+    
+                        page = page &gt; results.count.pages ? results.count.pages : page;
+                        page = page || 1;
+                        postQuery = conn.query(postSql, params.concat(that.pageLimit, that.pageLimit * (page - 1)), function (err, posts) {
+                            conn.release();
+                            cb(err, posts);
+                        });
+                    });
+                }],
+            comments: [&#x27;posts&#x27;, function(cb, results){
+                common.getAllCommentCount(cb, that, results.posts);
+            }],
+            users: [&#x27;posts&#x27;,
+                function (cb, results) {
+                    common.getAllUsers(cb, that, results.posts);
+                }],
+            termRels: [&#x27;posts&#x27;,
+                function (cb, results) {
+                    common.getAllTermRels(cb, that, results.posts);
+                }],
+            terms: [&#x27;termRels&#x27;,
+                function (cb, results) {
+                    common.getAllTerms(cb, that, results.termRels);
+                }]
+            //@formatter:on
+        }, function (err, results) {
+            if (err) {
+                return callback(err);
+            }
+            var postData = {
+                posts: [],
+                total: results.count.total,
+                pages: results.count.pages,
+                pageLimit: that.pageLimit,
+                crumb: crumb
+            }, post, postIdx, term, termIdx, created, modified;
+
+            for (postIdx = 0; postIdx &lt; results.posts.length; postIdx += 1) {
+                post = {};
+                post.post = results.posts[postIdx].posts;
+                created = moment(post.post.post_created === that.nullDate ? post.post.post_date : post.post.post_created);
+                modified = moment(post.post.post_modified === that.nullDate ? post.post.post_date : post.post.post_modified);
+                post.post.display_created = created.format(&#x27;YYYY-MM-DD&#x27;);
+                post.post.display_created_time = created.format(&#x27;YYYY-MM-DD HH:mm:ss&#x27;);
+                post.post.display_modified = modified.format(&#x27;YYYY-MM-DD&#x27;);
+                post.post.display_modified_time = modified.format(&#x27;YYYY-MM-DD HH:mm:ss&#x27;);
+                post.post.display_date = moment(post.post.post_date).format(&#x27;YYYY-MM-DD&#x27;);
+                post.post.display_month = util.getMonthName(post.post.post_date.getMonth() + 1);
+                post.post.post_excerpt = post.post.post_excerpt || util.cutStr(util.filterHtmlTag(post.post.post_content), 120);
+                post.post.display_status = common.getDisplayStatus(post.post.post_status);
+                post.category = [];
+                post.tag = [];
+                post.author = results.users[postIdx];//TODO: must mapped in post_id
+                post.post.comments = results.comments[postIdx];//TODO: must mapped in post_id
+
+                for (termIdx = 0; termIdx &lt; results.terms[postIdx].length; termIdx += 1) {
+                    term = results.terms[postIdx][termIdx];
+                    if (term.taxonomy === &#x27;post&#x27;) {
+                        post.category.push(term);
+                    } else if (term.taxonomy === &#x27;tag&#x27;) {
+                        post.tag.push(term);
+                    }
+                }
+
+                postData.posts.push(post);
+            }
+
+            callback(null, postData);
+        });
+    },
+    /**
+     * 查询所有post
+     * @method getAllPosts
+     * @param {Number} param 请求参数对象:page,tag,category,author,postStatus
+     * @param {Function} callback 回调函数
+     * @return {void}
+     * @author Fuyun
+     * @version 1.0.0(2014-06-03)
+     * @since 1.0.0(2014-05-27)
+     */
+    getAllPosts: function (param, callback) {
+        &#x27;use strict&#x27;;
+        var select, where, order, sqlParam, that = this;
+
+        select = &#x27;select * from posts &#x27;;
+        where = &#x27;where post_type = ? &#x27;;
+        sqlParam = [param.type || &#x27;post&#x27;];
+
+        order = &#x27;order by post_created desc, post_date desc limit ? offset ?&#x27;;//post_date
+
+        if (param.postStatus === &#x27;draft&#x27;) {
+            where += &#x27;and (post_status = ? or post_status = ?) &#x27;;
+            sqlParam.push(&#x27;draft&#x27;, &#x27;auto-draft&#x27;);
+        } else if (param.postStatus !== &#x27;all&#x27;) {
+            where += &#x27;and post_status = ? &#x27;;
+            sqlParam.push(param.postStatus);
+        } else {
+            where += &#x27;and post_status in (?) &#x27;;
+            sqlParam.push([&#x27;publish&#x27;, &#x27;private&#x27;, &#x27;draft&#x27;, &#x27;auto-draft&#x27;, &#x27;trash&#x27;]);
+        }
+        if (param.author) {
+            where += &#x27;and post_author = ? &#x27;;
+            sqlParam.push(param.author);
+        }
+        if (param.postDate) {
+            where += &#x27;and date_format(post_date,&quot;%Y/%m&quot;) = ? &#x27;;
+            sqlParam.push(param.postDate);
+            // order = &#x27;order by post_date desc limit ? offset ?&#x27;;
+        }
+        if (param.keyword) {
+            where += &#x27;and (post_title like ? or post_content like ? or post_excerpt like ?) &#x27;;
+            sqlParam.push(&#x27;%&#x27; + param.keyword + &#x27;%&#x27;, &#x27;%&#x27; + param.keyword + &#x27;%&#x27;, &#x27;%&#x27; + param.keyword + &#x27;%&#x27;);
+        }
+        if (param.fromAdmin) {//管理后台仍按发表时间排序
+            order = &#x27;order by post_created desc, post_date desc limit ? offset ?&#x27;;
+        }
+
+        this.p_getPosts(select + where + order, sqlParam, param.page, function (cb) {
+            that.p_getPostCount(&#x27;select count(1) total from posts &#x27; + where, sqlParam, cb);
+        }, null, callback);
+    },
+    /**
+     * 根据日期（年月）查询post
+     * @method getPostsByDate
+     * @param {Number|String} year 年
+     * @param {String} month 月
+     * @param {Number} page 请求页
+     * @param {Function} callback 回调函数
+     * @return {void}
+     * @author Fuyun
+     * @version 1.1.0(2016-06-23)
+     * @since 1.0.0(2014-06-01)
+     */
+    getPostsByDate: function (param, callback) {
+        &#x27;use strict&#x27;;
+        var select, where, order, sqlParam, dateFilter = &#x27;&#x27;, that = this;
+
+        select = &#x27;select * from posts &#x27;;
+        where = &#x27;where post_type = ? &#x27;;
+        sqlParam = [param.type || &#x27;post&#x27;];
+
+        if (param.month) {
+            dateFilter = &#x27;%Y%m&#x27;;
+        } else {
+            dateFilter = &#x27;%Y&#x27;;
+        }
+        if (param.postStatus === &#x27;draft&#x27;) {
+            where += &#x27;and (post_status = ? or post_status = ?) &#x27;;
+            sqlParam.push(&#x27;draft&#x27;, &#x27;auto-draft&#x27;);
+        } else if (param.postStatus !== &#x27;all&#x27;) {
+            where += &#x27;and post_status = ? &#x27;;
+            sqlParam.push(param.postStatus);
+        } else {
+            where += &#x27;and post_status in (?) &#x27;;
+            sqlParam.push([&#x27;publish&#x27;, &#x27;private&#x27;, &#x27;draft&#x27;, &#x27;auto-draft&#x27;, &#x27;trash&#x27;]);
+        }
+        if (param.author) {
+            where += &#x27;and post_author = ? &#x27;;
+            sqlParam.push(param.author);
+        }
+        if (param.keyword) {
+            where += &#x27;and (post_title like ? or post_content like ? or post_excerpt like ?) &#x27;;
+            sqlParam.push(&#x27;%&#x27; + param.keyword + &#x27;%&#x27;, &#x27;%&#x27; + param.keyword + &#x27;%&#x27;, &#x27;%&#x27; + param.keyword + &#x27;%&#x27;);
+        }
+        where += &#x27;and date_format(post_date,&quot;&#x27; + dateFilter + &#x27;&quot;) = ? &#x27;;
+        sqlParam.push(param.month ? param.year.toString() + param.month : param.year);
+
+        order = &#x27;order by post_date desc, post_created desc limit ? offset ?&#x27;;
+
+        this.p_getPosts(select + where + order, sqlParam, param.page, function (cb) {
+            that.p_getPostCount(&#x27;select count(1) total from posts &#x27; + where, sqlParam, cb);
+        }, null, callback);
+    },
+    /**
+     * 根据标签查询post
+     * @method getPostsByTag
+     * @param {String} tag 标签
+     * @param {Number} page 请求页
+     * @param {Function} callback 回调函数
+     * @return {void}
+     * @author Fuyun
+     * @version 1.0.0(2014-06-03)
+     * @since 1.0.0(2014-06-03)
+     */
+    getPostsByTag: function (param, callback) {
+        &#x27;use strict&#x27;;
+        var that = this;
+        async.parallel({
+            taxonomy: function (cb) {
+                that.taxonomy.getTaxonomyBySlug(param.tag, &#x27;tag&#x27;, cb);
+            }
+        }, function (err, results) {
+            if (err) {
+                return callback(err);
+            }
+            if (!results.taxonomy) {//TODO:无该标签
+                return callback(null);
+            }
+            var taxonomy = results.taxonomy, select, where, order, sqlParam;
+
+            select = &#x27;select posts.* from posts, term_relationships &#x27;;
+            where = &#x27;where posts.post_id = term_relationships.object_id and post_type = ? and term_relationships.term_taxonomy_id = ? &#x27;;
+            sqlParam = [&#x27;post&#x27;, taxonomy.taxonomy_id];
+            order = &#x27;order by post_created desc, post_date desc limit ? offset ?&#x27;;//post_date
+
+            // if (param.postStatus &amp;&amp; param.postStatus !== &#x27;all&#x27;) {
+            // where += &#x27;and posts.post_status = ?&#x27;;
+            // sqlParam.push(param.postStatus);
+            // }
+            if (param.postStatus === &#x27;draft&#x27;) {
+                where += &#x27;and (post_status = ? or post_status = ?) &#x27;;
+                sqlParam.push(&#x27;draft&#x27;, &#x27;auto-draft&#x27;);
+            } else if (param.postStatus !== &#x27;all&#x27;) {
+                where += &#x27;and post_status = ? &#x27;;
+                sqlParam.push(param.postStatus);
+            } else {
+                where += &#x27;and post_status in (?) &#x27;;
+                sqlParam.push([&#x27;publish&#x27;, &#x27;private&#x27;, &#x27;draft&#x27;, &#x27;auto-draft&#x27;, &#x27;trash&#x27;]);
+            }
+            if (param.author) {
+                where += &#x27;and posts.post_author = ?&#x27;;
+                sqlParam.push(param.author);
+            }
+            if (param.postDate) {
+                where += &#x27;and date_format(post_date,&quot;%Y/%m&quot;) = ? &#x27;;
+                sqlParam.push(param.postDate);
+                order = &#x27;order by post_date desc limit ? offset ?&#x27;;
+            }
+            if (param.keyword) {
+                where += &#x27;and (post_title like ? or post_content like ? or post_excerpt like ?) &#x27;;
+                sqlParam.push(&#x27;%&#x27; + param.keyword + &#x27;%&#x27;, &#x27;%&#x27; + param.keyword + &#x27;%&#x27;, &#x27;%&#x27; + param.keyword + &#x27;%&#x27;);
+            }
+
+            that.p_getPosts(select + where + order, sqlParam, param.page, function (cb) {
+                that.p_getPostCount(&#x27;select count(1) total from posts, term_relationships &#x27; + where, sqlParam, cb);
+            }, {
+                tagName: results.taxonomy.name
+            }, callback);
+        });
+    },
+    /**
+     * 根据分类查询post
+     * @method getPostsByCategories
+     * @param {String} category 分类
+     * @param {Number} page 请求页
+     * @param {Function} callback 回调函数
+     * @return {void}
+     * @author Fuyun
+     * @version 1.0.0(2014-06-03)
+     * @since 1.0.0(2014-06-03)
+     */
+    getPostsByCategories: function (param, callback) {
+        &#x27;use strict&#x27;;
+        var that = this;
+        async.auto({
+            taxonomy: function (cb) {
+                that.taxonomy.getTaxonomyBySlug(param.category, &#x27;post&#x27;, cb);
+            },
+            //@formatter:off
+            categories: [&#x27;taxonomy&#x27;,
+                function (cb, results) {
+                    if(!results.taxonomy || !results.taxonomy.taxonomy_id){
+                        return cb(null);
+                    }
+                    that.taxonomy.getChildCategories(results.taxonomy.taxonomy_id, cb);
+                }],
+            crumb: [&#x27;taxonomy&#x27;,
+                function (cb, results) {
+                    if(!results.taxonomy || !results.taxonomy.taxonomy_id){
+                        return cb(null);
+                    }
+                    that.taxonomy.getParentCategories(results.taxonomy.taxonomy_id, cb);
+                }]
+            //@formatter:on
+        }, function (err, results) {
+            if (err) {
+                return callback(err);
+            }
+            if (!results.taxonomy || !results.taxonomy.taxonomy_id) {//无该分类
+                return callback(null);
+            }
+            var categories = results.categories, select, where, order, sqlParam, catArr = [], catIdx;
+
+            for (catIdx = 0; catIdx &lt; categories.length; catIdx += 1) {
+                catArr.push(&#x27;&quot;&#x27; + categories[catIdx] + &#x27;&quot;&#x27;);
+            }
+
+            select = &#x27;select distinct(posts.post_id), posts.* from posts, term_relationships &#x27;;//去重，但包含重复字段：post_id
+            where = &#x27;where posts.post_id = term_relationships.object_id and post_type = ? and term_relationships.term_taxonomy_id in (&#x27; + catArr.join(&#x27;,&#x27;) + &#x27;) &#x27;;
+            sqlParam = [&#x27;post&#x27;];
+            order = &#x27;order by post_created desc, post_date desc limit ? offset ?&#x27;;//post_date
+
+            // if (param.postStatus &amp;&amp; param.postStatus !== &#x27;all&#x27;) {
+            // where += &#x27;and posts.post_status = ?&#x27;;
+            // sqlParam.push(param.postStatus);
+            // }
+            if (param.postStatus === &#x27;draft&#x27;) {
+                where += &#x27;and (post_status = ? or post_status = ?) &#x27;;
+                sqlParam.push(&#x27;draft&#x27;, &#x27;auto-draft&#x27;);
+            } else if (param.postStatus !== &#x27;all&#x27;) {
+                where += &#x27;and post_status = ? &#x27;;
+                sqlParam.push(param.postStatus);
+            } else {
+                where += &#x27;and post_status in (?) &#x27;;
+                sqlParam.push([&#x27;publish&#x27;, &#x27;private&#x27;, &#x27;draft&#x27;, &#x27;auto-draft&#x27;, &#x27;trash&#x27;]);
+            }
+            if (param.author) {
+                where += &#x27;and posts.post_author = ?&#x27;;
+                sqlParam.push(param.author);
+            }
+            if (param.postDate) {
+                where += &#x27;and date_format(post_date,&quot;%Y/%m&quot;) = ? &#x27;;
+                sqlParam.push(param.postDate);
+                order = &#x27;order by post_date desc limit ? offset ?&#x27;;
+            }
+            if (param.keyword) {
+                where += &#x27;and (post_title like ? or post_content like ? or post_excerpt like ?) &#x27;;
+                sqlParam.push(&#x27;%&#x27; + param.keyword + &#x27;%&#x27;, &#x27;%&#x27; + param.keyword + &#x27;%&#x27;, &#x27;%&#x27; + param.keyword + &#x27;%&#x27;);
+            }
+
+            that.p_getPosts(select + where + order, sqlParam, param.page, function (cb) {
+                that.p_getPostCount(&#x27;select count(1) total from posts, term_relationships &#x27; + where, sqlParam, cb);
+            }, results.crumb, callback);
+        });
+    },
+    /**
+     * 根据ID查询post
+     * @method getPostById
+     * @param {String} postId postId
+     * @param {String} type &#x27;id&#x27;, or &#x27;guid&#x27;
+     * @param {Boolean} isAdminUser 是否以管理员登录
+     * @param {Function} callback 回调函数
+     * @return {void}
+     * @author Fuyun
+     * @version 1.0.0(2014-05-30)
+     * @since 1.0.0(2014-05-26)
+     */
+    getPostById: function (postId, type, isAdminUser, callback) {
+        &#x27;use strict&#x27;;
+        var that = this;
+        async.auto({
+            post: function (cb) {
+                that.pool.getConnection(function (err, conn) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    var postSql, postQuery;
+                    postSql = {
+                        nestTables: false
+                    };
+                    if (type === &#x27;guid&#x27;) {
+                        postSql.sql = &#x27;select * from posts where post_guid = ?&#x27;;
+                    } else {
+                        postSql.sql = &#x27;select * from posts where post_id = ?&#x27;;
+                    }
+                    postQuery = conn.query(postSql, [postId], function (err, posts) {
+                        conn.release();
+                        if (err) {
+                            return cb(err);
+                        }
+                        if (posts.length &lt; 1) {//无记录提前返回
+                            return cb(&#x27;post not exist&#x27;);//TODO
+                        }
+                        cb(null, posts[0]);
+                    });
+                });
+            },
+            count: [&#x27;post&#x27;, function (cb, results) {
+                if (!isAdminUser &amp;&amp; results.post.post_status !== &#x27;publish&#x27;) {//非管理员不执行后续查询
+                    return cb(403, results);
+                }
+                that.pool.getConnection(function (err, conn) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    var postSql, postQuery;
+                    postSql = {
+                        nestTables: false
+                    };
+                    if (type === &#x27;guid&#x27;) {
+                        postSql.sql = &#x27;update posts set post_view_count = post_view_count + 1 where post_guid = ?&#x27;;
+                    } else {
+                        postSql.sql = &#x27;update posts set post_view_count = post_view_count + 1 where post_id = ?&#x27;;
+                    }
+                    postQuery = conn.query(postSql, [postId], function (err, count) {
+                        conn.release();
+                        if (err) {
+                            return cb(err);
+                        }
+                        cb(null);
+                    });
+                });
+            }],
+            comments: [&#x27;post&#x27;, function (cb, results) {
+                that.comment.getCommentsByPostId(results.post.post_id, cb);
+            }],
+            //@formatter:off
+            user: [&#x27;post&#x27;,
+                function (cb, results) {
+                    that.user.getUserById(results.post.post_author, cb);
+                }],
+            termRels: [&#x27;post&#x27;,
+                function (cb, results) {
+                    that.termRel.getTermRelsByObjId(results.post.post_id, cb);
+                }],
+            terms: [&#x27;termRels&#x27;,
+                function (cb, results) {
+                    common.getTerms(cb, that, results.termRels);
+                }]
+            //@formatter:on
+        }, function (err, results) {
+            if (err === 403) {
+                return callback(null, results);
+            }
+            if (err) {
+                return callback(err);
+            }
+            var post, termIdx, curTerm;
+
+            post = {};
+            post.post = results.post;
+            post.post.display_created = moment(post.post.post_created === that.nullDate ? post.post.post_date : post.post.post_created).format(&#x27;YYYY-MM-DD&#x27;);
+            post.post.display_full_date = moment(post.post.post_modified || post.post.post_created).format(&#x27;YYYY-MM-DD HH:mm&#x27;);
+            post.post.display_date = moment(post.post.post_date).format(&#x27;YYYY-MM-DD&#x27;);
+            post.post.display_month = util.getMonthName(post.post.post_date.getMonth() + 1);
+            post.category = [];
+            post.tag = [];
+            post.author = results.user;
+            // post.crumb = results.crumb;
+            post.comments = results.comments;
+
+            for (termIdx = 0; termIdx &lt; results.terms.length; termIdx += 1) {
+                curTerm = results.terms[termIdx];
+                if (curTerm.taxonomy === &#x27;post&#x27;) {
+                    post.category.push(curTerm);
+                } else if (curTerm.taxonomy === &#x27;tag&#x27;) {
+                    post.tag.push(curTerm);
+                }
+            }
+            callback(null, post);
+        });
+    },
+    /**
+     * 查询post归档日期
+     * @method getArchiveDates
+     * @param {Function} callback 回调函数
+     * @return {void}
+     * @author Fuyun
+     * @version 1.0.0(2014-06-01)
+     * @since 1.0.0(2014-03-08)
+     */
+    getArchiveDates: function (type, callback) {
+        &#x27;use strict&#x27;;
+        this.pool.getConnection(function (err, conn) {
+            if (err) {
+                return callback(err);
+            }
+            var dateSql, dateQuery;
+            dateSql = &#x27;select date_format(post_date, &quot;%Y/%m&quot;) link_date, date_format(post_date,&quot;%Y年%m月&quot;) display_date, count(1) count &#x27;;
+            dateSql += &#x27;from posts where post_status = ? and post_type = ? group by date_format(post_date,&quot;%Y-%m&quot;) order by link_date desc&#x27;;
+            dateQuery = conn.query(dateSql, [&#x27;publish&#x27;, type], function (err, result) {
+                conn.release();
+                callback(err, result);
+            });
+        });
+    },
+    /**
+     * 查询最近post
+     * @method getRecentPosts
+     * @param {Function} callback 回调函数
+     * @return {void}
+     * @author Fuyun
+     * @version 1.0.0(2014-06-01)
+     * @since 1.0.0(2014-03-08)
+     */
+    getRecentPosts: function (callback) {
+        &#x27;use strict&#x27;;
+        this.pool.getConnection(function (err, conn) {
+            if (err) {
+                return callback(err);
+            }
+            var recentSql, recentQuery;
+            recentSql = &#x27;select post_id, post_title, post_guid &#x27;;
+            recentSql += &#x27;from posts where post_status = ? and post_type = ? order by post_modified desc, post_date desc limit 10 offset 0&#x27;;//post_date
+            recentQuery = conn.query(recentSql, [&#x27;publish&#x27;, &#x27;post&#x27;], function (err, result) {
+                conn.release();
+                callback(err, result);
+            });
+        });
+    },
+    /**
+     * 查询随机post
+     * @method getRandPosts
+     * @param {Function} callback 回调函数
+     * @return {void}
+     * @author Fuyun
+     * @version 1.0.0(2014-06-01)
+     * @since 1.0.0(2014-03-08)
+     */
+    getRandPosts: function (callback) {
+        &#x27;use strict&#x27;;
+        this.pool.getConnection(function (err, conn) {
+            if (err) {
+                return callback(err);
+            }
+            var randSql, randQuery;
+            randSql = &#x27;select post_id, post_title, post_guid &#x27;;
+            randSql += &#x27;from posts where post_status = ? and post_type = ? order by rand() limit 10 offset 0&#x27;;
+            randQuery = conn.query(randSql, [&#x27;publish&#x27;, &#x27;post&#x27;], function (err, result) {
+                conn.release();
+                callback(err, result);
+            });
+        });
+    },
+    /**
+     * 查询热门post
+     * @method getHotPosts
+     * @param {Function} callback 回调函数
+     * @return {void}
+     * @author Fuyun
+     * @version 1.0.0(2016-08-11)
+     * @since 1.0.0(2016-08-11)
+     */
+    getHotPosts: function (callback) {
+        &#x27;use strict&#x27;;
+        this.pool.getConnection(function (err, conn) {
+            if (err) {
+                return callback(err);
+            }
+            var randSql, randQuery;
+            randSql = &#x27;select post_id, post_title, post_guid &#x27;;
+            randSql += &#x27;from posts where post_status = ? and post_type = ? order by post_view_count desc limit 10 offset 0&#x27;;
+            randQuery = conn.query(randSql, [&#x27;publish&#x27;, &#x27;post&#x27;], function (err, result) {
+                conn.release();
+                callback(err, result);
+            });
+        });
+    },
+    /**
+     * 保存文章
+     * @method savePost
+     * @param {Object} data 文章数据
+     * @param {Function} callback 回调函数
+     * @return {void}
+     * @author Fuyun
+     * @version 1.0.0
+     * @since 1.0.0
+     */
+    savePost: function (data, callback) {
+        &#x27;use strict&#x27;;
+        this.pool.getConnection(function (err, conn) {
+            if (err) {
+                return callback(err);
+            }
+            conn.beginTransaction(function (errTs) {
+                if (errTs) {
+                    return callback(errTs);
+                }
+                var newUuid = util.getUuid();
+                async.auto({
+                    deleted: function (cb) {
+                        var deleteSql = &#x27;&#x27;;
+                        if (data.type === &#x27;post&#x27; &amp;&amp; data.postId) {
+                            newUuid = data.postId;
+                            deleteSql = &#x27;delete from term_relationships where object_id = ?&#x27;;
+                            conn.query(deleteSql, [data.postId], function (errD, result) {
+                                cb(errD, result);
+                            });
+                        } else {
+                            cb(null);
+                        }
+                    },
+                    checkUrl: function (cb) {
+                        if (!data.postUrl) {
+                            return cb(null);
+                        }
+                        var sql = &#x27;select count(1) total from posts where post_guid = ?&#x27;, paramArr = [data.postUrl];
+                        if (data.postId) {
+                            sql += &#x27; and post_id &lt;&gt; ?&#x27;;
+                            paramArr.push(data.postId);
+                        }
+                        conn.query(sql, paramArr, function (err, result) {
+                            cb(err, result);
+                        });
+                    },
+                    post: [&#x27;checkUrl&#x27;, function (cb, checkResult) {//插入文章
+                        if (checkResult.checkUrl &amp;&amp; checkResult.checkUrl[0].total) {
+                            return cb(&#x27;URL已存在&#x27;);
+                        }
+                        var insertSql = &#x27;&#x27;, paramArr = [], commentFlag, postStatus, postOriginal, nowTime = new Date(), postDate, postGuid;
+
+                        switch (data.postComment) {
+                            case &#x27;1&#x27;:
+                                commentFlag = &#x27;open&#x27;;
+                                break;
+                            case &#x27;0&#x27;:
+                                commentFlag = &#x27;closed&#x27;;
+                                break;
+                            default:
+                                commentFlag = &#x27;verify&#x27;;
+                        }
+                        // commentFlag = data.postComment === &#x27;1&#x27; ? &#x27;open&#x27; : &#x27;closed&#x27;;
+                        postOriginal = data.postOriginal === &#x27;1&#x27;;
+                        postStatus = data.postStatus === &#x27;password&#x27; ? &#x27;publish&#x27; : data.postStatus;
+                        postDate = data.postDate ? moment(data.postDate).toDate() : nowTime;
+                        postGuid = data.postUrl || &#x27;/post/&#x27; + newUuid;
+
+                        insertSql = &#x27;insert into posts(post_id, post_author, post_date, post_content, post_title, post_excerpt, post_status, comment_flag, post_original, post_password, post_created, post_guid, post_type) &#x27;;
+                        insertSql += &#x27;values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)&#x27;;
+                        paramArr = [newUuid, data.user.user.user_id, postDate, data.postContent, data.postTitle, data.postExcerpt, postStatus, commentFlag, postOriginal, data.postPassword || &#x27;&#x27;, nowTime, postGuid, data.type];//options.site_url.option_value + &#x27;post/&#x27; + newUuid
+
+                        if (data.postId) {
+                            insertSql = &#x27;update posts set post_author = ?, post_date = ?, post_date_gmt = ?, post_content = ?, post_title = ?, &#x27;;
+                            insertSql += &#x27;post_excerpt = ?, post_status = ?, comment_flag = ?, post_original = ?, post_password = ?, post_modified = ?, post_guid = ? &#x27;;
+                            insertSql += &#x27;where post_id = ?&#x27;;
+                            paramArr = [data.user.user.user_id, postDate, postDate, data.postContent, data.postTitle, data.postExcerpt, postStatus, commentFlag, postOriginal, data.postPassword || &#x27;&#x27;, nowTime, postGuid, data.postId];
+                        }
+                        conn.query(insertSql, paramArr, function (errP, result) {
+                            cb(errP, result);
+                        });
+                    }],
+                    category: [&#x27;post&#x27;, function (cb, postResult) {//插入分类目录
+                        if (data.type === &#x27;page&#x27; || data.type === &#x27;attachment&#x27;) {
+                            return cb(null);
+                        }
+                        async.times(data.postCategory.length, function (i, next) {
+                            var insertSql = &#x27;&#x27;;
+                            insertSql = &#x27;insert into term_relationships(object_id, term_taxonomy_id) values(?, ?)&#x27;;
+                            conn.query(insertSql, [newUuid, data.postCategory[i]], function (errC, insertResult) {
+                                next(errC, insertResult);
+                            });
+                        }, function (errC, cateResult) {
+                            cb(errC, cateResult);
+                        });
+                    }],
+                    tag: [&#x27;post&#x27;, function (cb, postResult) {//插入标签，及标签关联记录
+                        if (data.type === &#x27;page&#x27; || data.type === &#x27;attachment&#x27;) {
+                            return cb(null);
+                        }
+                        async.times(data.postTag.length, function (i, next) {//循环标签列表
+                            async.auto({
+                                term: function (cbQ) {//分类表操作
+                                    var curTag = data.postTag[i].trim();
+                                    conn.query(&#x27;select * from term_taxonomy where slug = ?&#x27;, [curTag], function (errQ, queryResult) {
+                                        if (errQ) {
+                                            return next(errQ);
+                                        }
+                                        var taxonomyId = util.getUuid();
+                                        if (queryResult.length &gt; 0) {//已存在标签
+                                            cbQ(errQ, queryResult[0].taxonomy_id);//TODO:更新记录数
+                                        } else {//新标签
+                                            async.parallel({
+                                                taxonomy: function (cbI) {//标签扩展属性
+                                                    conn.query(&#x27;insert into term_taxonomy(taxonomy_id, taxonomy, name, slug, description, count, created) values(?,?,?,?,?,?,?)&#x27;, [taxonomyId, &#x27;tag&#x27;, curTag, curTag, curTag, 1, new Date()], function (errI, insertResult) {
+                                                        cbI(errI, insertResult);
+                                                    });
+                                                }
+                                            }, function (errI, insertResult) {
+                                                cbQ(errI, taxonomyId);
+                                            });
+                                        }
+                                    });
+                                },
+                                relationship: [&#x27;term&#x27;, function (cbI, queryResult) {//关系表操作
+                                    conn.query(&#x27;insert into term_relationships(object_id, term_taxonomy_id) values(?,?)&#x27;, [newUuid, queryResult.term], function (errI, insertResult) {
+                                        cbI(errI, queryResult);
+                                    });
+                                }]
+
+                            }, function (errT, insertResult) {
+                                next(errT, insertResult);
+                            });
+                        }, function (errT, allResult) {
+                            cb(errT, allResult);
+                        });
+                    }]
+                }, function (err, results) {
+                    if (err) {
+                        return conn.rollback(function () {//回滚
+                            return callback(err);
+                        });
+                    }
+                    conn.commit(function (errC) {//提交
+                        if (errC) {
+                            return conn.rollback(function () {//回滚
+                                return callback(errC);
+                            });
+                        }
+                        callback(null, results);
+                    });
+                });
+            });
+        });
+    },
+    /**
+     * 查询当前文章的上一篇
+     * @method getPrevPost
+     * @param {String} postId postId
+     * @param {Function} callback 回调函数
+     * @return {void}
+     * @author Fuyun
+     * @version 2.2.0
+     * @since 2.2.0
+     */
+    getPrevPost: function (postId, callback) {
+        &#x27;use strict&#x27;;
+        var that = this;
+        this.pool.getConnection(function (err, conn) {
+            if (err) {
+                logger.error(&#x27;&quot;Function: getPrevPost, Param: &#x27; + JSON.stringify({postId: postId}) + &#x27;, Error: &#x27; + err + &#x27;&quot;&#x27;);
+                return callback(err);
+            }
+            var prevSql = &#x27;&#x27;, prevQuery;
+            prevSql = &#x27;select post_id, post_guid, post_title &#x27;;
+            prevSql += &#x27;from posts &#x27;;
+            prevSql += &#x27;where post_status = ? and post_type = ? and post_created &gt; (select post_created from posts where post_id = ?) &#x27;;
+            prevSql += &#x27;order by post_created asc limit 1 offset 0&#x27;;
+            prevQuery = conn.query(prevSql, [&#x27;publish&#x27;, &#x27;post&#x27;, postId], function (err, result) {
+                conn.release();
+                logger.info(&#x27;&quot;Function: getPrevPost, Param: &#x27; + JSON.stringify({postId: postId}) + &#x27;, Data: &#x27; + JSON.stringify(result) + &#x27;&quot;&#x27;);
+                callback(err, result);
+            });
+        });
+    },
+    /**
+     * 查询当前文章的下一篇
+     * @method getNextPost
+     * @param {String} postId postId
+     * @param {Function} callback 回调函数
+     * @return {void}
+     * @author Fuyun
+     * @version 2.2.0
+     * @since 2.2.0
+     */
+    getNextPost: function (postId, callback) {
+        &#x27;use strict&#x27;;
+        var that = this;
+        this.pool.getConnection(function (err, conn) {
+            if (err) {
+                logger.error(&#x27;&quot;Function: getNextPost, Param: &#x27; + JSON.stringify({postId: postId}) + &#x27;, Error: &#x27; + err + &#x27;&quot;&#x27;);
+                return callback(err);
+            }
+            var prevSql = &#x27;&#x27;, prevQuery;
+            prevSql = &#x27;select post_id, post_guid, post_title &#x27;;
+            prevSql += &#x27;from posts &#x27;;
+            prevSql += &#x27;where post_status = ? and post_type = ? and post_created &lt; (select post_created from posts where post_id = ?) &#x27;;
+            prevSql += &#x27;order by post_created desc limit 1 offset 0&#x27;;
+            prevQuery = conn.query(prevSql, [&#x27;publish&#x27;, &#x27;post&#x27;, postId], function (err, result) {
+                conn.release();
+                logger.info(&#x27;&quot;Function: getNextPost, Param: &#x27; + JSON.stringify({postId: postId}) + &#x27;, Data: &#x27; + JSON.stringify(result) + &#x27;&quot;&#x27;);
+                callback(err, result);
+            });
+        });
+    }
+};
+
+module.exports = Post;
+
+    </pre>
+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>

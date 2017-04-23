@@ -76,36 +76,6 @@
     </div>
     <? include ../elements/pageFooter.html ?>
 </div>
-<script type="text/javascript" src="/js/vendor/jquery-1.11.0.min.js"></script>
-<script type="text/javascript">
-    $(function(){
-        $('.btn-delete').on('click', function(e){
-            var $that = $(this);
-            $.ajax({
-                type: 'post',
-                url: '/admin/category/remove',
-                data: {
-                    termId: $that.attr('data-term'),
-                    taxonomyId: $that.attr('data-taxonomy')
-                },
-                headers: {
-                    'X-CSRF-Token': $('#csrfToken').val()
-                },
-                dataType: 'json',
-                success: function (d, s, xhr) {
-                    if(d.code === 0){
-                        // location.href = d.data.url;
-                        window.location.reload();
-                    } else {
-                        alert(d.message);
-                    }
-                },
-                error: function (xhr, s, err) {
-                    return false;
-                }
-            });
-            return false;
-        });
-    });
-</script>
+<script type="text/javascript" src="<?- options.static_host.option_value ?>/dist/js/common_99219e3a.js"></script>
+<script type="text/javascript" src="<?- options.static_host.option_value ?>/dist/js/admin/category_99219e3a.js"></script>
 <? include ../common/footer.html ?>

@@ -1,0 +1,66 @@
+<? include ../common/header.html ?>
+<? include ../elements/pageHeader.html ?>
+<section class="g-container f-clearfix">
+    <div class="m-content-wrap">
+        <div class="m-content">
+            <? include ../elements/crumb.html ?>
+            <header class="m-article-header">
+                <h1 class="m-article-title">
+                    <a rel="bookmark" title="<?- post.postTitle ?>" href="<?= post.postGuid ?>"><?- post.postTitle ?></a>
+                </h1>
+                <div class="m-article-meta">
+                    <span title="写作时间: <?= moment(post.postDate).format('YYYY-MM-DD') ?>"><i class="glyphicon glyphicons-calendar"></i><?= moment(post.postDate).format('YYYY-MM-DD') ?></span>
+                    <span class="m-meta-dynamic"><i class="glyphicon glyphicons-folder-closed"></i><? categories.forEach(function(category){ ?><a title="查看 <?- category.name ?> 中的全部文章" rel="category" href="/category/<?= category.slug ? category.slug : category.name ?>"><?- category.name ?></a><? }) ?></span>
+                    <span title="作者： <?- post.User.userDisplayName ?>"><i class="glyphicon glyphicons-user"></i><?- post.User.userDisplayName ?></span>
+                    <? if(post.postOriginal === 1){ ?>
+                    <span class="m-meta-dynamic" title="<?- post.User.userDisplayName ?>原创"><i class="glyphicon glyphicons-pencil"></i>原创</span>
+                    <span class="m-meta-dynamic" title="禁止转载"><i class="glyphicon glyphicons-ban-circle"></i>禁止转载</span>
+                    <? } else { ?>
+                    <span class="m-meta-dynamic" title="转载"><i class="glyphicon glyphicons-unshare"></i>转载</span>
+                    <? } ?>
+                </div>
+            </header>
+            <div class="m-diag">&nbsp;</div>
+            <article class="m-article-content" id="postContent">
+                <?- post.postContent ?>
+                <span class="u-article-end">&#128282;</span>
+            </article>
+            <footer class="m-article-footer">
+                <div class="m-article-meta m-article-tag m-meta-dynamic">
+                    <div class="f-float-left"><i class="glyphicon glyphicons-folder-closed"></i></div>
+                    <ul class="f-clearfix"><? categories.forEach(function(category){ ?><li><a title="查看 <?- category.name ?> 中的全部文章" rel="category" href="/category/<?= category.slug ? category.slug : category.name ?>"><?- category.name ?></a></li><? }) ?></ul>
+                </div>
+                <? if(tags.length > 0){ ?>
+                <div class="m-article-meta m-article-tag">
+                    <div class="f-float-left"><i class="glyphicon glyphicons-tag"></i></div>
+                    <ul class="f-clearfix"><? tags.forEach(function(tag){ ?><li><a title="查看 <?= tag.name ?> 中的全部文章" rel="category" href="/tag/<?= tag.slug || tag.name ?>"><?= tag.name ?></a></li><? }) ?></ul>
+                </div>
+                <? } ?>
+                <div class="m-article-meta">
+                    <i class="glyphicon glyphicons-clock"></i>
+                    <span title="更新于: <?= moment(post.postModified || post.postCreated).format('YYYY-MM-DD HH:mm') ?>">最后更新：<?= moment(post.postModified || post.postCreated).format('YYYY-MM-DD HH:mm') ?></span>
+                </div>
+                <div class="m-article-qrcode f-clearfix">
+                    <div class="m-article-qrcode-img m-article-qrcode-share" id="qrcodeShare" data-url="<?= options.site_url.optionValue + post.postGuid ?>">&nbsp;</div>
+                    <div class="m-article-qrcode-img m-article-qrcode-reward" id="qrcodeReward">&nbsp;</div>
+                    <div class="m-article-qrcode-item m-article-share" id="btnShare">分享</div>
+                    <div class="m-article-qrcode-item m-article-reward" id="btnReward">打赏</div>
+                </div>
+                <div class="m-article-link f-clearfix">
+                    <? if(prevPost){ ?>
+                    <div class="m-article-link-prev"><a href="<?= prevPost.postGuid ?>" title="<?= prevPost.postTitle ?>"><span>&lt;&nbsp;上一篇：</span><span class="m-article-link-text"><?= prevPost.postTitle ?></span></a></div>
+                    <? } ?>
+                    <? if(nextPost){ ?>
+                    <div class="m-article-link-next"><a href="<?= nextPost.postGuid ?>" title="<?= nextPost.postTitle ?>"><span>下一篇：</span><span class="m-article-link-text"><?= nextPost.postTitle ?></span><span>&nbsp;&gt;</span></a></div>
+                    <? } ?>
+                </div>
+            </footer>
+            <? include ../elements/comment.html ?>
+        </div>
+    </div>
+    <? include ../elements/sidebar.html ?>
+</section>
+<? include ../elements/pageFooter.html ?>
+<script type="text/javascript" src="<?- options.static_host.optionValue ?>/dist/js/common_99219e3a.js"></script>
+<script type="text/javascript" src="<?- options.static_host.optionValue ?>/dist/js/web/post_99219e3a.js"></script>
+<? include ../common/footer.html ?>

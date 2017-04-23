@@ -3,11 +3,11 @@
  * @module m_term_taxonomy
  * @requires async, util
  * @author Fuyun
- * @version 1.0.0(2015-02-26)
- * @since 1.0.0(2014-03-08)
+ * @version 3.0.0
+ * @since 1.0.0
  */
-var async = require('async'),
-    util = require('../helper/util');
+const async = require('async');
+const util = require('../helper/util');
 
 /**
  * 分类(TermTaxonomy)模型：封装分类目录查询操作
@@ -16,11 +16,10 @@ var async = require('async'),
  * @param {Object} pool 连接池对象
  * @return {void}
  * @author Fuyun
- * @version 1.0.0(2014-03-15)
- * @since 1.0.0(2014-03-08)
+ * @version 1.0.0
+ * @since 1.0.0
  */
 var TermTaxonomy = function TermTaxonomy(pool) {
-    'use strict';
     /**
      * 连接池对象
      * @attribute pool
@@ -44,11 +43,10 @@ var TermTaxonomy = function TermTaxonomy(pool) {
  * @param {Array} categoryData 目录数据数组
  * @return {Object} 目录树层次数据对象(嵌套)
  * @author Fuyun
- * @version 1.0.0(2015-02-15)
- * @since 1.0.0(2015-02-15)
+ * @version 1.0.0
+ * @since 1.0.0
  */
 function createCategoryTree(categoryData) {
-    'use strict';
     var catTree = {},
         treeNodes = [];
 
@@ -90,11 +88,10 @@ function createCategoryTree(categoryData) {
  * @param {Number} level 层级，在ul中定义，而非li(已有level定义)，故需要此参数
  * @return {Array} 结构化HTML数组
  * @author Fuyun
- * @version 1.0.0(2015-02-26)
- * @since 1.0.0(2015-02-25)
+ * @version 1.0.0
+ * @since 1.0.0
  */
 function iterateCategoryTree(inTree, outTree, level) {
-    'use strict';
     var nodeIdx,
         curNode;
     outTree.push('<li>');
@@ -124,11 +121,10 @@ function iterateCategoryTree(inTree, outTree, level) {
  * @param {Number} level 层级，在ul中定义，而非li(已有level定义)，故需要此参数
  * @return {Array} 结构化HTML数组
  * @author Fuyun
- * @version 1.0.0(2015-07-13)
- * @since 1.0.0(2015-07-13)
+ * @version 1.0.0
+ * @since 1.0.0
  */
 function iterateCategoryArray(inTree, outArr, level) {
-    'use strict';
     var nodeIdx,
         curNode;
     for (nodeIdx in inTree) {
@@ -156,11 +152,10 @@ TermTaxonomy.prototype = {
      * @param {Function} callback 回调函数
      * @return {void}
      * @author Fuyun
-     * @version 1.0.0(2014-05-30)
-     * @since 1.0.0(2014-03-08)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     getTermByTaxonomyId: function (taxonomyId, callback) {
-        'use strict';
         this.pool.getConnection(function (err, conn) {
             if (err) {
                 return callback(err);
@@ -193,11 +188,10 @@ TermTaxonomy.prototype = {
      * @param {Function} callback 回调函数，参数：目录树HTML
      * @return {void}
      * @author Fuyun
-     * @version 1.0.0(2015-02-25)
-     * @since 1.0.0(2014-03-08)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     getCategoryDom: function (callback) {
-        'use strict';
         this.pool.getConnection(function (err, conn) {
             if (err) {
                 return callback(err);
@@ -224,11 +218,10 @@ TermTaxonomy.prototype = {
      * @param {Function} callback 回调函数，参数：目录数组
      * @return {void}
      * @author Fuyun
-     * @version 1.0.0(2015-07-13)
-     * @since 1.0.0(2015-07-13)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     getCategoryArray: function (type, callback) {
-        'use strict';
         this.pool.getConnection(function (err, conn) {
             if (err) {
                 return callback(err);
@@ -255,11 +248,10 @@ TermTaxonomy.prototype = {
      * @param {Function} callback 回调函数，参数：目录树Object
      * @return {void}
      * @author Fuyun
-     * @version 2.0.0(2016-03-14)
-     * @since 2.0.0(2016-03-14)
+     * @version 2.0.0
+     * @since 2.0.0
      */
     getCategoryTree: function (callback) {
-        'use strict';
         this.pool.getConnection(function (err, conn) {
             if (err) {
                 return callback(err);
@@ -284,11 +276,10 @@ TermTaxonomy.prototype = {
      * @param {Function} callback 回调函数
      * @return {void}
      * @author Fuyun
-     * @version 1.0.0(2014-06-01)
-     * @since 1.0.0(2014-03-08)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     getMainNavs: function (callback) {
-        'use strict';
         this.pool.getConnection(function (err, conn) {
             if (err) {
                 return callback(err);
@@ -310,11 +301,10 @@ TermTaxonomy.prototype = {
      * @param {Function} callback 回调函数
      * @return {void}
      * @author Fuyun
-     * @version 1.0.0(2014-06-03)
-     * @since 1.0.0(2014-03-11)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     getParentCategories: function (catId, callback) {
-        'use strict';
         var parentCats = [],
             that = this,
             recursive = function (curCatId) {
@@ -343,7 +333,6 @@ TermTaxonomy.prototype = {
      * @since 1.0.0
      */
     getChildCategories: function (parent, callback) {//getTaxonomyByParent
-        'use strict';
         this.pool.getConnection(function (err, conn) {
             if (err) {
                 return callback(err);
@@ -376,7 +365,6 @@ TermTaxonomy.prototype = {
      * @since 1.0.0
      */
     getCategories: function (param, callback) {
-        'use strict';
         var that = this;
 
         this.pool.getConnection(function (err, conn) {
@@ -440,7 +428,6 @@ TermTaxonomy.prototype = {
      * @since 1.0.0
      */
     saveCategory: function (data, callback) {
-        'use strict';
         this.pool.getConnection(function (err, conn) {
             if (err) {
                 return callback(err);
@@ -514,7 +501,6 @@ TermTaxonomy.prototype = {
      * @since 1.0.0
      */
     removeCategory: function (data, callback) {
-        'use strict';
         this.pool.getConnection(function (err, conn) {
             if (err) {
                 return callback(err);
@@ -582,11 +568,10 @@ TermTaxonomy.prototype = {
      * @param {Function} callback 回调函数
      * @return {void}
      * @author Fuyun
-     * @version 1.0.0(2014-06-01)
-     * @since 1.0.0(2014-03-08)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     getTaxonomyBySlug: function (slug, type, callback) {
-        'use strict';
         this.pool.getConnection(function (err, conn) {
             if (err) {
                 return callback(err);

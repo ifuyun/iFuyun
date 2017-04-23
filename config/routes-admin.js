@@ -1,28 +1,23 @@
 /*global console*/
 /**
  * 后台路由
- * @author Fuyun
- * @version 1.1.0(2015-07-10)
- * @since 1.1.0(2015-02-27)
- */
-/**
- * 后台路由
+ * @module cfg_routes_admin
  * @param {Object} app Server对象
  * @param {Object} router 路由对象
  * @return {Object} router 路由对象
  * @author Fuyun
- * @version 1.1.0(2015-02-27)
- * @since 1.1.0(2015-02-27)
+ * @version 3.0.0
+ * @since 1.1.0
  */
+'use strict';
 module.exports = function (app, router) {
-    'use strict';
-    var base = require('../controllers/base'),
-        post = require('../controllers/post'),
-        user = require('../controllers/user'),
-        admin = require('../controllers/admin'),
-        comment = require('../controllers/comment'),
-        taxonomy = require('../controllers/taxonomy'),
-        link = require('../controllers/link');
+    const base = require('../controllers/base');
+    const post = require('../controllers/post');
+    const user = require('../controllers/user');
+    const admin = require('../controllers/admin');
+    const comment = require('../controllers/comment');
+    const taxonomy = require('../controllers/taxonomy');
+    const link = require('../controllers/link');
 
     router.use(admin.checkAuth);
     router.get('/', admin.welcome);

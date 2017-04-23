@@ -3,20 +3,18 @@
  * @module m_post
  * @requires m_term_taxonomy, m_term_relationship, m_user, m_comment, moment, async, util, logger
  * @author Fuyun
- * @version 2.2.0
- * @since 1.0.0(2014-03-08)
+ * @version 3.0.0
+ * @since 1.0.0
  */
-var TaxonomyModel = require('../model/termTaxonomy'),
-    TermRelModel = require('../model/termRelationship'),
-    UserModel = require('../model/user'),
-    CommentModel = require('../model/comment'),
-
-    moment = require('moment'),
-    async = require('async'),
-
-    util = require('../helper/util'),
-    Logger = require('../helper/logger'),
-    logger = Logger.sysLog;
+const TaxonomyModel = require('../model/termTaxonomy');
+const TermRelModel = require('../model/termRelationship');
+const UserModel = require('../model/user');
+const CommentModel = require('../model/comment');
+const moment = require('moment');
+const async = require('async');
+const util = require('../helper/util');
+const Logger = require('../helper/logger');
+const logger = Logger.sysLog;
 
 /**
  * 文章(Post)模型：封装文章查询操作
@@ -26,11 +24,10 @@ var TaxonomyModel = require('../model/termTaxonomy'),
  * @param {Object} pool 连接池对象
  * @return {void}
  * @author Fuyun
- * @version 1.0.0(2014-06-01)
- * @since 1.0.0(2014-03-08)
+ * @version 1.0.0
+ * @since 1.0.0
  */
 var Post = function Post(pool) {
-    'use strict';
     /**
      * 分类模型实例
      * @attribute taxonomy
@@ -94,11 +91,10 @@ var common = {
      * @param {Array} termRels 分类关系结果集(单篇文章)
      * @return {void}
      * @author Fuyun
-     * @version 1.0.0(2014-03-08)
-     * @since 1.0.0(2014-03-08)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     getTerms: function (cb, that, termRels) {
-        'use strict';
         async.map(termRels, function (termRel, fn) {
             that.taxonomy.getTermByTaxonomyId(termRel.term_taxonomy_id, fn);
         }, function (err, results) {
@@ -114,11 +110,10 @@ var common = {
      * @param {Array} posts 文章结果集
      * @return {void}
      * @author Fuyun
-     * @version 1.0.0(2014-03-08)
-     * @since 1.0.0(2014-03-08)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     getAllUsers: function (cb, that, posts) {
-        'use strict';
         async.map(posts, function (post, fn) {
             that.user.getUserById(post.posts.post_author, fn);
         }, function (err, data) {
@@ -134,11 +129,10 @@ var common = {
      * @param {Array} posts 文章结果集
      * @return {void}
      * @author Fuyun
-     * @version 1.0.0(2014-03-08)
-     * @since 1.0.0(2014-03-08)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     getAllTermRels: function (cb, that, posts) {
-        'use strict';
         async.map(posts, function (post, fn) {
             that.termRel.getTermRelsByObjId(post.posts.post_id, fn);
         }, function (err, data) {
@@ -154,11 +148,10 @@ var common = {
      * @param {Array} termRels 分类关系结果集(多篇文章)
      * @return {void}
      * @author Fuyun
-     * @version 1.0.0(2014-03-08)
-     * @since 1.0.0(2014-03-08)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     getAllTerms: function (cb, that, termRels) {
-        'use strict';
         async.map(termRels, function (termRel, fn) {
             common.getTerms(fn, that, termRel);
         }, function (err, results) {
@@ -178,7 +171,6 @@ var common = {
      * @since 1.0.0
      */
     getAllCommentCount: function (cb, that, posts) {
-        'use strict';
         async.map(posts, function (post, fn) {
             that.comment.getCommentCountByPostId(post.posts.post_id, fn);
         }, function (err, data) {
@@ -196,7 +188,6 @@ var common = {
      * @since 1.0.0
      */
     getDisplayStatus: function (status) {
-        'use strict';
         var statusArr = {
             'publish': '已发布',
             'private': '私密',
@@ -218,11 +209,10 @@ Post.prototype = {
      * @param {Function} callback 回调函数
      * @return {void}
      * @author Fuyun
-     * @version 1.0.0(2014-06-01)
-     * @since 1.0.0(2014-03-08)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     p_getPostCount: function (sql, params, callback) {
-        'use strict';
         var that = this;
         this.pool.getConnection(function (err, conn) {
             if (err) {
@@ -252,7 +242,6 @@ Post.prototype = {
      * @since 1.0.0
      */
     getPostCount: function (param, type, callback) {
-        'use strict';
         var where;
 
         where = 'where post_type = ? and post_status = ?';
@@ -285,11 +274,10 @@ Post.prototype = {
      * @param {Function} callback 回调函数
      * @return {void}
      * @author Fuyun
-     * @version 1.0.0(2014-06-03)
-     * @since 1.0.0(2014-06-01)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     p_getPosts: function (sql, params, page, countFn, crumb, callback) {
-        'use strict';
         var that = this;
         async.auto({
             count: countFn,
@@ -381,11 +369,10 @@ Post.prototype = {
      * @param {Function} callback 回调函数
      * @return {void}
      * @author Fuyun
-     * @version 1.0.0(2014-06-03)
-     * @since 1.0.0(2014-05-27)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     getAllPosts: function (param, callback) {
-        'use strict';
         var select, where, order, sqlParam, that = this;
 
         select = 'select * from posts ';
@@ -434,11 +421,10 @@ Post.prototype = {
      * @param {Function} callback 回调函数
      * @return {void}
      * @author Fuyun
-     * @version 1.1.0(2016-06-23)
-     * @since 1.0.0(2014-06-01)
+     * @version 1.1.0
+     * @since 1.0.0
      */
     getPostsByDate: function (param, callback) {
-        'use strict';
         var select, where, order, sqlParam, dateFilter = '', that = this;
 
         select = 'select * from posts ';
@@ -485,11 +471,10 @@ Post.prototype = {
      * @param {Function} callback 回调函数
      * @return {void}
      * @author Fuyun
-     * @version 1.0.0(2014-06-03)
-     * @since 1.0.0(2014-06-03)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     getPostsByTag: function (param, callback) {
-        'use strict';
         var that = this;
         async.parallel({
             taxonomy: function (cb) {
@@ -552,11 +537,10 @@ Post.prototype = {
      * @param {Function} callback 回调函数
      * @return {void}
      * @author Fuyun
-     * @version 1.0.0(2014-06-03)
-     * @since 1.0.0(2014-06-03)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     getPostsByCategories: function (param, callback) {
-        'use strict';
         var that = this;
         async.auto({
             taxonomy: function (cb) {
@@ -638,11 +622,10 @@ Post.prototype = {
      * @param {Function} callback 回调函数
      * @return {void}
      * @author Fuyun
-     * @version 1.0.0(2014-05-30)
-     * @since 1.0.0(2014-05-26)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     getPostById: function (postId, type, isAdminUser, callback) {
-        'use strict';
         var that = this;
         async.auto({
             post: function (cb) {
@@ -752,11 +735,10 @@ Post.prototype = {
      * @param {Function} callback 回调函数
      * @return {void}
      * @author Fuyun
-     * @version 1.0.0(2014-06-01)
-     * @since 1.0.0(2014-03-08)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     getArchiveDates: function (type, callback) {
-        'use strict';
         this.pool.getConnection(function (err, conn) {
             if (err) {
                 return callback(err);
@@ -776,11 +758,10 @@ Post.prototype = {
      * @param {Function} callback 回调函数
      * @return {void}
      * @author Fuyun
-     * @version 1.0.0(2014-06-01)
-     * @since 1.0.0(2014-03-08)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     getRecentPosts: function (callback) {
-        'use strict';
         this.pool.getConnection(function (err, conn) {
             if (err) {
                 return callback(err);
@@ -800,11 +781,10 @@ Post.prototype = {
      * @param {Function} callback 回调函数
      * @return {void}
      * @author Fuyun
-     * @version 1.0.0(2014-06-01)
-     * @since 1.0.0(2014-03-08)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     getRandPosts: function (callback) {
-        'use strict';
         this.pool.getConnection(function (err, conn) {
             if (err) {
                 return callback(err);
@@ -824,11 +804,10 @@ Post.prototype = {
      * @param {Function} callback 回调函数
      * @return {void}
      * @author Fuyun
-     * @version 1.0.0(2016-08-11)
-     * @since 1.0.0(2016-08-11)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     getHotPosts: function (callback) {
-        'use strict';
         this.pool.getConnection(function (err, conn) {
             if (err) {
                 return callback(err);
@@ -846,15 +825,13 @@ Post.prototype = {
      * 保存文章
      * @method savePost
      * @param {Object} data 文章数据
-     * @param {Object} options 站点配置
      * @param {Function} callback 回调函数
      * @return {void}
      * @author Fuyun
      * @version 1.0.0
      * @since 1.0.0
      */
-    savePost: function (data, options, callback) {
-        'use strict';
+    savePost: function (data, callback) {
         this.pool.getConnection(function (err, conn) {
             if (err) {
                 return callback(err);
@@ -907,7 +884,7 @@ Post.prototype = {
                                 commentFlag = 'verify';
                         }
                         // commentFlag = data.postComment === '1' ? 'open' : 'closed';
-                        postOriginal = data.postOriginal === '1' ? true : false;
+                        postOriginal = data.postOriginal === '1';
                         postStatus = data.postStatus === 'password' ? 'publish' : data.postStatus;
                         postDate = data.postDate ? moment(data.postDate).toDate() : nowTime;
                         postGuid = data.postUrl || '/post/' + newUuid;
@@ -927,7 +904,7 @@ Post.prototype = {
                         });
                     }],
                     category: ['post', function (cb, postResult) {//插入分类目录
-                        if (data.type === 'page') {
+                        if (data.type === 'page' || data.type === 'attachment') {
                             return cb(null);
                         }
                         async.times(data.postCategory.length, function (i, next) {
@@ -941,7 +918,7 @@ Post.prototype = {
                         });
                     }],
                     tag: ['post', function (cb, postResult) {//插入标签，及标签关联记录
-                        if (data.type === 'page') {
+                        if (data.type === 'page' || data.type === 'attachment') {
                             return cb(null);
                         }
                         async.times(data.postTag.length, function (i, next) {//循环标签列表
@@ -1010,7 +987,6 @@ Post.prototype = {
      * @since 2.2.0
      */
     getPrevPost: function (postId, callback) {
-        'use strict';
         var that = this;
         this.pool.getConnection(function (err, conn) {
             if (err) {
@@ -1040,7 +1016,6 @@ Post.prototype = {
      * @since 2.2.0
      */
     getNextPost: function (postId, callback) {
-        'use strict';
         var that = this;
         this.pool.getConnection(function (err, conn) {
             if (err) {

@@ -3,10 +3,11 @@
  * @module m_user
  * @requires async, util
  * @author Fuyun
- * @version 1.0.0(2014-06-01)
- * @since 1.0.0(2014-03-08)
+ * @version 3.0.0
+ * @since 1.0.0
  */
-var async = require('async'), util = require('../helper/util');
+const async = require('async');
+const util = require('../helper/util');
 
 /**
  * 用户(User)模型：封装用户查询操作
@@ -15,11 +16,10 @@ var async = require('async'), util = require('../helper/util');
  * @param {Object} pool 连接池对象
  * @return {void}
  * @author Fuyun
- * @version 1.0.0(2014-03-15)
- * @since 1.0.0(2014-03-08)
+ * @version 1.0.0
+ * @since 1.0.0
  */
 var User = function User(pool) {
-    'use strict';
     /**
      * 连接池对象
      * @attribute pool
@@ -37,11 +37,10 @@ User.prototype = {
      * @param {Function} callback 回调函数
      * @return {void}
      * @author Fuyun
-     * @version 1.0.0(2014-06-01)
-     * @since 1.0.0(2014-03-08)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     getUserById: function (userId, callback) {
-        'use strict';
         this.pool.getConnection(function (err, conn) {
             if (err) {
                 return callback(err);
@@ -86,11 +85,10 @@ User.prototype = {
      * @param {Function} callback 回调函数
      * @return {void}
      * @author Fuyun
-     * @version 1.0.0(2014-06-01)
-     * @since 1.0.0(2014-03-08)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     findUser: function (username, password, callback) {
-        'use strict';
         this.pool.getConnection(function (err, conn) {
             if (err) {
                 return callback(err);

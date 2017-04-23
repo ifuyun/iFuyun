@@ -21,7 +21,7 @@
         </ul>
         <ul class="m-nav-tool">
             <? quickLinks.forEach(function(link){ ?>
-            <li><a title="<?- link.link_description ?>" href="<?= link.link_url ?>"><?- link.link_name ?></a></li>
+            <li><a title="<?- link.linkDescription ?>" href="<?= link.linkUrl ?>"><?- link.linkName ?></a></li>
             <? }) ?>
             <? if (isLogin){ ?>
             <li><a href="/admin" title="管理后台" target="_blank">管理</a></li>

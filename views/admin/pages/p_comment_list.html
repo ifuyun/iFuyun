@@ -93,49 +93,6 @@
     </div>
     <? include ../elements/pageFooter.html ?>
 </div>
-<script type="text/javascript" src="/js/vendor/jquery-1.11.0.min.js"></script>
-<script type="text/javascript">
-    function sendAction(action, commentId){
-        $.ajax({
-            type: 'post',
-            url: '/admin/comment/status',
-            data: {
-                action: action,
-                commentId: commentId
-            },
-            headers: {
-                'X-CSRF-Token': $('#csrfToken').val()
-            },
-            dataType: 'json',
-            success: function (d, s, xhr) {
-                if(d.code === 0){
-                    window.location.reload();
-                } else {
-                    alert(d.message);
-                }
-            },
-            error: function (xhr, s, err) {
-                return false;
-            }
-        });
-    }
-    $(function(){
-        $('.btn-approve').on('click', function(e){
-            sendAction('approve', $(this).attr('data-id'));
-            return false;
-        });
-        $('.btn-reject').on('click', function(e){
-            sendAction('reject', $(this).attr('data-id'));
-            return false;
-        });
-        $('.btn-spam').on('click', function(e){
-            sendAction('spam', $(this).attr('data-id'));
-            return false;
-        });
-        $('.btn-delete').on('click', function(e){
-            sendAction('delete', $(this).attr('data-id'));
-            return false;
-        });
-    });
-</script>
+<script type="text/javascript" src="<?- options.static_host.option_value ?>/dist/js/common_99219e3a.js"></script>
+<script type="text/javascript" src="<?- options.static_host.option_value ?>/dist/js/admin/comment_99219e3a.js"></script>
 <? include ../common/footer.html ?>

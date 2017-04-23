@@ -6,21 +6,18 @@
  * @static
  * @requires async, sanitizer, m_user, m_base, util
  * @author Fuyun
- * @version 1.1.0(2015-11-26)
- * @since 1.1.0(2015-02-26)
+ * @version 3.0.0
+ * @since 1.1.0
  */
-var async = require('async'),
-    xss = require('sanitizer'),
-
-    base = require('./base'),
-    pool = require('../model/base').pool,
-    util = require('../helper/util'),
-
-    UserModel = require('../model/user'),
-    OptionModel = require('../model/option'),
-
-    user = new UserModel(pool),
-    option = new OptionModel(pool);
+const async = require('async');
+const xss = require('sanitizer');
+const base = require('./base');
+const pool = require('../model/base').pool;
+const util = require('../helper/util');
+const UserModel = require('../model/user');
+const OptionModel = require('../model/option');
+const user = new UserModel(pool);
+const option = new OptionModel(pool);
 
 module.exports = {
     /**
@@ -36,14 +33,6 @@ module.exports = {
      * @since 1.1.0
      */
     welcome: function(req, res, next) {
-        'use strict';
-        // var resData = {
-        // meta: {
-        // title: 'I, Fuyun管理后台'
-        // },
-        // page: 'welcome'
-        // };
-        // res.render('admin', resData);
         res.redirect('/admin/post');
     },
     /**
@@ -59,8 +48,7 @@ module.exports = {
      * @since 1.1.0
      */
     checkAuth: function(req, res, next) {
-        'use strict';
-        var curUser = req.session.user;
+        // const curUser = req.session.user;
 
         res.locals.isLogin = util.isLogin(req);
 
@@ -91,8 +79,7 @@ module.exports = {
      * @since 1.1.0
      */
     setGeneral: function(req, res, next) {
-        'use strict';
-        var resData = {
+        let resData = {
             meta: {
                 title: ''
             },
@@ -106,7 +93,7 @@ module.exports = {
             if (err) {
                 return next(err);
             }
-            var options = results.options;
+            const options = results.options;
 
             resData.meta.title = util.getTitle(['常规选项', '站点设置', '管理后台', options.site_name.option_value]);
 
@@ -128,9 +115,7 @@ module.exports = {
      * @since 1.1.0
      */
     saveGeneral: function(req, res, next) {
-        'use strict';
-        var params = req.body,
-            paramIdx = 0;
+        let params = req.body;
 
         // req.session.referer = req.headers.referer;
         // req.session.save();
@@ -189,7 +174,7 @@ module.exports = {
             desc: '版权信息'
         }];
 
-        for ( paramIdx = 0; paramIdx < params.options.length; paramIdx += 1) {
+        for ( let paramIdx = 0; paramIdx < params.options.length; paramIdx += 1) {
             if (params.options[paramIdx].required && !params.options[paramIdx].value) {
                 return util.catchError({
                     status: 200,
@@ -232,8 +217,7 @@ module.exports = {
      * @unimplemented
      */
     setWriting: function(req, res, next) {//TODO
-        'use strict';
-        var resData = {
+        let resData = {
             meta: {
                 title: 'I, Fuyun管理后台'
             }
@@ -252,8 +236,7 @@ module.exports = {
      * @unimplemented
      */
     setReading: function(req, res, next) {//TODO
-        'use strict';
-        var resData = {
+        let resData = {
             meta: {
                 title: 'I, Fuyun管理后台'
             }
@@ -272,8 +255,7 @@ module.exports = {
      * @unimplemented
      */
     setDiscussion: function(req, res, next) {//TODO
-        'use strict';
-        var resData = {
+        let resData = {
             meta: {
                 title: 'I, Fuyun管理后台'
             }

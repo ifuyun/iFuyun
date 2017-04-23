@@ -1,0 +1,12 @@
+node_modules
+.git
+.idea
+.tmp
+.npm-debug*
+/config/credentials.js
+/public/dist/**
+/public/dist/static/**
+/public/upload/**
+/logs/**
+/**/.DS_Store
+/**/*.css.map

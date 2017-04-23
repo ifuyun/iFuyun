@@ -5,20 +5,17 @@
  * @static
  * @requires async, sanitizer, cfg_core, c_base, m_base, util, m_user
  * @author Fuyun
- * @version 1.1.0(2015-02-26)
- * @since 1.0.0(2014-05-16)
+ * @version 3.0.0
+ * @since 1.0.0
  */
-var async = require('async'),
-    xss = require('sanitizer'),
-
-    config = require('../config/core'),
-    base = require('./base'),
-    pool = require('../model/base').pool,
-    util = require('../helper/util'),
-
-    UserModel = require('../model/user'),
-
-    user = new UserModel(pool);
+const async = require('async');
+const xss = require('sanitizer');
+const config = require('../config/core');
+const base = require('./base');
+const pool = require('../model/base').pool;
+const util = require('../helper/util');
+const UserModel = require('../model/user');
+const user = new UserModel(pool);
 
 module.exports = {
     /**
@@ -34,7 +31,6 @@ module.exports = {
      * @since 1.0.0
      */
     login: function (req, res, next) {
-        'use strict';
         req.session.loginReferer = req.headers.referer;
 
         if (req.session.user) {
@@ -74,7 +70,6 @@ module.exports = {
      * @since 1.0.0
      */
     logout: function (req, res, next) {
-        'use strict';
         req.session.destroy(function (err) {
             if (err) {
                 return next(err);
@@ -95,7 +90,6 @@ module.exports = {
      * @since 1.0.0
      */
     doLogin: function (req, res, next) {
-        'use strict';
         var params = req.body, username = xss.sanitize(params.username);
 
         res.cookie('username', username, {
@@ -148,9 +142,7 @@ module.exports = {
         });
     },
     home: function (req, res, next) {
-        'use strict';
     },
     profile: function (req, res, next) {
-        'use strict';
     }
 };

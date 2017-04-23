@@ -66,31 +66,6 @@
     </div>
     <? include ../elements/pageFooter.html ?>
 </div>
-<script type="text/javascript" src="/js/vendor/jquery-1.11.0.min.js"></script>
-<script type="text/javascript">
-    $(function(){
-        $('#cat-name').focus();
-        $('#form-link').on('submit', function(e){
-            var $that = $(this);
-            $.ajax({
-                type: 'post',
-                url: $that.attr('action'),
-                data: $that.serialize(),
-                dataType: 'json',
-                success: function (d, s, xhr) {
-                    if(d.code === 0){
-                        location.href = d.data.url;
-                    } else {
-                        $('#csrfToken').val(d.token);
-                        alert(d.message);
-                    }
-                },
-                error: function (xhr, s, err) {
-                    return false;
-                }
-            });
-            return false;
-        });
-    });
-</script>
+<script type="text/javascript" src="<?- options.static_host.option_value ?>/dist/js/common_99219e3a.js"></script>
+<script type="text/javascript" src="<?- options.static_host.option_value ?>/dist/js/admin/link_99219e3a.js"></script>
 <? include ../common/footer.html ?>

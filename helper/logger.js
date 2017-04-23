@@ -7,10 +7,10 @@
  * @static
  * @requires log4js
  * @author Fuyun
- * @version 2.1.0
+ * @version 3.0.0
  * @since 2.1.0
  */
-var log4js = require('log4js');
+const log4js = require('log4js');
 
 log4js.configure({
     appenders: [{

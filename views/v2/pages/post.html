@@ -26,7 +26,7 @@
             <div class="m-diag">&nbsp;</div>
             <article class="m-article-content" id="postContent">
                 <?- post.post.post_content ?>
-                <span class="u-article-end">🔚</span>
+                <span class="u-article-end">&#128282;</span>
             </article>
             <footer class="m-article-footer">
                 <div class="m-article-meta m-article-tag m-meta-dynamic">
@@ -58,14 +58,12 @@
                     <? } ?>
                 </div>
             </footer>
-            <!-- <? include ../elements/comment.html ?> -->
+            <? include ../elements/comment.html ?>
         </div>
     </div>
     <? include ../elements/sidebar.html ?>
 </section>
 <? include ../elements/pageFooter.html ?>
-<? include ../common/js.html ?>
-<script type="text/javascript">
-    seajs.use('module/web/post');
-</script>
+<script type="text/javascript" src="<?- options.static_host.option_value ?>/dist/js/common_99219e3a.js"></script>
+<script type="text/javascript" src="<?- options.static_host.option_value ?>/dist/js/web/post_99219e3a.js"></script>
 <? include ../common/footer.html ?>

@@ -35,19 +35,21 @@
                         <thead>
                             <tr>
                                 <th width="2%" class="column-check"><input type="checkbox" class="checkAll" /></th>
-                                <th width="18%">标题</th>
-                                <th width="8%">日期</th>
-                                <th width="8%">修改时间</th>
-                                <th width="8%">创建时间</th>
-                                <th width="5%">作者</th>
-                                <th width="5%">状态</th>
-                                <th width="10%">操作</th>
+                                <th width="15%">标题</th>
+                                <th width="22%">文件路径</th>
+                                <th width="10%">日期</th>
+                                <th width="10%">修改时间</th>
+                                <th width="10%">创建时间</th>
+                                <th width="8%">作者</th>
+                                <th width="8%">状态</th>
+                                <th width="15%">操作</th>
                             </tr>
                         </thead>
                         <tfoot>
                             <tr>
                                 <th class="column-check"><input type="checkbox" class="checkAll" /></th>
                                 <th>标题</th>
+                                <th>文件路径</th>
                                 <th>日期</th>
                                 <th>修改时间</th>
                                 <th>创建时间</th>
@@ -63,6 +65,7 @@
                             <tr<? if(rowIdx % 2 === 0) { ?> class="alternate"<? } ?>>
                                 <td class="column-check"><input type="checkbox" class="checkRow" /></td>
                                 <td><a rel="bookmark" title="<?- post.post.post_title ?>" href="<?= post.post.post_guid ?>"><?- util.cutStr(post.post.post_title, 20) ?></a></td>
+                                <td><?= post.post.post_guid ?></td>
                                 <td><?= post.post.display_date ?></td>
                                 <td title="<?= post.post.display_modified_time ?>"><?= post.post.display_modified_time ?></td>
                                 <td title="<?= post.post.display_created_time ?>"><?= post.post.display_created_time ?></td>
