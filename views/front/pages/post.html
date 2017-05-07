@@ -10,7 +10,7 @@
                 </h1>
                 <div class="m-article-meta">
                     <span title="写作时间: <?= moment(post.postDate).format('YYYY-MM-DD') ?>"><i class="glyphicon glyphicons-calendar"></i><?= moment(post.postDate).format('YYYY-MM-DD') ?></span>
-                    <span class="m-meta-dynamic"><i class="glyphicon glyphicons-folder-closed"></i><? categories.forEach(function(category){ ?><a title="查看 <?- category.name ?> 中的全部文章" rel="category" href="/category/<?= category.slug ? category.slug : category.name ?>"><?- category.name ?></a><? }) ?></span>
+                    <span class="m-meta-dynamic"><i class="glyphicon glyphicons-folder-closed"></i><? postCats.forEach(function(category){ ?><a title="查看 <?- category.name ?> 中的全部文章" rel="category" href="/category/<?= category.slug ? category.slug : category.name ?>"><?- category.name ?></a><? }) ?></span>
                     <span title="作者： <?- post.User.userDisplayName ?>"><i class="glyphicon glyphicons-user"></i><?- post.User.userDisplayName ?></span>
                     <? if(post.postOriginal === 1){ ?>
                     <span class="m-meta-dynamic" title="<?- post.User.userDisplayName ?>原创"><i class="glyphicon glyphicons-pencil"></i>原创</span>
@@ -28,12 +28,12 @@
             <footer class="m-article-footer">
                 <div class="m-article-meta m-article-tag m-meta-dynamic">
                     <div class="f-float-left"><i class="glyphicon glyphicons-folder-closed"></i></div>
-                    <ul class="f-clearfix"><? categories.forEach(function(category){ ?><li><a title="查看 <?- category.name ?> 中的全部文章" rel="category" href="/category/<?= category.slug ? category.slug : category.name ?>"><?- category.name ?></a></li><? }) ?></ul>
+                    <ul class="f-clearfix"><? postCats.forEach(function(category){ ?><li><a title="查看 <?- category.name ?> 中的全部文章" rel="category" href="/category/<?= category.slug ? category.slug : category.name ?>"><?- category.name ?></a></li><? }) ?></ul>
                 </div>
-                <? if(tags.length > 0){ ?>
+                <? if(postTags.length > 0){ ?>
                 <div class="m-article-meta m-article-tag">
                     <div class="f-float-left"><i class="glyphicon glyphicons-tag"></i></div>
-                    <ul class="f-clearfix"><? tags.forEach(function(tag){ ?><li><a title="查看 <?= tag.name ?> 中的全部文章" rel="category" href="/tag/<?= tag.slug || tag.name ?>"><?= tag.name ?></a></li><? }) ?></ul>
+                    <ul class="f-clearfix"><? postTags.forEach(function(tag){ ?><li><a title="查看 <?= tag.name ?> 中的全部文章" rel="category" href="/tag/<?= tag.slug || tag.name ?>"><?= tag.name ?></a></li><? }) ?></ul>
                 </div>
                 <? } ?>
                 <div class="m-article-meta">

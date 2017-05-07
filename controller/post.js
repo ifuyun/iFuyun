@@ -14,10 +14,10 @@ function getCommonData (param, cb) {
         recentPosts: common.recentPosts,
         randPosts: common.randPosts,
         hotPosts: common.hotPosts,
-        friendLinks: function (cb) {
+        friendLinks: (cb) => {
             common.getLinks('friendlink', param.from !== 'list' || param.page > 1 ? 'site' : ['homepage', 'site'], cb);
         },
-        quickLinks: function (cb) {
+        quickLinks: (cb) => {
             common.getLinks('quicklink', ['homepage', 'site'], cb);
         },
         categories: common.getCategoryTree.bind(common),
@@ -33,27 +33,27 @@ function getCommonData (param, cb) {
 }
 function queryPosts (param, cb, next) {
     models.Post.findAll({
-        attributes: ['postId', 'postAuthor', 'postDate', 'postContent', 'postTitle', 'postExcerpt', 'postStatus', 'commentFlag', 'postOriginal', 'postName', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'],
+        attributes: ['postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus', 'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'],
         include: [{
             model: models.User,
             attributes: ['userDisplayName']
-        }, {
-            model: models.Comment,
-            attributes: ['commentId', 'commentContent', 'commentAuthor', 'commentVote', 'commentCreated'],
-            where: {
-                commentStatus: ['normal']
-            }
+        // }, {
+        //     model: models.Comment,
+        //     attributes: ['commentId', 'commentContent', 'commentAuthor', 'commentVote', 'commentCreated'],
+        //     where: {
+        //         commentStatus: ['normal']
+        //     }
         }, {
             model: models.TermTaxonomy,
             attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'termOrder', 'count'],
-            where: {
-                taxonomy: ['post']// , 'tag'
-            }
+            where: param.taxonomyWhere
         }],
         where: param.where,
         order: [['postCreated', 'desc'], ['postDate', 'desc']],
+        group: ['postId'],
         limit: 10,
-        offset: 10 * (param.page - 1)
+        offset: 10 * (param.page - 1),
+        subQuery: false
     }).then(function (posts) {
         cb(null, posts);
     }).catch(function (err) {
@@ -82,28 +82,35 @@ module.exports = {
                 }
             }];
         }
-        async.parallel({
-            commonData: function (cb) {
+        async.auto({
+            commonData: (cb) => {
                 getCommonData({
                     page: page,
                     from: 'list'
                 }, cb);
             },
-            posts: function (cb) {
+            posts: (cb) => {
                 queryPosts({
                     page: page,
-                    where: where
+                    where: where,
+                    taxonomyWhere: {
+                        taxonomy: ['post']
+                    }
                 }, cb, next);
             },
-            postsCount: function (cb) {
+            postsCount: (cb) => {
                 models.Post.count({
                     // attributes: [[models.sequelize.fn('count', 1), 'count']],
-                    where: where
+                    where: where,
+                    distinct: true
                 }).then(function (result) {
                     // console.log(result[0].get({plain: true}).count);
                     cb(null, result);
                 });
-            }
+            },
+            comments: ['posts', function (result, cb) {
+                common.getCommentCountByPosts(result.posts, cb);
+            }]
         }, function (err, result) {
             if (err) {
                 return next(err);
@@ -111,12 +118,7 @@ module.exports = {
             let resData = {
                 curNav: 'index',
                 showCrumb: false,
-                meta: {
-                    title: '',
-                    description: '',
-                    keywords: '',
-                    author: ''
-                }
+                meta: {}
             };
             const options = result.commonData.options;
             Object.assign(resData, result.commonData);
@@ -125,6 +127,7 @@ module.exports = {
             resData.posts.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), 9);
             resData.posts.linkUrl = '/post/page-';
             resData.posts.linkParam = req.query.keyword ? '?keyword=' + req.query.keyword : '';
+            resData.comments = result.comments;
 
             if (req.query.keyword) {
                 if (page > 1) {
@@ -199,7 +202,8 @@ module.exports = {
                             message: 'Page Not Found.'
                         }));
                     }
-                    if (!util.isAdminUser(req) && result.postStatus !== 'publish') {// 无管理员权限不允许访问非公开文章(包括草稿)
+                    // 无管理员权限不允许访问非公开文章(包括草稿)
+                    if (!util.isAdminUser(req) && result.postStatus !== 'publish') {
                         logger.warn(util.getErrorLog({
                             req: req,
                             funcName: 'showPost',
@@ -219,11 +223,11 @@ module.exports = {
                     cb(null, result);
                 });
             },
-            crumb: ['post',
+            crumb: ['commonData', 'post',
                 function (result, cb) {
                     let post = result.post;
                     let categories = [];
-                    post.TermTaxonomies.forEach(function (v) {
+                    post.TermTaxonomies.forEach((v) => {
                         if (v.taxonomy === 'post') {
                             categories.push(v);
                         }
@@ -240,22 +244,15 @@ module.exports = {
                         }));
                         return cb('Category Not Exist.');
                     }
-                    let catCrumb = [];
-                    catCrumb.push({
-                        'title': categories[0].name,
-                        'tooltip': categories[0].description,
-                        'url': '/category/' + categories[0].slug,
-                        'headerFlag': true
-                    });
-                    if (!categories[0].parent) {
-                        return cb(null, catCrumb);
-                    }
-                    common.getCategoryPath(catCrumb, categories[0].parent, cb);
+                    cb(null, common.getCategoryPath({
+                        catData: result.commonData.categories.catData,
+                        taxonomyId: categories[0].taxonomyId
+                    }));
                 }],
-            prevPost: function (cb) {
+            prevPost: (cb) => {
                 common.getPrevPost(postId, cb);
             },
-            nextPost: function (cb) {
+            nextPost: (cb) => {
                 common.getNextPost(postId, cb);
             }
         }, function (err, result) {
@@ -263,19 +260,9 @@ module.exports = {
                 return next(err);
             }
             let resData = {
-                curNav: '',
-                curPos: '',
                 showCrumb: true,
-                user: {
-                    userName: '',
-                    userEmail: ''
-                },
-                meta: {
-                    title: '',
-                    description: '',
-                    keywords: '',
-                    author: ''
-                },
+                user: {},
+                meta: {},
                 token: req.csrfToken()
             };
             if (req.session.user) {
@@ -285,31 +272,25 @@ module.exports = {
             const options = result.commonData.options;
             Object.assign(resData, result.commonData);
 
-            result.crumb.unshift({
-                'title': '首页',
-                'tooltip': 'iFuyun',
-                'url': '/',
-                'headerFlag': false
-            });
-            resData.curNav = result.crumb[1].slug;
+            resData.curNav = result.crumb[0].slug;
             resData.curPos = util.createCrumb(result.crumb);
-            resData.categories = [];
-            resData.tags = [];
+            resData.postCats = [];
+            resData.postTags = [];
 
             let tagArr = [];
-            result.post.TermTaxonomies.forEach(function (v) {
+            result.post.TermTaxonomies.forEach((v) => {
                 if (v.taxonomy === 'tag') {
                     tagArr.push(v.name);
-                    resData.tags.push(v);
+                    resData.postTags.push(v);
                 } else if (v.taxonomy === 'post') {
-                    resData.categories.push(v);
+                    resData.postCats.push(v);
                 }
             });
             tagArr.push(options.site_keywords.optionValue);
 
             resData.meta.title = util.getTitle([result.post.postTitle, options.site_name.optionValue]);
             resData.meta.description = result.post.postExcerpt || util.cutStr(util.filterHtmlTag(result.post.postContent), 140);
-            resData.meta.keywords = tagArr.join(',');
+            resData.meta.keywords = tagArr.join(',') + ',' + options.site_keywords.optionValue;
             resData.meta.author = options.site_author.optionValue;
             resData.post = result.post;
             resData.prevPost = result.prevPost;
@@ -317,6 +298,110 @@ module.exports = {
             resData.util = util;
             resData.moment = moment;
             res.render('front/pages/post', resData);
+        });
+    },
+    listByCategory: function (req, res, next) {
+        const page = parseInt(req.params.page, 10) || 1;
+        const category = req.params.category;
+        let where = {
+            postStatus: 'publish',
+            postType: 'post'
+        };
+        let taxonomyWhere = {
+            taxonomy: ['post']// , 'tag'
+        };
+        async.auto({
+            commonData: (cb) => {
+                getCommonData({
+                    page: page,
+                    from: 'category'
+                }, cb);
+            },
+            subCategories: ['commonData', (result, cb) => {
+                common.getSubCategoriesBySlug({
+                    catData: result.commonData.categories.catData,
+                    slug: category
+                }, cb);
+            }],
+            setTaxonomyWhere: ['subCategories', (result, cb) => {
+                taxonomyWhere.taxonomyId = result.subCategories.subCatIds;
+                cb(null);
+            }],
+            posts: ['setTaxonomyWhere', function (result, cb) {
+                queryPosts({
+                    page,
+                    where,
+                    taxonomyWhere
+                }, cb, next);
+            }],
+            postsCount: ['setTaxonomyWhere', function (result, cb) {
+                models.Post.count({
+                    where,
+                    include: [{
+                        model: models.TermTaxonomy,
+                        attributes: ['taxonomyId'],
+                        where: taxonomyWhere
+                    }],
+                    subQuery: false,
+                    distinct: true
+                }).then((count) => {
+                    cb(null, count);
+                });
+            }],
+            comments: ['posts', function (result, cb) {
+                common.getCommentCountByPosts(result.posts, cb);
+            }]
+        }, function (err, result) {
+            if (err) {
+                return next(err);
+            }
+            // res.send(JSON.stringify(result));
+            let resData = {
+                curNav: result.subCategories.catPath[0].slug,
+                showCrumb: true,
+                user: {},
+                meta: {}
+            };
+            const options = result.commonData.options;
+            Object.assign(resData, result.commonData);
+
+            resData.curPos = util.createCrumb(result.subCategories.catPath);
+
+            resData.posts = result.posts;
+            resData.posts.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), 9);
+            resData.posts.linkUrl = '/category/' + category + '/page-';
+            resData.posts.linkParam = '';
+            resData.comments = result.comments;
+
+            const curCat = result.subCategories.catPath[result.subCategories.catPath.length - 1].title;
+            if (page > 1) {
+                resData.meta.title = util.getTitle(['第' + page + '页', curCat, '分类目录', options.site_name.optionValue]);
+            } else {
+                resData.meta.title = util.getTitle([curCat, '分类目录', options.site_name.optionValue]);
+            }
+
+            resData.meta.description = '[' + curCat + ']' + (page > 1 ? '(第' + page + '页)' : '') + options.site_description.option_value;
+            resData.meta.keywords = curCat + ',' + options.site_keywords.optionValue;
+            resData.meta.author = options.site_author.optionValue;
+
+            resData.util = util;
+            resData.moment = moment;
+            res.render('front/pages/postList', resData);
+            // const options = result.commonData.options;
+            // Object.assign(resData, result.commonData);
+            //
+            // resData.posts = result.posts;
+            // resData.posts.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), 9);
+            // resData.posts.linkUrl = '/post/page-';
+            // resData.posts.linkParam = req.query.keyword ? '?keyword=' + req.query.keyword : '';
+            //
+            // resData.meta.description = (page > 1 ? '[文章列表](第' + page + '页)' : '') + options.site_description.optionValue;
+            // resData.meta.keywords = options.site_keywords.optionValue;
+            // resData.meta.author = options.site_author.optionValue;
+            //
+            // resData.util = util;
+            // resData.moment = moment;
+            // res.render('front/pages/postList', resData);
         });
     }
 }

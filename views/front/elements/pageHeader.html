@@ -4,8 +4,8 @@
         <a class="u-logo" href="/" title="抚云生活">&nbsp;</a>
         <ul class="m-nav-main">
             <? if(curNav === 'index'){ ?><li class="active"><? } else { ?><li><? } ?><a title="返回抚云生活首页" href="/">首页</a></li>
-            <? for(var navIdx in categories){ ?>
-            <? var nav = categories[navIdx]; ?>
+            <? for(var navIdx in categories.catTree){ ?>
+            <? var nav = categories.catTree[navIdx]; ?>
             <? if(nav.slug === curNav){ ?><li class="active"><? } else { ?><li><? } ?>
                 <a title="<?- nav.description ?>" href="/category/<?= nav.slug ? nav.slug : nav.name ?>"><?- nav.name ?></a>
                 <? if(!util.isEmptyObject(nav.children)){ ?>

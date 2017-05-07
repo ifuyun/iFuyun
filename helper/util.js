@@ -91,22 +91,24 @@ module.exports = {
         return data;
     },
     createCrumb: function (crumbData, separator) {
-        let tempArr = [];
-        let crumb;
+        let crumbArr = [];
         separator = separator || '&nbsp;→&nbsp;';
-        for (crumb in crumbData) {
-            if (crumbData.hasOwnProperty(crumb)) {
-                crumb = crumbData[crumb];
-                if (crumb.url !== '' && !crumb.headerFlag) {
-                    tempArr.push('<a title="' + crumb.tooltip + '" href="' + crumb.url + '">' + crumb.title + '</a>');
-                } else if (crumb.url !== '' && crumb.headerFlag) {
-                    tempArr.push('<h3><a title="' + crumb.tooltip + '" href="' + crumb.url + '">' + crumb.title + '</a></h3>');
-                } else {
-                    tempArr.push('<span title="' + crumb.tooltip + '">' + crumb.title + '</span>');
-                }
+        crumbData.unshift({
+            'title': '首页',
+            'tooltip': 'iFuyun',
+            'url': '/',
+            'headerFlag': false
+        });
+        crumbData.forEach((crumb) => {
+            if (crumb.url !== '' && !crumb.headerFlag) {
+                crumbArr.push('<a title="' + crumb.tooltip + '" href="' + crumb.url + '">' + crumb.title + '</a>');
+            } else if (crumb.url !== '' && crumb.headerFlag) {
+                crumbArr.push('<h3><a title="' + crumb.tooltip + '" href="' + crumb.url + '">' + crumb.title + '</a></h3>');
+            } else {
+                crumbArr.push('<span title="' + crumb.tooltip + '">' + crumb.title + '</span>');
             }
-        }
-        return tempArr.join(separator);
+        });
+        return crumbArr.join(separator);
     },
     /**
      * 根据月份返回月份名称

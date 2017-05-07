@@ -19,7 +19,7 @@
                     <ul class="m-excerpt-meta">
                         <li><span class="glyphicon glyphicons-calendar"></span><span title="写作时间: <?= moment(post.postDate).format('YYYY-MM-DD') ?>"><?= moment(post.postDate).format('YYYY-MM-DD') ?></span></li>
                         <li>
-                            <span class="glyphicon glyphicons-conversation"></span><? if(post.commentFlag === 'closed'){ ?><span class="comment">评论关闭</span><? } else { ?><? if(post.Comments.length > 0){ ?><span><a title="《<?= post.postTitle ?>》上的评论" href="<?= post.postGuid ?>#comments"><?= post.Comments.length ?> 条评论</a></span><? } else { ?><span><a title="《<?= post.postTitle ?>》上的评论" href="<?= post.postGuid ?>#respond">没有评论</a></span><? } ?><? } ?>
+                            <span class="glyphicon glyphicons-conversation"></span><? if(post.commentFlag === 'closed'){ ?><span class="comment">评论关闭</span><? } else { ?><? if(comments[post.postId] > 0){ ?><span><a title="《<?= post.postTitle ?>》上的评论" href="<?= post.postGuid ?>#comments"><?= comments[post.postId] ?> 条评论</a></span><? } else { ?><span><a title="《<?= post.postTitle ?>》上的评论" href="<?= post.postGuid ?>#respond">没有评论</a></span><? } ?><? } ?>
                         </li>
                         <li>
                             <span class="glyphicon glyphicons-folder-closed"></span><? post.TermTaxonomies.forEach(function(category, index){ ?><? if(index > 0){ ?>&nbsp;<? } ?><a title="查看 <?- category.name ?> 中的全部文章" rel="category" href="/category/<?= category.slug ? category.slug : category.name ?>"><?- category.name ?></a><? }) ?>

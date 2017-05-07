@@ -3,6 +3,7 @@
  */
 
 const models = require('../models/index');
+const async = require('async');
 
 module.exports = {
     getInitOptions: function (cb) {
@@ -152,11 +153,113 @@ module.exports = {
             ]
         }).then(function (data) {
             if (data.length > 0) {
-                cb(null, that.createCategoryTree(data));
+                cb(null, {
+                    catData: data,
+                    catTree: that.createCategoryTree(data)
+                });
             } else {
                 cb('分类不存在');
             }
         });
+    },
+    getCategoryPath: function ({catData, slug, taxonomyId}) {
+        let catPath = [];
+        if (slug) {
+            // 根据slug获取ID
+            for (let i = 0; i < catData.length; i += 1) {
+                if (catData[i].slug === slug) {
+                    taxonomyId = catData[i].taxonomyId;
+                    break;
+                }
+            }
+        }
+        // 循环获取父分类
+        while (taxonomyId) {
+            for (let i = 0; i < catData.length; i += 1) {
+                const curCat = catData[i];
+                if (curCat.taxonomyId === taxonomyId) {
+                    taxonomyId = curCat.parent;
+                    catPath.unshift({
+                        'title': curCat.name,
+                        'tooltip': curCat.description,
+                        'slug': curCat.slug,
+                        'url': '/category/' + curCat.slug,
+                        'headerFlag': false
+                    });
+                    break;
+                }
+            }
+        }
+        catPath[catPath.length - 1].headerFlag = true;
+        return catPath;
+    },
+    getSubCategoriesBySlug: function ({catData, slug}, cb) {
+        // const that = this;
+        // models.TermTaxonomy.findAll({
+        //     attributes: ['name', 'description', 'slug', 'count', 'taxonomyId', 'parent'],
+        //     where: {
+        //         taxonomy: 'post'
+        //     },
+        //     order: [
+        //         ['termOrder', 'asc']
+        //     ]
+        // }).then(function (data) {
+        //     if (catData.length > 0) {
+        const catTree = this.createCategoryTree(catData);
+        let subCatIds = [];
+        // 循环获取子分类ID：父->子
+        const iterateCatTree = function (curNode) {
+            subCatIds.push(curNode.taxonomyId);
+            Object.keys(curNode.children).forEach((v) => {
+                iterateCatTree(curNode.children[v]);
+            });
+        };
+        // 获取匹配slug的根分类
+        const getRootCatNodeBySlug = function (slug, curNode) {
+            let rootNode;
+            const nodeKeys = Object.keys(curNode.children);
+            for (let i = 0; i < nodeKeys.length; i += 1) {
+                const v = nodeKeys[i];
+                if (curNode.children[v].slug === slug) {
+                    rootNode = curNode.children[v];
+                    break;
+                }
+                if (Object.keys(curNode.children[v].children.length > 0)) {
+                    getRootCatNodeBySlug(slug, curNode.children[v]);
+                }
+            }
+            return rootNode;
+        };
+        const nodeKeys = Object.keys(catTree);
+        for (let i = 0; i < nodeKeys.length; i += 1) {
+            const v = nodeKeys[i];
+            let rootNode;
+            if (catTree[v].slug === slug) {
+                rootNode = catTree[v];
+            } else {
+                if (Object.keys(catTree[v].children).length > 0) {
+                    rootNode = getRootCatNodeBySlug(slug, catTree[v]);
+                }
+            }
+            if (rootNode) {
+                iterateCatTree(rootNode);
+                break;
+            }
+        }
+        console.log('----------------------');
+        console.log(subCatIds);
+        console.log('----------------------');
+        cb(null, {
+            subCatIds,
+            catPath: this.getCategoryPath({
+                catData,
+                slug
+            })
+        });
+        // } else {
+        //     cb('分类不存在');
+        // }
+        // });
     },
     mainNavs: function (cb) {
         models.TermTaxonomy.findAll({
@@ -170,6 +273,27 @@ module.exports = {
             ]
         }).then(function (data) {
             cb(null, data);
+        });
+    },
+    getCommentCountByPosts: function (posts, cb) {
+        async.map(posts, (post, fn) => {
+            models.Comment.count({
+                where: {
+                    postId: post.postId,
+                    commentStatus: 'normal'
+                }
+            }).then((result) => {
+                fn(null, {
+                    postId: post.postId,
+                    count: result
+                });
+            });
+        }, (err, data) => {
+            let result = {};
+            data.forEach(function (v) {
+                result[v.postId] = v.count;
+            });
+            cb(err, result);
         });
     },
     getPrevPost: function (postId, cb) {
@@ -205,22 +329,23 @@ module.exports = {
         }).then(function (data) {
             cb(null, data);
         });
-    },
-    getCategoryPath: function (catCrumb, catId, cb) {
-        models.TermTaxonomy.findById(catId, {
-            attributes: ['taxonomyId', 'name', 'slug', 'description']
-        }).then(function (category) {
-            catCrumb.unshift({
-                'title': category.name,
-                'tooltip': category.description,
-                'url': '/category/' + category.slug,
-                'headerFlag': false
-            });
-            if (category.parent) {
-                this.getCategoryPath(catCrumb, category.parent, cb);
-            } else {
-                cb(null, catCrumb);
-            }
-        });
+        // },
+        // queryCategoryPath: function (catCrumb, catId, cb) {
+        //     models.TermTaxonomy.findById(catId, {
+        //         attributes: ['taxonomyId', 'name', 'slug', 'description']
+        //     }).then(function (category) {
+        //         catCrumb.unshift({
+        //             'title': category.name,
+        //             'tooltip': category.description,
+        //             'slug': category.slug,
+        //             'url': '/category/' + category.slug,
+        //             'headerFlag': false
+        //         });
+        //         if (category.parent) {
+        //             this.getCategoryPath(catCrumb, category.parent, cb);
+        //         } else {
+        //             cb(null, catCrumb);
+        //         }
+        //     });
     }
 };
