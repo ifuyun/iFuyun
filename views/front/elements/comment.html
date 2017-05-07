@@ -1,8 +1,8 @@
 <? if(post.commentFlag !== 'closed'){ ?>
-<? if(post.Comments.length > 0){ ?>
+<? if(comments.length > 0){ ?>
 <div class="m-diag">&nbsp;</div>
 <div class="m-comment-list" id="comments">
-    <? post.Comments.forEach(function(comment, index){ ?>
+    <? comments.forEach(function(comment, index){ ?>
     <? if(index > 0){ ?>
     <div class="m-diag m-diag-dashed">&nbsp;</div>
     <? } ?>

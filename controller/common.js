@@ -190,21 +190,12 @@ module.exports = {
                 }
             }
         }
-        catPath[catPath.length - 1].headerFlag = true;
+        if (catPath.length > 0) {
+            catPath[catPath.length - 1].headerFlag = true;
+        }
         return catPath;
     },
     getSubCategoriesBySlug: function ({catData, slug}, cb) {
-        // const that = this;
-        // models.TermTaxonomy.findAll({
-        //     attributes: ['name', 'description', 'slug', 'count', 'taxonomyId', 'parent'],
-        //     where: {
-        //         taxonomy: 'post'
-        //     },
-        //     order: [
-        //         ['termOrder', 'asc']
-        //     ]
-        // }).then(function (data) {
-        //     if (catData.length > 0) {
         const catTree = this.createCategoryTree(catData);
         let subCatIds = [];
         // 循环获取子分类ID：父->子
@@ -246,20 +237,17 @@ module.exports = {
                 break;
             }
         }
-        console.log('----------------------');
-        console.log(subCatIds);
-        console.log('----------------------');
-        cb(null, {
-            subCatIds,
-            catPath: this.getCategoryPath({
-                catData,
-                slug
-            })
-        });
-        // } else {
-        //     cb('分类不存在');
-        // }
-        // });
+        if (subCatIds.length > 0) {
+            cb(null, {
+                subCatIds,
+                catPath: this.getCategoryPath({
+                    catData,
+                    slug
+                })
+            });
+        } else {
+            cb('分类不存在');
+        }
     },
     mainNavs: function (cb) {
         models.TermTaxonomy.findAll({
@@ -271,7 +259,7 @@ module.exports = {
             order: [
                 ['termOrder', 'asc']
             ]
-        }).then(function (data) {
+        }).then((data) => {
             cb(null, data);
         });
     },
@@ -296,6 +284,20 @@ module.exports = {
             cb(err, result);
         });
     },
+    getCommentsByPostId: function (postId, cb) {
+        models.Comment.findAll({
+            attributes: ['commentId', 'commentContent', 'commentAuthor', 'commentVote', 'commentCreated'],
+            where: {
+                postId,
+                commentStatus: 'normal'
+            },
+            order: [
+                ['commentCreated', 'desc']
+            ]
+        }).then((data) => {
+            cb(null, data);
+        });
+    },
     getPrevPost: function (postId, cb) {
         models.Post.findOne({
             attributes: ['postId', 'postGuid', 'postTitle'],
@@ -309,7 +311,7 @@ module.exports = {
             order: [
                 ['postCreated', 'asc']
             ]
-        }).then(function (data) {
+        }).then((data) => {
             cb(null, data);
         });
     },
@@ -326,7 +328,7 @@ module.exports = {
             order: [
                 ['postCreated', 'desc']
             ]
-        }).then(function (data) {
+        }).then((data) => {
             cb(null, data);
         });
         // },

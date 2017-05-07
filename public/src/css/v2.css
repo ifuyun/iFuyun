@@ -221,10 +221,15 @@ html {
 .m-sticky {
     padding: 10px 8px 0 8px;
     position: relative;
+    margin: 15px 0;
+}
+.m-crumb-wrap + .m-sticky {
+    margin-top: 0;
+    padding-top: 0;
 }
 .m-sticky li {
     overflow: hidden;
-    margin: 15px 20px;
+    margin: 0 20px;
 }
 .m-sticky li img {
     /*max-width: none;*/

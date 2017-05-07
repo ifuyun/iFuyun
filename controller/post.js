@@ -32,6 +32,9 @@ function getCommonData (param, cb) {
     });
 }
 function queryPosts (param, cb, next) {
+    // 根据group方式去重（distinct需要使用子查询，sequelize不支持include时的distinct）
+    // 需要注意的是posts和postsCount的一致性
+    // 评论数的查询通过posts进行循环查询，采用关联查询会导致结果不全（hasMany关系对应的是INNER JOIN，并不是LEFT OUTER JOIN），且并不需要所有评论数据，只需要总数
     models.Post.findAll({
         attributes: ['postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus', 'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'],
         include: [{
@@ -100,11 +103,8 @@ module.exports = {
             },
             postsCount: (cb) => {
                 models.Post.count({
-                    // attributes: [[models.sequelize.fn('count', 1), 'count']],
-                    where: where,
-                    distinct: true
+                    where: where
                 }).then(function (result) {
-                    // console.log(result[0].get({plain: true}).count);
                     cb(null, result);
                 });
             },
@@ -169,16 +169,10 @@ module.exports = {
             },
             post: function (cb) {
                 models.Post.findById(postId, {
-                    attributes: ['postId', 'postAuthor', 'postDate', 'postContent', 'postTitle', 'postExcerpt', 'postStatus', 'commentFlag', 'postOriginal', 'postName', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'],
+                    attributes: ['postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus', 'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'],
                     include: [{
                         model: models.User,
                         attributes: ['userDisplayName']
-                    }, {
-                        model: models.Comment,
-                        attributes: ['commentId', 'commentContent', 'commentAuthor', 'commentVote', 'commentCreated'],
-                        where: {
-                            commentStatus: ['normal']
-                        }
                     }, {
                         model: models.TermTaxonomy,
                         attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'count'],
@@ -223,6 +217,9 @@ module.exports = {
                     cb(null, result);
                 });
             },
+            comments: ['post', function (result, cb) {
+                common.getCommentsByPostId(result.post.postId, cb);
+            }],
             crumb: ['commonData', 'post',
                 function (result, cb) {
                     let post = result.post;
@@ -295,6 +292,7 @@ module.exports = {
             resData.post = result.post;
             resData.prevPost = result.prevPost;
             resData.nextPost = result.nextPost;
+            resData.comments = result.comments;
             resData.util = util;
             resData.moment = moment;
             res.render('front/pages/post', resData);
@@ -355,7 +353,6 @@ module.exports = {
             if (err) {
                 return next(err);
             }
-            // res.send(JSON.stringify(result));
             let resData = {
                 curNav: result.subCategories.catPath[0].slug,
                 showCrumb: true,
@@ -387,21 +384,6 @@ module.exports = {
             resData.util = util;
             resData.moment = moment;
             res.render('front/pages/postList', resData);
-            // const options = result.commonData.options;
-            // Object.assign(resData, result.commonData);
-            //
-            // resData.posts = result.posts;
-            // resData.posts.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), 9);
-            // resData.posts.linkUrl = '/post/page-';
-            // resData.posts.linkParam = req.query.keyword ? '?keyword=' + req.query.keyword : '';
-            //
-            // resData.meta.description = (page > 1 ? '[文章列表](第' + page + '页)' : '') + options.site_description.optionValue;
-            // resData.meta.keywords = options.site_keywords.optionValue;
-            // resData.meta.author = options.site_author.optionValue;
-            //
-            // resData.util = util;
-            // resData.moment = moment;
-            // res.render('front/pages/postList', resData);
         });
     }
 }
