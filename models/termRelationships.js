@@ -21,7 +21,15 @@ module.exports = function (sequelize, DataTypes) {
         }
     }, {
         tableName: 'term_relationships',
-        timestamps: false
+        timestamps: false,
+        classMethods: {
+            associate: function (models) {
+                TermRelationship.belongsTo(models.Post, {
+                    foreignKey: 'objectId',
+                    targetKey: 'postId'
+                });
+            }
+        }
     });
 
     return TermRelationship;

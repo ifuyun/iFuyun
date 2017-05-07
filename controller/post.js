@@ -31,37 +31,63 @@ function getCommonData (param, cb) {
         }
     });
 }
-function queryPosts (param, cb, next) {
-    // 根据group方式去重（distinct需要使用子查询，sequelize不支持include时的distinct）
-    // 需要注意的是posts和postsCount的一致性
-    // 评论数的查询通过posts进行循环查询，采用关联查询会导致结果不全（hasMany关系对应的是INNER JOIN，并不是LEFT OUTER JOIN），且并不需要所有评论数据，只需要总数
-    models.Post.findAll({
-        attributes: ['postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus', 'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'],
-        include: [{
-            model: models.User,
-            attributes: ['userDisplayName']
-        // }, {
-        //     model: models.Comment,
-        //     attributes: ['commentId', 'commentContent', 'commentAuthor', 'commentVote', 'commentCreated'],
-        //     where: {
-        //         commentStatus: ['normal']
-        //     }
-        }, {
-            model: models.TermTaxonomy,
-            attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'termOrder', 'count'],
-            where: param.taxonomyWhere
-        }],
-        where: param.where,
-        order: [['postCreated', 'desc'], ['postDate', 'desc']],
-        group: ['postId'],
-        limit: 10,
-        offset: 10 * (param.page - 1),
-        subQuery: false
-    }).then(function (posts) {
-        cb(null, posts);
-    }).catch(function (err) {
-        next(err);
-    });
+function queryPosts (param, cb) {
+    /**
+     * 根据group方式去重（distinct需要使用子查询，sequelize不支持include时的distinct）
+     * 需要注意的是posts和postsCount的一致性
+     * 评论数的查询通过posts进行循环查询，采用关联查询会导致结果不全（hasMany关系对应的是INNER JOIN，并不是LEFT OUTER JOIN），且并不需要所有评论数据，只需要总数
+     *
+     * sequelize有一个Bug：
+     * 关联查询去重时，通过group by方式无法获取关联表的多行数据（如：此例的文章分类，只能返回第一条，并没有返回所有的分类）*/
+    function doQueryPosts (postIds) {
+        if (postIds) {
+            param.where.postId = {'$in': postIds};
+        }
+        models.Post.findAll({
+            attributes: ['postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus', 'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'],
+            include: [{
+                model: models.User,
+                attributes: ['userDisplayName']
+            }, {
+                model: models.TermTaxonomy,
+                attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'termOrder', 'count'],
+                where: {
+                    taxonomy: ['post']
+                }
+            }],
+            where: param.where,
+            order: [['postCreated', 'desc'], ['postDate', 'desc']],
+            subQuery: false
+        }).then(function (posts) {
+            cb(null, posts);
+        }).catch(function (err) {
+            cb(err);
+        });
+    }
+
+    if (param.relationshipWhere) {
+        models.Post.findAll({
+            attributes: ['postId'],
+            include: [{
+                model: models.TermRelationship,
+                attributes: ['objectId'],
+                where: param.relationshipWhere
+            }],
+            group: ['postId'],
+            order: [['postCreated', 'desc'], ['postDate', 'desc']],
+            limit: 10,
+            offset: 10 * (param.page - 1),
+            subQuery: false
+        }).then((posts) => {
+            let postIds = [];
+            posts.forEach((v) => {
+                postIds.push(v.postId);
+            });
+            doQueryPosts(postIds);
+        });
+    } else {
+        doQueryPosts();
+    }
 }
 module.exports = {
     listPosts: function (req, res, next) {
@@ -95,11 +121,8 @@ module.exports = {
             posts: (cb) => {
                 queryPosts({
                     page: page,
-                    where: where,
-                    taxonomyWhere: {
-                        taxonomy: ['post']
-                    }
-                }, cb, next);
+                    where: where
+                }, cb);
             },
             postsCount: (cb) => {
                 models.Post.count({
@@ -305,9 +328,7 @@ module.exports = {
             postStatus: 'publish',
             postType: 'post'
         };
-        let taxonomyWhere = {
-            taxonomy: ['post']// , 'tag'
-        };
+        let relationshipWhere = {};
         async.auto({
             commonData: (cb) => {
                 getCommonData({
@@ -322,23 +343,23 @@ module.exports = {
                 }, cb);
             }],
             setTaxonomyWhere: ['subCategories', (result, cb) => {
-                taxonomyWhere.taxonomyId = result.subCategories.subCatIds;
+                relationshipWhere.termTaxonomyId = result.subCategories.subCatIds;
                 cb(null);
             }],
             posts: ['setTaxonomyWhere', function (result, cb) {
                 queryPosts({
                     page,
                     where,
-                    taxonomyWhere
-                }, cb, next);
+                    relationshipWhere
+                }, cb);
             }],
             postsCount: ['setTaxonomyWhere', function (result, cb) {
                 models.Post.count({
                     where,
                     include: [{
-                        model: models.TermTaxonomy,
-                        attributes: ['taxonomyId'],
-                        where: taxonomyWhere
+                        model: models.TermRelationship,
+                        attributes: ['objectId'],
+                        where: relationshipWhere
                     }],
                     subQuery: false,
                     distinct: true
