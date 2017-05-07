@@ -38,8 +38,8 @@ module.exports = function (app, express) {
     // app.get('/archive/:year/page-:page', post.listByDate);
     // app.get('/archive/:year/:month', post.listByDate);
     // app.get('/archive/:year/:month/page-:page', post.listByDate);
-    // app.get('/tag/:tag', post.listByTag);
-    // app.get('/tag/:tag/page-:page', post.listByTag);
+    app.get('/tag/:tag', post.listByTag);
+    app.get('/tag/:tag/page-:page', post.listByTag);
     //
     // app.post('/post/comment/save', comment.saveReply);
     // app.post('/post/comment/vote', comment.saveVote);

@@ -51,9 +51,7 @@ function queryPosts (param, cb) {
             }, {
                 model: models.TermTaxonomy,
                 attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'termOrder', 'count'],
-                where: {
-                    taxonomy: ['post']
-                }
+                where: param.taxonomyWhere
             }],
             where: param.where,
             order: [['postCreated', 'desc'], ['postDate', 'desc']],
@@ -74,6 +72,25 @@ function queryPosts (param, cb) {
                 where: param.relationshipWhere
             }],
             group: ['postId'],
+            order: [['postCreated', 'desc'], ['postDate', 'desc']],
+            limit: 10,
+            offset: 10 * (param.page - 1),
+            subQuery: false
+        }).then((posts) => {
+            let postIds = [];
+            posts.forEach((v) => {
+                postIds.push(v.postId);
+            });
+            doQueryPosts(postIds);
+        });
+    } else if (param.from === 'tag') {
+        models.Post.findAll({
+            attributes: ['postId'],
+            include: [{
+                model: models.TermTaxonomy,
+                attributes: ['taxonomyId'],
+                where: param.tagWhere
+            }],
             order: [['postCreated', 'desc'], ['postDate', 'desc']],
             limit: 10,
             offset: 10 * (param.page - 1),
@@ -121,7 +138,11 @@ module.exports = {
             posts: (cb) => {
                 queryPosts({
                     page: page,
-                    where: where
+                    where: where,
+                    taxonomyWhere: {
+                        taxonomy: 'post'
+                    },
+                    from: 'index'
                 }, cb);
             },
             postsCount: (cb) => {
@@ -342,18 +363,22 @@ module.exports = {
                     slug: category
                 }, cb);
             }],
-            setTaxonomyWhere: ['subCategories', (result, cb) => {
+            setRelationshipWhere: ['subCategories', (result, cb) => {
                 relationshipWhere.termTaxonomyId = result.subCategories.subCatIds;
                 cb(null);
             }],
-            posts: ['setTaxonomyWhere', function (result, cb) {
+            posts: ['setRelationshipWhere', function (result, cb) {
                 queryPosts({
                     page,
                     where,
-                    relationshipWhere
+                    taxonomyWhere: {
+                        taxonomy: 'post'
+                    },
+                    relationshipWhere,
+                    from: 'category'
                 }, cb);
             }],
-            postsCount: ['setTaxonomyWhere', function (result, cb) {
+            postsCount: ['setRelationshipWhere', function (result, cb) {
                 models.Post.count({
                     where,
                     include: [{
@@ -400,6 +425,97 @@ module.exports = {
 
             resData.meta.description = '[' + curCat + ']' + (page > 1 ? '(第' + page + '页)' : '') + options.site_description.option_value;
             resData.meta.keywords = curCat + ',' + options.site_keywords.optionValue;
+            resData.meta.author = options.site_author.optionValue;
+
+            resData.util = util;
+            resData.moment = moment;
+            res.render('front/pages/postList', resData);
+        });
+    },
+    listByTag: function (req, res, next) {
+        const page = parseInt(req.params.page, 10) || 1;
+        const tag = req.params.tag;
+        let where = {
+            postStatus: 'publish',
+            postType: 'post'
+        };
+        let tagWhere = {
+            taxonomy: ['tag'],
+            slug: tag
+        };
+        async.auto({
+            commonData: (cb) => {
+                getCommonData({
+                    page: page,
+                    from: 'category'
+                }, cb);
+            },
+            posts: (cb) => {
+                queryPosts({
+                    page,
+                    where,
+                    tagWhere,
+                    taxonomyWhere: {
+                        taxonomy: 'post'
+                    },
+                    from: 'tag'
+                }, cb);
+            },
+            postsCount: function (cb) {
+                models.Post.count({
+                    where,
+                    include: [{
+                        model: models.TermTaxonomy,
+                        attributes: ['taxonomyId'],
+                        where: tagWhere
+                    }]
+                }).then((count) => {
+                    cb(null, count);
+                });
+            },
+            comments: ['posts', function (result, cb) {
+                common.getCommentCountByPosts(result.posts, cb);
+            }]
+        }, function (err, result) {
+            if (err) {
+                return next(err);
+            }
+            let resData = {
+                curNav: 'index',
+                showCrumb: true,
+                user: {},
+                meta: {}
+            };
+            const options = result.commonData.options;
+            Object.assign(resData, result.commonData);
+
+            const crumbData = [{
+                'title': '标签',
+                'tooltip': '标签',
+                'url': '',
+                'headerFlag': false
+            }, {
+                'title': tag,
+                'tooltip': tag,
+                'url': '/tag/' + tag,
+                'headerFlag': true
+            }];
+            resData.curPos = util.createCrumb(crumbData);
+
+            resData.posts = result.posts;
+            resData.posts.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), 9);
+            resData.posts.linkUrl = '/tag/' + tag + '/page-';
+            resData.posts.linkParam = '';
+            resData.comments = result.comments;
+
+            if (page > 1) {
+                resData.meta.title = util.getTitle(['第' + page + '页', tag, '标签', options.site_name.optionValue]);
+            } else {
+                resData.meta.title = util.getTitle([tag, '标签', options.site_name.optionValue]);
+            }
+
+            resData.meta.description = '[' + tag + ']' + (page > 1 ? '(第' + page + '页)' : '') + options.site_description.option_value;
+            resData.meta.keywords = tag + ',' + options.site_keywords.optionValue;
             resData.meta.author = options.site_author.optionValue;
 
             resData.util = util;
