@@ -112,6 +112,13 @@ module.exports = {
             cb(null, data);
         });
     },
+    getUserById: function (userId, cb) {
+        models.User.findById(userId, {
+            attributes: ['userId', 'userLogin', 'userNicename', 'userEmail', 'userUrl', 'userDisplayName']
+        }).then((result) => {
+            cb(null, result);
+        });
+    },
     createCategoryTree: function (categoryData) {
         let catTree = {};
         let treeNodes = [];
@@ -267,12 +274,12 @@ module.exports = {
         async.map(posts, (post, fn) => {
             models.Comment.count({
                 where: {
-                    postId: post.postId,
+                    postId: post.post.postId,
                     commentStatus: 'normal'
                 }
             }).then((result) => {
                 fn(null, {
-                    postId: post.postId,
+                    postId: post.post.postId,
                     count: result
                 });
             });

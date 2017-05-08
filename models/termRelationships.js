@@ -28,6 +28,10 @@ module.exports = function (sequelize, DataTypes) {
                     foreignKey: 'objectId',
                     targetKey: 'postId'
                 });
+                TermRelationship.belongsTo(models.TermTaxonomy, {
+                    foreignKey: 'termTaxonomyId',
+                    targetKey: 'taxonomyId'
+                });
             }
         }
     });

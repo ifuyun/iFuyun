@@ -22,7 +22,12 @@ module.exports = {
         password: credential.db.development.password,
         database: 'ifuyun',
         host: 'localhost',
-        dialect: 'mysql'
+        dialect: 'mysql',
+        pool: {
+            max: 10,
+            min: 0,
+            idle: 10000
+        }
     },
     production: {
         username: credential.db.production.username,

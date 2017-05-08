@@ -85,6 +85,10 @@ module.exports = function (sequelize, DataTypes) {
                     foreignKey: 'termTaxonomyId',
                     otherKey: 'objectId'
                 });
+                TermTaxonomy.hasMany(models.TermRelationship, {
+                    foreignKey: 'termTaxonomyId',
+                    sourceKey: 'taxonomyId'
+                });
             }
         }
     });

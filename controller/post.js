@@ -9,6 +9,7 @@ const moment = require('moment');
 const logger = require('../helper/logger').sysLog;
 
 function getCommonData (param, cb) {
+    console.time('f');
     async.parallel({
         archiveDates: common.archiveDates,
         recentPosts: common.recentPosts,
@@ -24,6 +25,7 @@ function getCommonData (param, cb) {
         mainNavs: common.mainNavs,
         options: common.getInitOptions
     }, function (err, result) {
+        console.timeEnd('f');
         if (err) {
             cb(err);
         } else {
@@ -39,72 +41,143 @@ function queryPosts (param, cb) {
      *
      * sequelize有一个Bug：
      * 关联查询去重时，通过group by方式无法获取关联表的多行数据（如：此例的文章分类，只能返回第一条，并没有返回所有的分类）*/
-    function doQueryPosts (postIds) {
-        if (postIds) {
-            param.where.postId = {'$in': postIds};
-        }
-        models.Post.findAll({
-            attributes: ['postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus', 'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'],
-            include: [{
-                model: models.User,
-                attributes: ['userDisplayName']
-            }, {
-                model: models.TermTaxonomy,
-                attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'termOrder', 'count'],
-                where: param.taxonomyWhere
-            }],
-            where: param.where,
-            order: [['postCreated', 'desc'], ['postDate', 'desc']],
-            subQuery: false
-        }).then(function (posts) {
-            cb(null, posts);
-        }).catch(function (err) {
-            cb(err);
-        });
+    console.time('a');
+    function doQueryPosts (posts, postIds) {
+        // models.Post.findAll({
+        //     attributes: ['postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus', 'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'],
+        //     include: [{
+        //         model: models.User,
+        //         attributes: ['userDisplayName']
+        //     }, {
+        //         model: models.TermTaxonomy,
+        //         attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'termOrder', 'count'],
+        //         where: param.taxonomyWhere
+        //     }],
+        //     where: param.where,
+        //     order: [['postCreated', 'desc'], ['postDate', 'desc']],
+        //     subQuery: false
+        // }).then(function (posts) {
+        //     cb(null, posts);
+        // }).catch(function (err) {
+        //     cb(err);
+        // });
+
+        // async.map(posts, (post, fn) => {
+        console.time('d');
+            models.TermTaxonomy.findAll({
+                attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'count'],
+                include: [{
+                    model: models.TermRelationship,
+                    attributes: ['objectId', 'termTaxonomyId'],
+                    where: {
+                        objectId: postIds
+                    }
+                }],
+                where: {
+                    taxonomy: ['post', 'tag']
+                },
+                order: [['termOrder', 'asc']]
+            }).then((data) => {
+                // fn(null, {
+                //     post: post,
+                //     taxonomies: result
+                // });
+                console.timeEnd('d');
+                console.timeEnd('a');
+                console.time('h');
+                let result = [];
+                    posts.forEach((post) => {
+                        let tags = [];
+                        let categories = [];
+                        data.forEach((u) => {
+                            if (u.taxonomy === 'tag') {
+                                u.TermRelationships.forEach((v) => {
+                                    if(v.objectId === post.postId) {
+                                        tags.push(u);
+                                    }
+                                });
+                            } else {
+                                u.TermRelationships.forEach((v) => {
+                                    if(v.objectId === post.postId) {
+                                        categories.push(u);
+                                    }
+                                });
+                            }
+                        });
+                        result.push({
+                            post,
+                            tags,
+                            categories
+                        });
+                    });
+                console.timeEnd('h');
+                    cb(null, result);
+            });
+        // }, (err, data) => {
+        //     let result = [];
+        //     data.forEach((v) => {
+        //         let tags = [];
+        //         let taxonomies = [];
+        //         v.taxonomies.forEach((u) => {
+        //             if (u.taxonomy === 'tag') {
+        //                 tags.push(u);
+        //             } else {
+        //                 taxonomies.push(u);
+        //             }
+        //         });
+        //         result.push({
+        //             post: v.post,
+        //             tags,
+        //             taxonomies
+        //         });
+        //     });
+        //     console.timeEnd('post');
+        //     cb(err, result);
+        // });
     }
 
-    if (param.relationshipWhere) {
-        models.Post.findAll({
-            attributes: ['postId'],
-            include: [{
+    console.time('b');
+    let queryOpt = {
+        where: param.where,
+        attributes: ['postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus', 'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'],
+        include: {
+            model: models.User,
+            attributes: ['userDisplayName']
+        },
+        order: [['postCreated', 'desc'], ['postDate', 'desc']],
+        limit: 10,
+        offset: 10 * (param.page - 1),
+        subQuery: false
+    };
+    switch (param.from) {
+        case 'category':
+            queryOpt.include = [{
                 model: models.TermRelationship,
                 attributes: ['objectId'],
                 where: param.relationshipWhere
-            }],
-            group: ['postId'],
-            order: [['postCreated', 'desc'], ['postDate', 'desc']],
-            limit: 10,
-            offset: 10 * (param.page - 1),
-            subQuery: false
-        }).then((posts) => {
-            let postIds = [];
-            posts.forEach((v) => {
-                postIds.push(v.postId);
-            });
-            doQueryPosts(postIds);
-        });
-    } else if (param.from === 'tag') {
-        models.Post.findAll({
-            attributes: ['postId'],
-            include: [{
+            }];
+            queryOpt.group = ['postId'];
+            break;
+        case 'tag':
+            queryOpt.include = [{
                 model: models.TermTaxonomy,
                 attributes: ['taxonomyId'],
                 where: param.tagWhere
-            }],
-            order: [['postCreated', 'desc'], ['postDate', 'desc']],
-            limit: 10,
-            offset: 10 * (param.page - 1),
-            subQuery: false
-        }).then((posts) => {
-            let postIds = [];
-            posts.forEach((v) => {
-                postIds.push(v.postId);
-            });
-            doQueryPosts(postIds);
-        });
-    } else {
-        doQueryPosts();
+            }];
+            break;
+        default:
     }
+    console.timeEnd('b');
+    console.time('c');
+    models.Post.findAll(queryOpt).then((posts) => {
+        console.timeEnd('c');
+        let postIds = [];
+        posts.forEach((v) => {
+            postIds.push(v.postId);
+        });
+        // param.where.postId = {'$in': postIds};
+        doQueryPosts(posts, postIds);
+    });
 }
 module.exports = {
     listPosts: function (req, res, next) {
