@@ -271,24 +271,42 @@ module.exports = {
         });
     },
     getCommentCountByPosts: function (posts, cb) {
-        async.map(posts, (post, fn) => {
-            models.Comment.count({
-                where: {
-                    postId: post.post.postId,
-                    commentStatus: 'normal'
-                }
-            }).then((result) => {
-                fn(null, {
-                    postId: post.post.postId,
-                    count: result
-                });
-            });
-        }, (err, data) => {
+        // async.map(posts, (post, fn) => {
+        //     models.Comment.count({
+        //         where: {
+        //             postId: post.post.postId,
+        //             commentStatus: 'normal'
+        //         }
+        //     }).then((result) => {
+        //         fn(null, {
+        //             postId: post.post.postId,
+        //             count: result
+        //         });
+        //     });
+        // }, (err, data) => {
+        //     let result = {};
+        //     data.forEach(function (v) {
+        //         result[v.postId] = v.count;
+        //     });
+        //     cb(err, result);
+        // });
+        let postIds = [];
+        posts.forEach((v) => {
+            postIds.push(v.post.postId);
+        });
+        models.Comment.findAll({
+            attributes: ['postId', [models.sequelize.fn('count', 1), 'count']],
+            where: {
+                postId: postIds,
+                commentStatus: 'normal'
+            },
+            group: ['postId']
+        }).then((data) => {
             let result = {};
-            data.forEach(function (v) {
-                result[v.postId] = v.count;
+            data.forEach((v) => {
+                result[v.postId] = v.dataValues.count;
             });
-            cb(err, result);
+            cb(null, result);
         });
     },
     getCommentsByPostId: function (postId, cb) {
