@@ -33,7 +33,7 @@ function getCommonData (param, cb) {
         }
     });
 }
-function queryPosts (param, cb) {
+function queryPostsByIds (posts, postIds, cb) {
     /**
      * 根据group方式去重（distinct需要使用子查询，sequelize不支持include时的distinct）
      * 需要注意的是posts和postsCount的一致性
@@ -41,64 +41,64 @@ function queryPosts (param, cb) {
      *
      * sequelize有一个Bug：
      * 关联查询去重时，通过group by方式无法获取关联表的多行数据（如：此例的文章分类，只能返回第一条，并没有返回所有的分类）*/
-    console.time('a');
-    function doQueryPosts (posts, postIds) {
-        console.time('d');
-        models.TermTaxonomy.findAll({
-            attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'count'],
-            include: [{
-                model: models.TermRelationship,
-                attributes: ['objectId', 'termTaxonomyId'],
-                where: {
-                    objectId: postIds
-                }
-            }],
+    console.time('d');
+    models.TermTaxonomy.findAll({
+        attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'count'],
+        include: [{
+            model: models.TermRelationship,
+            attributes: ['objectId', 'termTaxonomyId'],
             where: {
-                taxonomy: ['post', 'tag']
-            },
-            order: [['termOrder', 'asc']]
-        }).then((data) => {
-            console.timeEnd('d');
-            console.timeEnd('a');
-            console.time('h');
-            let result = [];
-            posts.forEach((post) => {
-                let tags = [];
-                let categories = [];
-                data.forEach((u) => {
-                    if (u.taxonomy === 'tag') {
-                        u.TermRelationships.forEach((v) => {
-                            if (v.objectId === post.postId) {
-                                tags.push(u);
-                            }
-                        });
-                    } else {
-                        u.TermRelationships.forEach((v) => {
-                            if (v.objectId === post.postId) {
-                                categories.push(u);
-                            }
-                        });
-                    }
-                });
-                result.push({
-                    post,
-                    tags,
-                    categories
-                });
+                objectId: postIds
+            }
+        }],
+        where: {
+            taxonomy: ['post', 'tag']
+        },
+        order: [['termOrder', 'asc']]
+    }).then((data) => {
+        console.timeEnd('d');
+        console.timeEnd('a');
+        console.time('h');
+        let result = [];
+        posts.forEach((post) => {
+            let tags = [];
+            let categories = [];
+            data.forEach((u) => {
+                if (u.taxonomy === 'tag') {
+                    u.TermRelationships.forEach((v) => {
+                        if (v.objectId === post.postId) {
+                            tags.push(u);
+                        }
+                    });
+                } else {
+                    u.TermRelationships.forEach((v) => {
+                        if (v.objectId === post.postId) {
+                            categories.push(u);
+                        }
+                    });
+                }
             });
-            console.timeEnd('h');
-            cb(null, result);
+            result.push({
+                post,
+                tags,
+                categories
+            });
         });
-    }
+        console.timeEnd('h');
+        cb(null, result);
+    });
+}
+function queryPosts (param, cb) {
+    console.time('a');
 
     console.time('b');
     let queryOpt = {
         where: param.where,
         attributes: ['postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus', 'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'],
-        include: {
+        include: [{
             model: models.User,
             attributes: ['userDisplayName']
-        },
+        }],
         order: [['postCreated', 'desc'], ['postDate', 'desc']],
         limit: 10,
         offset: 10 * (param.page - 1),
@@ -106,19 +106,19 @@ function queryPosts (param, cb) {
     };
     switch (param.from) {
         case 'category':
-            queryOpt.include = [{
+            queryOpt.include.push({
                 model: models.TermRelationship,
                 attributes: ['objectId'],
                 where: param.relationshipWhere
-            }];
+            });
             queryOpt.group = ['postId'];
             break;
         case 'tag':
-            queryOpt.include = [{
+            queryOpt.include.push({
                 model: models.TermTaxonomy,
                 attributes: ['taxonomyId'],
                 where: param.tagWhere
-            }];
+            });
             break;
         default:
     }
@@ -130,7 +130,7 @@ function queryPosts (param, cb) {
         posts.forEach((v) => {
             postIds.push(v.postId);
         });
-        doQueryPosts(posts, postIds);
+        queryPostsByIds(posts, postIds, cb);
     });
 }
 module.exports = {
@@ -166,9 +166,9 @@ module.exports = {
                 queryPosts({
                     page: page,
                     where: where,
-                    taxonomyWhere: {
-                        taxonomy: 'post'
-                    },
+                    // taxonomyWhere: {
+                    //     taxonomy: 'post'
+                    // },
                     from: 'index'
                 }, cb);
             },
@@ -398,9 +398,9 @@ module.exports = {
                 queryPosts({
                     page,
                     where,
-                    taxonomyWhere: {
-                        taxonomy: 'post'
-                    },
+                    // taxonomyWhere: {
+                    //     taxonomy: 'post'
+                    // },
                     relationshipWhere,
                     from: 'category'
                 }, cb);
