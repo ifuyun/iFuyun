@@ -29,6 +29,14 @@ log4js.configure({
         pattern: '_yyyy-MM-dd.log',
         alwaysIncludePattern: true,
         category: 'system'
+    }, {
+        type: 'dateFile',
+        filename: 'logs/db',
+        maxLogSize: 10485760,
+        backups: 5,
+        pattern: '_yyyy-MM-dd.log',
+        alwaysIncludePattern: true,
+        category: 'db'
     }]
 });
 
@@ -46,5 +54,6 @@ module.exports = {
      * @writeOnce
      * @type {Object}
      */
-    sysLog: log4js.getLogger('system')
+    sysLog: log4js.getLogger('system'),
+    dbLog: log4js.getLogger('db')
 };

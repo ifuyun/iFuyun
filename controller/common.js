@@ -271,25 +271,6 @@ module.exports = {
         });
     },
     getCommentCountByPosts: function (posts, cb) {
-        // async.map(posts, (post, fn) => {
-        //     models.Comment.count({
-        //         where: {
-        //             postId: post.post.postId,
-        //             commentStatus: 'normal'
-        //         }
-        //     }).then((result) => {
-        //         fn(null, {
-        //             postId: post.post.postId,
-        //             count: result
-        //         });
-        //     });
-        // }, (err, data) => {
-        //     let result = {};
-        //     data.forEach(function (v) {
-        //         result[v.postId] = v.count;
-        //     });
-        //     cb(err, result);
-        // });
         let postIds = [];
         posts.forEach((v) => {
             postIds.push(v.post.postId);

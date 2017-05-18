@@ -9,7 +9,7 @@ const moment = require('moment');
 const logger = require('../helper/logger').sysLog;
 
 function getCommonData (param, cb) {
-    console.time('f');
+    // 执行时间在30-60ms，间歇60-80ms
     async.parallel({
         archiveDates: common.archiveDates,
         recentPosts: common.recentPosts,
@@ -25,7 +25,6 @@ function getCommonData (param, cb) {
         mainNavs: common.mainNavs,
         options: common.getInitOptions
     }, function (err, result) {
-        console.timeEnd('f');
         if (err) {
             cb(err);
         } else {
@@ -34,6 +33,7 @@ function getCommonData (param, cb) {
     });
 }
 function queryPostsByIds (posts, postIds, cb) {
+    // 执行时间在10-20ms
     /**
      * 根据group方式去重（distinct需要使用子查询，sequelize不支持include时的distinct）
      * 需要注意的是posts和postsCount的一致性
@@ -41,7 +41,6 @@ function queryPostsByIds (posts, postIds, cb) {
      *
      * sequelize有一个Bug：
      * 关联查询去重时，通过group by方式无法获取关联表的多行数据（如：此例的文章分类，只能返回第一条，并没有返回所有的分类）*/
-    console.time('d');
     models.TermTaxonomy.findAll({
         attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'count'],
         include: [{
@@ -56,9 +55,6 @@ function queryPostsByIds (posts, postIds, cb) {
         },
         order: [['termOrder', 'asc']]
     }).then((data) => {
-        console.timeEnd('d');
-        console.timeEnd('a');
-        console.time('h');
         let result = [];
         posts.forEach((post) => {
             let tags = [];
@@ -84,14 +80,10 @@ function queryPostsByIds (posts, postIds, cb) {
                 categories
             });
         });
-        console.timeEnd('h');
         cb(null, result);
     });
 }
 function queryPosts (param, cb) {
-    console.time('a');
-
-    console.time('b');
     let queryOpt = {
         where: param.where,
         attributes: ['postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus', 'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'],
@@ -122,10 +114,7 @@ function queryPosts (param, cb) {
             break;
         default:
     }
-    console.timeEnd('b');
-    console.time('c');
     models.Post.findAll(queryOpt).then((posts) => {
-        console.timeEnd('c');
         let postIds = [];
         posts.forEach((v) => {
             postIds.push(v.postId);
@@ -158,14 +147,14 @@ module.exports = {
         async.auto({
             commonData: (cb) => {
                 getCommonData({
-                    page: page,
+                    page,
                     from: 'list'
                 }, cb);
             },
             posts: (cb) => {
                 queryPosts({
-                    page: page,
-                    where: where,
+                    page,
+                    where,
                     // taxonomyWhere: {
                     //     taxonomy: 'post'
                     // },
@@ -174,7 +163,7 @@ module.exports = {
             },
             postsCount: (cb) => {
                 models.Post.count({
-                    where: where
+                    where
                 }).then(function (result) {
                     cb(null, result);
                 });
@@ -474,7 +463,7 @@ module.exports = {
             commonData: (cb) => {
                 getCommonData({
                     page: page,
-                    from: 'category'
+                    from: 'tag'
                 }, cb);
             },
             posts: (cb) => {
@@ -543,6 +532,98 @@ module.exports = {
 
             resData.meta.description = '[' + tag + ']' + (page > 1 ? '(第' + page + '页)' : '') + options.site_description.option_value;
             resData.meta.keywords = tag + ',' + options.site_keywords.optionValue;
+            resData.meta.author = options.site_author.optionValue;
+
+            resData.util = util;
+            resData.moment = moment;
+            res.render('front/pages/postList', resData);
+        });
+    },
+    listByDate: function (req, res, next) {
+        const page = parseInt(req.params.page, 10) || 1;
+        let year = parseInt(req.params.year, 10) || new Date().getFullYear();
+        let month = parseInt(req.params.month, 10);// || (new Date().getMonth() + 1);
+        year = year.toString();
+        month = month ? month < 10 ? '0' + month : month.toString() : '';
+        // let where = {
+        //     postStatus: 'publish',
+        //     postType: 'post',
+        //     [models.sequelize.fn('date_format', models.sequelize.col('postDate'), '%Y%m')]: year + month
+        // };
+        // let where = models.sequelize.where(models.sequelize.fn('date_format', models.sequelize.col('post_date'), '%Y%m'), year + month);
+        let where = ['post_status = "publish" and post_type = "post" and date_format(post_date, ?) = ?', month ? '%Y%m' : '%Y', month ? year + month : year];
+        async.auto({
+            commonData: (cb) => {
+                getCommonData({
+                    page,
+                    from: 'archive'
+                }, cb);
+            },
+            posts: (cb) => {
+                queryPosts({
+                    page,
+                    where,
+                    from: 'archive'
+                }, cb);
+            },
+            postsCount: (cb) => {
+                models.Post.count({
+                    where
+                }).then(function (result) {
+                    cb(null, result);
+                });
+            },
+            comments: ['posts', function (result, cb) {
+                common.getCommentCountByPosts(result.posts, cb);
+            }]
+        }, (err, result) => {
+            if (err) {
+                return next(err);
+            }
+            let resData = {
+                curNav: 'index',
+                showCrumb: true,
+                meta: {}
+            };
+            const options = result.commonData.options;
+            Object.assign(resData, result.commonData);
+
+            let crumbData = [{
+                'title': '文章归档',
+                'tooltip': '文章归档',
+                'url': '',
+                'headerFlag': false
+            }, {
+                'title': `${year}年`,
+                'tooltip': `${year}年`,
+                'url': '/archive/' + year,
+                'headerFlag': !month
+            }];
+            if (month) {
+                crumbData.push({
+                    'title': `${parseInt(month, 10)}月`,
+                    'tooltip': `${year}年${month}月`,
+                    'url': `/archive/${year}/${month}`,
+                    'headerFlag': true
+                });
+            }
+            resData.curPos = util.createCrumb(crumbData);
+
+            resData.posts = result.posts;
+            resData.posts.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), 9);
+            resData.posts.linkUrl = `/archive/${year}${month ? '/' + month : ''}/page-`;
+            resData.posts.linkParam = '';
+            resData.comments = result.comments;
+
+            const title = `${year}年${month ? month + '月' : ''}`;
+            if (page > 1) {
+                resData.meta.title = util.getTitle(['第' + page + '页', title, '文章归档', options.site_name.optionValue]);
+            } else {
+                resData.meta.title = util.getTitle([title, '文章归档', options.site_name.optionValue]);
+            }
+
+            resData.meta.description = `[${title}]` + (page > 1 ? '(第' + page + '页)' : '') + options.site_description.optionValue;
+            resData.meta.keywords = options.site_keywords.optionValue;
             resData.meta.author = options.site_author.optionValue;
 
             resData.util = util;

@@ -6,6 +6,7 @@
  * @since 1.0.0
  */
 const credential = require('./credentials');
+const logger = require('../helper/logger').dbLog;
 module.exports = {
     use_env_variable: (process.env.ENV && process.env.ENV.trim()) || 'development',
     //TODO: to be removed.
@@ -26,7 +27,10 @@ module.exports = {
         pool: {
             max: 10,
             min: 0,
-            idle: 10000
+            idle: 30000
+        },
+        logging: function (sql) {
+            logger.info(sql);
         }
     },
     production: {
@@ -34,6 +38,9 @@ module.exports = {
         password: credential.db.production.password,
         database: 'ifuyun',
         host: 'localhost',
-        dialect: 'mysql'
+        dialect: 'mysql',
+        logging: function (sql) {
+            logger.info(sql);
+        }
     }
 };

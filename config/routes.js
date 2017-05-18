@@ -34,10 +34,10 @@ module.exports = function (app, express) {
     // app.get('/post/:postId/page-:page', post.showPost);
     app.get('/category/:category', post.listByCategory);
     app.get('/category/:category/page-:page', post.listByCategory);
-    // app.get('/archive/:year', post.listByDate);
-    // app.get('/archive/:year/page-:page', post.listByDate);
-    // app.get('/archive/:year/:month', post.listByDate);
-    // app.get('/archive/:year/:month/page-:page', post.listByDate);
+    app.get('/archive/:year', post.listByDate);
+    app.get('/archive/:year/page-:page', post.listByDate);
+    app.get('/archive/:year/:month', post.listByDate);
+    app.get('/archive/:year/:month/page-:page', post.listByDate);
     app.get('/tag/:tag', post.listByTag);
     app.get('/tag/:tag/page-:page', post.listByTag);
     //
