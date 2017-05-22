@@ -6,6 +6,7 @@ const common = require('./common');
 const async = require('async');
 const util = require('../helper/util');
 const moment = require('moment');
+const url = require('url');
 const logger = require('../helper/logger').sysLog;
 
 function getCommonData (param, cb) {
@@ -358,6 +359,10 @@ module.exports = {
             res.render('front/pages/post', resData);
         });
     },
+    showPage: function (req, res, next) {
+        const reqUrl = url.parse(req.url);
+        const reqPath = reqUrl.pathname;
+    },
     listByCategory: function (req, res, next) {
         const page = parseInt(req.params.page, 10) || 1;
         const category = req.params.category;
@@ -542,16 +547,12 @@ module.exports = {
     listByDate: function (req, res, next) {
         const page = parseInt(req.params.page, 10) || 1;
         let year = parseInt(req.params.year, 10) || new Date().getFullYear();
-        let month = parseInt(req.params.month, 10);// || (new Date().getMonth() + 1);
+        let month = parseInt(req.params.month, 10);
+
         year = year.toString();
         month = month ? month < 10 ? '0' + month : month.toString() : '';
-        // let where = {
-        //     postStatus: 'publish',
-        //     postType: 'post',
-        //     [models.sequelize.fn('date_format', models.sequelize.col('postDate'), '%Y%m')]: year + month
-        // };
-        // let where = models.sequelize.where(models.sequelize.fn('date_format', models.sequelize.col('post_date'), '%Y%m'), year + month);
-        let where = ['post_status = "publish" and post_type = "post" and date_format(post_date, ?) = ?', month ? '%Y%m' : '%Y', month ? year + month : year];
+        const where = ['post_status = "publish" and post_type = "post" and date_format(post_date, ?) = ?', month ? '%Y%m' : '%Y', month ? year + month : year];
+
         async.auto({
             commonData: (cb) => {
                 getCommonData({

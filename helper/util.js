@@ -189,7 +189,7 @@ module.exports = {
      */
     filterHtmlTag: function (srcStr) {
         return srcStr.replace(/<\/?[^>]*>/ig, '');
-        //\w\s~!@#$%^&*\(\)\-=+\[\]\{\}\\\|;:'",\.\/<\?\u4E00-\uFA29
+        // \w\s~!@#$%^&*\(\)\-=+\[\]\{\}\\\|;:'",\.\/<\?\u4E00-\uFA29
     },
     /**
      * 获取访问者IP

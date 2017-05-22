@@ -34,17 +34,17 @@ module.exports = function (sequelize, DataTypes) {
             defaultValue: '',
             field: 'comment_author_email'
         },
-        commentAuthorUrl: {
+        commentAuthorLink: {
             type: DataTypes.STRING(200),
             allowNull: false,
             defaultValue: '',
-            field: 'comment_author_url'
+            field: 'comment_author_Link'
         },
-        commentAuthorIp: {
+        commentIp: {
             type: DataTypes.STRING(100),
             allowNull: false,
             defaultValue: '',
-            field: 'comment_author_ip'
+            field: 'comment_ip'
         },
         commentCreated: {
             type: DataTypes.DATE,
