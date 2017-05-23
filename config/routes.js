@@ -8,17 +8,15 @@
  * @param {Object} express express对象
  * @return {void}
  * @author Fuyun
- * @version 1.0.0
+ * @version 2.0.0
  * @since 1.0.0
  */
-'use strict';
 module.exports = function (app, express) {
     const path = require('path');
     // const router = express.Router();
     const base = require('./routes-base');
     const post = require('../controller/post');
-    // const post = require('../controllers/post');
-    // const user = require('../controllers/user');
+    const user = require('../controller/user');
     const comment = require('../controller/comment');
     // const admin = require('./routes-admin')(app, router);
 
@@ -43,18 +41,18 @@ module.exports = function (app, express) {
     app.post('/post/comment/save', comment.saveComment);
     // app.post('/post/comment/vote', comment.saveVote);
 
-    // // app.get('/comment/:postId', comment.listComments);
-    // // app.get('/comment/:postId/page-:page', comment.listComments);
-    // app.get('/user/login', user.login);
-    // app.post('/user/login', user.doLogin);
-    // app.get('/user/logout', user.logout);
+    // app.get('/comment/:postId', comment.listComments);
+    // app.get('/comment/:postId/page-:page', comment.listComments);
+    app.get('/user/login', user.showLogin);
+    app.post('/user/login', user.login);
+    app.get('/user/logout', user.logout);
     // app.get('/author/:user', user.home);
 
     // 后台路由
     // app.use('/admin', admin);
 
     // 独立页面
-    // app.use(post.showPage);
+    app.use(post.showPage);
     // 可以省略
     app.use(base.last);
     // 错误路由

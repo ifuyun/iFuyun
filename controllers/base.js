@@ -91,61 +91,61 @@ module.exports = {
                 message: err.message || err || 'Page Not Found'
             });
         }
-    },
-    /**
-     * 查询全局自动加载的配置项
-     * @method getInitOptions
-     * @static
-     * @param {Function} callback 回调函数
-     * @return {void}
-     * @author Fuyun
-     * @version 3.0.0
-     * @since 1.0.0
-     */
-    getInitOptions: function (callback) {
-        option.getAutoloadOptions(function (err, data) {
-            if (err) {
-                return callback(err, data);
-            }
-            let tmpArr = {};
-            for (let rowIdx = 0; rowIdx < data.length; rowIdx += 1) {
-                let tmpObj;
-                tmpObj = {
-                    blog_id: data[rowIdx].blog_id,
-                    option_value: data[rowIdx].option_value
-                };
-                tmpArr[data[rowIdx].option_name] = tmpObj;
-            }
-            callback(null, tmpArr);
-        });
-    },
-    /**
-     * 生成面包屑
-     * @method createCrumb
-     * @static
-     * @param {Array} crumbData 面包屑路径对象
-     * @param {String} [separator='&nbsp;→&nbsp;'] 路径分隔符
-     * @return {String} 面包屑
-     * @author Fuyun
-     * @version 1.0.0
-     * @since 1.0.0
-     */
-    createCrumb: function (crumbData, separator) {
-        let tempArr = [];
-        let crumb;
-        separator = separator || '&nbsp;→&nbsp;';
-        for (crumb in crumbData) {
-            if (crumbData.hasOwnProperty(crumb)) {
-                crumb = crumbData[crumb];
-                if (crumb.url !== '' && !crumb.headerFlag) {
-                    tempArr.push('<a title="' + crumb.tooltip + '" href="' + crumb.url + '">' + crumb.title + '</a>');
-                } else if (crumb.url !== '' && crumb.headerFlag) {
-                    tempArr.push('<h3><a title="' + crumb.tooltip + '" href="' + crumb.url + '">' + crumb.title + '</a></h3>');
-                } else {
-                    tempArr.push('<span title="' + crumb.tooltip + '">' + crumb.title + '</span>');
-                }
-            }
-        }
-        return tempArr.join(separator);
+    // },
+    // /**
+    //  * 查询全局自动加载的配置项
+    //  * @method getInitOptions
+    //  * @static
+    //  * @param {Function} callback 回调函数
+    //  * @return {void}
+    //  * @author Fuyun
+    //  * @version 3.0.0
+    //  * @since 1.0.0
+    //  */
+    // getInitOptions: function (callback) {
+    //     option.getAutoloadOptions(function (err, data) {
+    //         if (err) {
+    //             return callback(err, data);
+    //         }
+    //         let tmpArr = {};
+    //         for (let rowIdx = 0; rowIdx < data.length; rowIdx += 1) {
+    //             let tmpObj;
+    //             tmpObj = {
+    //                 blog_id: data[rowIdx].blog_id,
+    //                 option_value: data[rowIdx].option_value
+    //             };
+    //             tmpArr[data[rowIdx].option_name] = tmpObj;
+    //         }
+    //         callback(null, tmpArr);
+    //     });
+    // },
+    // /**
+    //  * 生成面包屑
+    //  * @method createCrumb
+    //  * @static
+    //  * @param {Array} crumbData 面包屑路径对象
+    //  * @param {String} [separator='&nbsp;→&nbsp;'] 路径分隔符
+    //  * @return {String} 面包屑
+    //  * @author Fuyun
+    //  * @version 1.0.0
+    //  * @since 1.0.0
+    //  */
+    // createCrumb: function (crumbData, separator) {
+    //     let tempArr = [];
+    //     let crumb;
+    //     separator = separator || '&nbsp;→&nbsp;';
+    //     for (crumb in crumbData) {
+    //         if (crumbData.hasOwnProperty(crumb)) {
+    //             crumb = crumbData[crumb];
+    //             if (crumb.url !== '' && !crumb.headerFlag) {
+    //                 tempArr.push('<a title="' + crumb.tooltip + '" href="' + crumb.url + '">' + crumb.title + '</a>');
+    //             } else if (crumb.url !== '' && crumb.headerFlag) {
+    //                 tempArr.push('<h3><a title="' + crumb.tooltip + '" href="' + crumb.url + '">' + crumb.title + '</a></h3>');
+    //             } else {
+    //                 tempArr.push('<span title="' + crumb.tooltip + '">' + crumb.title + '</span>');
+    //             }
+    //         }
+    //     }
+    //     return tempArr.join(separator);
     }
 };

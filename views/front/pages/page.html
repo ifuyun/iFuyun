@@ -5,17 +5,17 @@
         <div class="m-content m-page">
             <header class="m-article-header">
                 <h1 class="m-article-title">
-                    <a rel="bookmark" title="<?- post.post.post_title ?>" href="<?= post.post.post_guid ?>"><?- post.post.post_title ?></a>
+                    <a rel="bookmark" title="<?- post.postTitle ?>" href="<?= post.postGuid ?>"><?- post.postTitle ?></a>
                 </h1>
             </header>
             <div class="m-diag">&nbsp;</div>
             <article class="m-article-content">
-                <?- post.post.post_content ?>
+                <?- post.postContent ?>
             </article>
             <footer class="m-article-footer">
                 <div class="m-article-meta">
                     <i class="glyphicon glyphicons-clock"></i>
-                    <span title="更新于: <?= post.post.display_full_date ?>">最后更新：<?= post.post.display_full_date ?></span>
+                    <span title="更新于: <?= moment(post.postModified || post.postCreated).format('YYYY-MM-DD HH:mm') ?>">最后更新：<?= moment(post.postModified || post.postCreated).format('YYYY-MM-DD HH:mm') ?></span>
                 </div>
             </footer>
             <? include ../elements/comment.html ?>
@@ -24,6 +24,6 @@
     <? include ../elements/sidebar.html ?>
 </section>
 <? include ../elements/pageFooter.html ?>
-<script type="text/javascript" src="<?- options.static_host.option_value ?>/dist/js/common_99219e3a.js"></script>
-<script type="text/javascript" src="<?- options.static_host.option_value ?>/dist/js/web/post_99219e3a.js"></script>
+<script type="text/javascript" src="<?- options.static_host.optionValue ?>/dist/js/common_99219e3a.js"></script>
+<script type="text/javascript" src="<?- options.static_host.optionValue ?>/dist/js/web/post_99219e3a.js"></script>
 <? include ../common/footer.html ?>

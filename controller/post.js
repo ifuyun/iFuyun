@@ -223,7 +223,7 @@ module.exports = {
             }, next);
         }
         async.auto({
-            commonData: function (cb) {
+            commonData: (cb) => {
                 getCommonData({
                     from: 'post'
                 }, cb);
@@ -362,6 +362,91 @@ module.exports = {
     showPage: function (req, res, next) {
         const reqUrl = url.parse(req.url);
         const reqPath = reqUrl.pathname;
+        async.auto({
+            commonData: (cb) => {
+                getCommonData({
+                    from: 'page'
+                }, cb);
+            },
+            post: function (cb) {
+                models.Post.findOne({
+                    attributes: ['postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus', 'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'],
+                    include: [{
+                        model: models.User,
+                        attributes: ['userDisplayName']
+                    }],
+                    where: {
+                        postGuid: reqPath
+                    }
+                }).then(function (result) {
+                    if (!result || !result.postId) {
+                        logger.error(util.getErrorLog({
+                            req: req,
+                            funcName: 'showPage',
+                            funcParam: {
+                                postId: result.postId
+                            },
+                            msg: 'Post Not Exist.'
+                        }));
+                        return cb(util.catchError({
+                            status: 404,
+                            code: 404,
+                            message: 'Page Not Found.'
+                        }));
+                    }
+                    // 无管理员权限不允许访问非公开文章(包括草稿)
+                    if (!util.isAdminUser(req) && result.postStatus !== 'publish') {
+                        logger.warn(util.getErrorLog({
+                            req: req,
+                            funcName: 'showPage',
+                            funcParam: {
+                                postId: result.postId,
+                                postTitle: result.postTitle,
+                                postStatus: result.postStatus
+                            },
+                            msg: result.postTitle + ' is ' + result.postStatus
+                        }));
+                        return cb(util.catchError({
+                            status: 404,
+                            code: 404,
+                            message: 'Page Not Found.'
+                        }));
+                    }
+                    cb(null, result);
+                });
+            },
+            comments: ['post', function (result, cb) {
+                common.getCommentsByPostId(result.post.postId, cb);
+            }]
+        }, function (err, result) {
+            if (err) {
+                return next(err);
+            }
+            let resData = {
+                curNav: '',
+                showCrumb: false,
+                user: {},
+                meta: {},
+                token: req.csrfToken()
+            };
+            if (req.session.user) {
+                resData.user.userName = req.session.user.user.user_display_name;
+                resData.user.userEmail = req.session.user.user.user_email;
+            }
+            const options = result.commonData.options;
+            Object.assign(resData, result.commonData);
+
+            resData.meta.title = util.getTitle([result.post.postTitle, options.site_name.optionValue]);
+            resData.meta.description = result.post.postExcerpt || util.cutStr(util.filterHtmlTag(result.post.postContent), 140);
+            resData.meta.keywords = result.post.postTitle + ',' + options.site_keywords.optionValue;
+            resData.meta.author = options.site_author.optionValue;
+
+            resData.post = result.post;
+            resData.comments = result.comments;
+            resData.util = util;
+            resData.moment = moment;
+            res.render('front/pages/page', resData);
+        });
     },
     listByCategory: function (req, res, next) {
         const page = parseInt(req.params.page, 10) || 1;

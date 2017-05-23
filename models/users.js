@@ -36,11 +36,11 @@ module.exports = function (sequelize, DataTypes) {
             defaultValue: '',
             field: 'user_email'
         },
-        userUrl: {
+        userLink: {
             type: DataTypes.STRING(100),
             allowNull: false,
             defaultValue: '',
-            field: 'user_url'
+            field: 'user_link'
         },
         userRegistered: {
             type: DataTypes.DATE,
@@ -75,6 +75,10 @@ module.exports = function (sequelize, DataTypes) {
             associate: function (models) {
                 User.hasMany(models.Post, {
                     foreignKey: 'postAuthor',
+                    sourceKey: 'userId'
+                });
+                User.hasMany(models.Usermeta, {
+                    foreignKey: 'userId',
                     sourceKey: 'userId'
                 });
             }
