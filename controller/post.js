@@ -717,5 +717,9 @@ module.exports = {
             resData.moment = moment;
             res.render('front/pages/postList', resData);
         });
+    },
+    listEdit: function (req, res, next) {
+        const page = parseInt(req.params.page, 10) || 1;
+        res.send();
     }
 };

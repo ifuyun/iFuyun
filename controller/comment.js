@@ -181,7 +181,7 @@ module.exports = {
             commentVote = models.sequelize.literal('comment_vote - 1');
             data.voteCount = -1;
         }
-        async.auto({
+        async.auto({// TODO: transaction
             comment: (cb) => {
                 models.Comment.update({
                     commentVote

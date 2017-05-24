@@ -13,12 +13,12 @@
  */
 module.exports = function (app, express) {
     const path = require('path');
-    // const router = express.Router();
+    const router = express.Router();
     const base = require('./routes-base');
     const post = require('../controller/post');
     const user = require('../controller/user');
     const comment = require('../controller/comment');
-    // const admin = require('./routes-admin')(app, router);
+    const admin = require('./routes-admin')(app, router);
 
     // 静态文件(若先路由后静态文件，将导致session丢失)
     app.use(express.static(path.join(__dirname, '..', 'public')));
@@ -48,7 +48,7 @@ module.exports = function (app, express) {
     app.get('/user/logout', user.logout);
 
     // 后台路由
-    // app.use('/admin', admin);
+    app.use('/admin', admin);
 
     // 独立页面
     app.use(post.showPage);
