@@ -123,6 +123,7 @@ function queryPosts (param, cb) {
         queryPostsByIds(posts, postIds, cb);
     });
 }
+
 module.exports = {
     listPosts: function (req, res, next) {
         const page = parseInt(req.params.page, 10) || 1;
@@ -324,8 +325,8 @@ module.exports = {
                 token: req.csrfToken()
             };
             if (req.session.user) {
-                resData.user.userName = req.session.user.user.user_display_name;
-                resData.user.userEmail = req.session.user.user.user_email;
+                resData.user.userName = req.session.user.userDisplayName;
+                resData.user.userEmail = req.session.user.userEmail;
             }
             const options = result.commonData.options;
             Object.assign(resData, result.commonData);
@@ -717,4 +718,4 @@ module.exports = {
             res.render('front/pages/postList', resData);
         });
     }
-}
+};

@@ -12,7 +12,7 @@ const idReg = /^[0-9a-fA-F]{16}$/i;
 
 module.exports = {
     saveComment: function (req, res, next) {
-        let params = req.body;
+        const params = req.body;
         let user = {};
         let data = {};
         const referer = req.session.referer;
@@ -20,7 +20,7 @@ module.exports = {
         let commentId = xss.sanitize(params.commentId || '').trim();
 
         if (req.session.user) {
-            user = req.session.user.user;
+            user = req.session.user;
         }
 
         // 避免undefined问题
@@ -127,7 +127,7 @@ module.exports = {
             delete req.session.referrer;
             let postGuid;
             let commentFlag;
-            if(result.post.postGuid) {
+            if (result.post.postGuid) {
                 postGuid = result.post.postGuid;
                 commentFlag = result.post.commentFlag;
             }
@@ -140,6 +140,85 @@ module.exports = {
                 data: {
                     commentFlag,
                     url: isAdmin ? referer || postUrl : postUrl
+                }
+            });
+        });
+    },
+    saveVote: function (req, res, next) {
+        const params = req.body;
+        let user = {};
+        let data = {};
+        let commentVote;
+
+        if (req.session.user) {
+            user = req.session.user;
+        }
+
+        data.userIp = req.ip || req._remoteAddress;
+        data.userAgent = req.headers['user-agent'];
+        data.userId = user.userId || '';
+
+        data.objectId = xss.sanitize(params.commentId.trim());
+
+        if (!idReg.test(data.objectId)) {
+            return util.catchError({
+                status: 500,
+                code: 500,
+                message: '参数错误'
+            }, next);
+        }
+        if (params.type !== 'up' && params.type !== 'down') {
+            return util.catchError({
+                status: 500,
+                code: 500,
+                message: '参数错误'
+            }, next);
+        }
+        if (params.type === 'up') {
+            commentVote = models.sequelize.literal('comment_vote + 1');
+            data.voteCount = 1;
+        } else {
+            commentVote = models.sequelize.literal('comment_vote - 1');
+            data.voteCount = -1;
+        }
+        async.auto({
+            comment: (cb) => {
+                models.Comment.update({
+                    commentVote
+                }, {
+                    where: {
+                        commentId: data.objectId
+                    },
+                    silent: true
+                }).then((comment) => {
+                    cb(null, comment);
+                });
+            },
+            vote: (cb) => {
+                data.voteId = util.getUuid();
+                models.Vote.create(data).then((vote) => {
+                    cb(null, vote);
+                });
+            },
+            commentVote: ['comment', function (result, cb) {
+                models.Comment.findById(data.objectId, {
+                    attributes: ['commentId', 'commentVote']
+                }).then(function (comment) {
+                    cb(null, comment);
+                });
+            }]
+        }, function (err, result) {
+            if (err) {
+                return next(err);
+            }
+            res.set('Content-type', 'application/json');
+            res.send({
+                status: 200,
+                code: 0,
+                message: null,
+                token: req.csrfToken ? req.csrfToken() : '',
+                data: {
+                    commentVote: result.commentVote.commentVote
                 }
             });
         });

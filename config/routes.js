@@ -39,14 +39,13 @@ module.exports = function (app, express) {
     app.get('/tag/:tag/page-:page', post.listByTag);
 
     app.post('/post/comment/save', comment.saveComment);
-    // app.post('/post/comment/vote', comment.saveVote);
+    app.post('/post/comment/vote', comment.saveVote);
 
     // app.get('/comment/:postId', comment.listComments);
     // app.get('/comment/:postId/page-:page', comment.listComments);
     app.get('/user/login', user.showLogin);
     app.post('/user/login', user.login);
     app.get('/user/logout', user.logout);
-    // app.get('/author/:user', user.home);
 
     // 后台路由
     // app.use('/admin', admin);

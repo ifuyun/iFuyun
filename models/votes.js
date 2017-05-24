@@ -1,7 +1,7 @@
 /* jshint indent: 4 */
 
 module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('votes', {
+    return sequelize.define('Vote', {
         voteId: {
             type: DataTypes.CHAR(16),
             allowNull: false,
@@ -42,6 +42,8 @@ module.exports = function (sequelize, DataTypes) {
         }
     }, {
         tableName: 'votes',
-        createdAt: 'vote_created'
+        createdAt: 'vote_created',
+        updatedAt: false,
+        deletedAt: false
     });
 };
