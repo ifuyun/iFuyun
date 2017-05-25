@@ -826,8 +826,10 @@ module.exports = {
                         'postType',
                         ['count(1)', 'count']
                     ],
-                    where,
-                    // include: includeOpt,
+                    where: {
+                        postType: where.postType,
+                        postStatus: ['publish', 'private', 'draft', 'auto-draft', 'trash']
+                    },
                     group: ['postStatus']
                 }).then((data) => {
                     cb(null, data);
