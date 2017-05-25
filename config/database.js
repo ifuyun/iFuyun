@@ -24,6 +24,7 @@ module.exports = {
         database: 'ifuyun',
         host: 'localhost',
         dialect: 'mysql',
+        timezone: '+08:00',
         pool: {
             max: 10,
             min: 0,
@@ -39,6 +40,12 @@ module.exports = {
         database: 'ifuyun',
         host: 'localhost',
         dialect: 'mysql',
+        timezone: '+08:00',
+        pool: {
+            max: 10,
+            min: 0,
+            idle: 30000
+        },
         logging: function (sql) {
             logger.info(sql);
         }

@@ -99,19 +99,11 @@ function queryPosts (param, cb) {
     };
     switch (param.from) {
         case 'category':
-            queryOpt.include.push({
-                model: models.TermRelationship,
-                attributes: ['objectId'],
-                where: param.relationshipWhere
-            });
+            queryOpt.include = queryOpt.include.concat(param.includeOpt);
             queryOpt.group = ['postId'];
             break;
         case 'tag':
-            queryOpt.include.push({
-                model: models.TermTaxonomy,
-                attributes: ['taxonomyId'],
-                where: param.tagWhere
-            });
+            queryOpt.include = queryOpt.include.concat(param.includeOpt);
             break;
         default:
     }
@@ -157,9 +149,6 @@ module.exports = {
                 queryPosts({
                     page,
                     where,
-                    // taxonomyWhere: {
-                    //     taxonomy: 'post'
-                    // },
                     from: 'index'
                 }, cb);
             },
@@ -385,7 +374,7 @@ module.exports = {
                             req: req,
                             funcName: 'showPage',
                             funcParam: {
-                                postId: result.postId
+                                pageUrl: reqPath
                             },
                             msg: 'Post Not Exist.'
                         }));
@@ -456,7 +445,7 @@ module.exports = {
             postStatus: 'publish',
             postType: 'post'
         };
-        let relationshipWhere = {};
+        let includeOpt;
         async.auto({
             commonData: (cb) => {
                 getCommonData({
@@ -471,28 +460,27 @@ module.exports = {
                 }, cb);
             }],
             setRelationshipWhere: ['subCategories', (result, cb) => {
-                relationshipWhere.termTaxonomyId = result.subCategories.subCatIds;
+                includeOpt = [{
+                    model: models.TermRelationship,
+                    attributes: ['objectId'],
+                    where: {
+                        termTaxonomyId: result.subCategories.subCatIds
+                    }
+                }];
                 cb(null);
             }],
             posts: ['setRelationshipWhere', function (result, cb) {
                 queryPosts({
                     page,
                     where,
-                    // taxonomyWhere: {
-                    //     taxonomy: 'post'
-                    // },
-                    relationshipWhere,
+                    includeOpt,
                     from: 'category'
                 }, cb);
             }],
             postsCount: ['setRelationshipWhere', function (result, cb) {
                 models.Post.count({
                     where,
-                    include: [{
-                        model: models.TermRelationship,
-                        attributes: ['objectId'],
-                        where: relationshipWhere
-                    }],
+                    include: includeOpt,
                     subQuery: false,
                     distinct: true
                 }).then((count) => {
@@ -546,10 +534,14 @@ module.exports = {
             postStatus: 'publish',
             postType: 'post'
         };
-        let tagWhere = {
-            taxonomy: ['tag'],
-            slug: tag
-        };
+        let includeOpt = [{
+            model: models.TermTaxonomy,
+            attributes: ['taxonomyId'],
+            where: {
+                taxonomy: ['tag'],
+                slug: tag
+            }
+        }];
         async.auto({
             commonData: (cb) => {
                 getCommonData({
@@ -561,21 +553,14 @@ module.exports = {
                 queryPosts({
                     page,
                     where,
-                    tagWhere,
-                    taxonomyWhere: {
-                        taxonomy: 'post'
-                    },
+                    includeOpt,
                     from: 'tag'
                 }, cb);
             },
             postsCount: function (cb) {
                 models.Post.count({
                     where,
-                    include: [{
-                        model: models.TermTaxonomy,
-                        attributes: ['taxonomyId'],
-                        where: tagWhere
-                    }]
+                    include: includeOpt
                 }).then((count) => {
                     cb(null, count);
                 });
@@ -720,6 +705,195 @@ module.exports = {
     },
     listEdit: function (req, res, next) {
         const page = parseInt(req.params.page, 10) || 1;
-        res.send();
+        let where = {};
+        let titleArr = [];
+        let paramArr = [];
+        let from = 'admin';
+
+        if (req.query.status) {
+            if (req.query.status === 'draft') {
+                where.postStatus = ['draft', 'auto-draft'];
+            } else {
+                where.postStatus = req.query.status;
+            }
+            paramArr.push(`status=${req.query.status}`);
+            titleArr.push(req.query.status, '状态');
+        } else {
+            where.postStatus = ['publish', 'private', 'draft', 'auto-draft', 'trash'];
+        }
+        if (req.query.author) {
+            where.postAuthor = req.query.author;
+            paramArr.push(`author=${req.query.author}`);
+            titleArr.push('作者');
+        }
+        if (req.query.date) {
+            where.$and = [models.sequelize.where(models.sequelize.fn('date_format', models.sequelize.col('post_date'), '%Y/%m'), '=', req.query.date)];
+            paramArr.push(`date=${req.query.date}`);
+            titleArr.push(req.query.date, '日期');
+        }
+        if (req.query.keyword) {
+            where.$or = [{
+                postTitle: {
+                    $like: `%${req.query.keyword}%`
+                }
+            }, {
+                postContent: {
+                    $like: `%${req.query.keyword}%`
+                }
+            }, {
+                postExcerpt: {
+                    $like: `%${req.query.keyword}%`
+                }
+            }];
+            paramArr.push(`keyword=${req.query.keyword}`);
+            titleArr.push(req.query.keyword, '搜索');
+        }
+        let includeOpt = [];
+        if (req.query.category) {
+            from = 'category';
+        }
+        let tagWhere;
+        if (req.query.tag) {
+            from = 'tag';
+            tagWhere = {
+                taxonomy: ['tag'],
+                slug: req.query.tag
+            };
+            includeOpt.push({
+                model: models.TermTaxonomy,
+                attributes: ['taxonomyId'],
+                where: tagWhere
+            });
+            paramArr.push(`tag=${req.query.tag}`);
+            titleArr.push(req.query.tag, '标签');
+        }
+        if (req.query.category) {
+            paramArr.push(`category=${req.query.category}`);
+        }
+        where.postType = req.query.type === 'page' ? 'page' : 'post';
+        paramArr.push(`type=${where.postType}`);
+
+        async.auto({
+            options: common.getInitOptions,
+            archiveDates: common.archiveDates,
+            categories: common.getCategoryTree.bind(common),
+            subCategories: ['categories', (result, cb) => {
+                if (req.query.category) {
+                    common.getSubCategoriesBySlug({
+                        catData: result.categories.catData,
+                        slug: req.query.category
+                    }, (err, data) => {
+                        if (err) {
+                            return cb(err);
+                        }
+                        includeOpt.push({
+                            model: models.TermRelationship,
+                            attributes: ['objectId'],
+                            where: {
+                                termTaxonomyId: data.subCatIds
+                            }
+                        });
+                        titleArr.push(data.catRoot.name, '分类');
+                        cb(null);
+                    });
+                } else {
+                    cb(null);
+                }
+            }],
+            posts: ['subCategories', (result, cb) => {
+                queryPosts({
+                    page,
+                    where,
+                    from,
+                    includeOpt
+                }, cb);
+            }],
+            postsCount: ['subCategories', (result, cb) => {
+                models.Post.count({
+                    where,
+                    include: includeOpt
+                }).then(function (result) {
+                    cb(null, result);
+                });
+            }],
+            comments: ['posts', function (result, cb) {
+                common.getCommentCountByPosts(result.posts, cb);
+            }],
+            typeCount: (cb) => {
+                models.Post.findAll({
+                    attributes: [
+                        'postStatus',
+                        'postType',
+                        ['count(1)', 'count']
+                    ],
+                    where,
+                    // include: includeOpt,
+                    group: ['postStatus']
+                }).then((data) => {
+                    cb(null, data);
+                });
+            }
+        }, function (err, result) {
+            if (err) {
+                return next(err);
+            }
+            let resData = {
+                meta: {},
+                type: where.postType,
+                page: where.postType,
+                archiveDates: result.archiveDates,
+                categories: result.categories,
+                options: result.options,
+                count: {
+                    all: 0,
+                    publish: 0,
+                    private: 0,
+                    draft: 0,
+                    trash: 0
+                },
+                posts: result.posts,
+                comments: result.comments,
+                util,
+                moment
+            };
+            resData.posts.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), 9);
+            resData.posts.linkUrl = '/admin/post/page-';
+            resData.posts.linkParam = paramArr.length > 0 ? '?' + paramArr.join('&') : '';
+
+            if (page > 1) {
+                resData.meta.title = util.getTitle(titleArr.concat(['第' + page + '页', where.postType === 'page' ? '页面列表' : '文章列表', '管理后台', result.options.site_name.optionValue]));
+            } else {
+                resData.meta.title = util.getTitle(titleArr.concat([where.postType === 'page' ? '页面列表' : '文章列表', '管理后台', result.options.site_name.optionValue]));
+            }
+
+            result.typeCount.forEach((item) => {
+                resData.count.all += item.get('count');
+
+                switch (item.postStatus) {
+                    case 'publish':
+                        resData.count.publish += item.get('count');
+                        break;
+                    case 'private':
+                        resData.count.private += item.get('count');
+                        break;
+                    case 'draft':
+                        resData.count.draft += item.get('count');
+                        break;
+                    case 'auto-draft':
+                        resData.count.draft += item.get('count');
+                        break;
+                    case 'trash':
+                        resData.count.trash += item.get('count');
+                        break;
+                    default:
+                }
+            });
+
+            resData.curCategory = req.query.category;
+            resData.curStatus = req.query.status || 'all';
+            resData.curDate = req.query.date;
+            resData.curKeyword = req.query.keyword;
+            res.render('admin/pages/postList', resData);
+        });
     }
 };

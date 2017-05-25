@@ -12,28 +12,28 @@ const idReg = /^[0-9a-fA-F]{16}$/i;
 
 module.exports = {
     saveComment: function (req, res, next) {
-        const params = req.body;
+        const param = req.body;
         let user = {};
         let data = {};
         const referer = req.session.referer;
         const isAdmin = util.isAdminUser(req);
-        let commentId = xss.sanitize(params.commentId || '').trim();
+        let commentId = xss.sanitize(param.commentId || '').trim();
 
         if (req.session.user) {
             user = req.session.user;
         }
 
         // 避免undefined问题
-        data.commentContent = xss.sanitize(params.commentContent || '').trim();
-        data.parentId = xss.sanitize(params.parentId || '').trim();
-        data.postId = xss.sanitize(params.postId || '').trim();
-        // params.type = 'reply';
+        data.commentContent = xss.sanitize(param.commentContent || '').trim();
+        data.parentId = xss.sanitize(param.parentId || '').trim();
+        data.postId = xss.sanitize(param.postId || '').trim();
+        // param.type = 'reply';
         data.commentIp = req.ip || req._remoteAddress;
         data.commentAgent = req.headers['user-agent'];
-        data.commentAuthor = xss.sanitize(params.commentUser || '').trim() || user.userDisplayName || '';
-        data.commentAuthorEmail = xss.sanitize(params.commentEmail || '').trim() || user.userEmail || '';
+        data.commentAuthor = xss.sanitize(param.commentUser || '').trim() || user.userDisplayName || '';
+        data.commentAuthorEmail = xss.sanitize(param.commentEmail || '').trim() || user.userEmail || '';
         data.userId = user.userId || '';
-        data.commentAuthorLink = xss.sanitize(params.commentSite || '').trim() || '';
+        data.commentAuthorLink = xss.sanitize(param.commentSite || '').trim() || '';
         data.commentStatus = 'pending';
 
         if (!commentId || !idReg.test(commentId)) {
@@ -145,7 +145,7 @@ module.exports = {
         });
     },
     saveVote: function (req, res, next) {
-        const params = req.body;
+        const param = req.body;
         let user = {};
         let data = {};
         let commentVote;
@@ -158,7 +158,7 @@ module.exports = {
         data.userAgent = req.headers['user-agent'];
         data.userId = user.userId || '';
 
-        data.objectId = xss.sanitize(params.commentId.trim());
+        data.objectId = xss.sanitize(param.commentId.trim());
 
         if (!idReg.test(data.objectId)) {
             return util.catchError({
@@ -167,14 +167,14 @@ module.exports = {
                 message: '参数错误'
             }, next);
         }
-        if (params.type !== 'up' && params.type !== 'down') {
+        if (param.type !== 'up' && param.type !== 'down') {
             return util.catchError({
                 status: 500,
                 code: 500,
                 message: '参数错误'
             }, next);
         }
-        if (params.type === 'up') {
+        if (param.type === 'up') {
             commentVote = models.sequelize.literal('comment_vote + 1');
             data.voteCount = 1;
         } else {

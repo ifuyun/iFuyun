@@ -7,8 +7,8 @@
  * @static
  * @requires log4js
  * @author Fuyun
- * @version 3.0.0
- * @since 2.1.0
+ * @version 2.0.0
+ * @since 2.0.0
  */
 const log4js = require('log4js');
 
@@ -16,10 +16,10 @@ log4js.configure({
     appenders: [{
         type: 'dateFile',
         filename: 'logs/access',
-        maxLogSize: 10485760, //10MB, 只在 type: 'file' 中才支持
-        backups: 5, //默认5，指定pattern后backups参数无效，除非pattern是小于backups的数字，原理是不指定pattern时备份的文件是在文件名后加'.n'的数字，n从1开始自增
-        pattern: '_yyyy-MM-dd.log', //指定pattern后无限备份
-        alwaysIncludePattern: true, //不指定pattern时若为true会使用默认值'.yyyy-MM-dd'
+        maxLogSize: 10485760, // 10MB, 只在 type: 'file' 中才支持
+        backups: 5, // 默认5，指定pattern后backups参数无效，除非pattern是小于backups的数字，原理是不指定pattern时备份的文件是在文件名后加'.n'的数字，n从1开始自增
+        pattern: '_yyyy-MM-dd.log', // 指定pattern后无限备份
+        alwaysIncludePattern: true, // 不指定pattern时若为true会使用默认值'.yyyy-MM-dd'
         category: 'access'
     }, {
         type: 'dateFile',

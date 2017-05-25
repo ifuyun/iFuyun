@@ -4,6 +4,7 @@
 
 const models = require('../models/index');
 const async = require('async');
+const util = require('../helper/util');
 
 module.exports = {
     getInitOptions: function (cb) {
@@ -148,8 +149,22 @@ module.exports = {
         iterateCategory(categoryData, '', catTree, 1);
         return catTree;
     },
+    getCategoryArray: function (catTree, outArr) {
+        Object.keys(catTree).forEach((key) => {
+            const curNode = catTree[key];
+            outArr.push({
+                level: curNode.level,
+                name: curNode.name,
+                slug: curNode.slug,
+                taxonomyId: curNode.taxonomyId
+            });
+            if (!util.isEmptyObject(curNode.children)) {
+                this.getCategoryArray(curNode.children, outArr);
+            }
+        });
+        return outArr;
+    },
     getCategoryTree: function (cb) {
-        const that = this;
         models.TermTaxonomy.findAll({
             attributes: ['name', 'description', 'slug', 'count', 'taxonomyId', 'parent'],
             where: {
@@ -158,11 +173,13 @@ module.exports = {
             order: [
                 ['termOrder', 'asc']
             ]
-        }).then(function (data) {
+        }).then((data) => {
             if (data.length > 0) {
+                const catTree = this.createCategoryTree(data);
                 cb(null, {
                     catData: data,
-                    catTree: that.createCategoryTree(data)
+                    catTree,
+                    catArray: this.getCategoryArray(catTree, [])
                 });
             } else {
                 cb('分类不存在');
@@ -229,9 +246,9 @@ module.exports = {
             return rootNode;
         };
         const nodeKeys = Object.keys(catTree);
+        let rootNode;
         for (let i = 0; i < nodeKeys.length; i += 1) {
             const v = nodeKeys[i];
-            let rootNode;
             if (catTree[v].slug === slug) {
                 rootNode = catTree[v];
             } else {
@@ -250,7 +267,8 @@ module.exports = {
                 catPath: this.getCategoryPath({
                     catData,
                     slug
-                })
+                }),
+                catRoot: rootNode || {}
             });
         } else {
             cb('分类不存在');
