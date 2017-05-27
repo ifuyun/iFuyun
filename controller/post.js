@@ -8,6 +8,7 @@ const util = require('../helper/util');
 const moment = require('moment');
 const url = require('url');
 const logger = require('../helper/logger').sysLog;
+const idReg = /^[0-9a-fA-F]{16}$/i;
 
 function getCommonData (param, cb) {
     // 执行时间在30-60ms，间歇60-80ms
@@ -231,13 +232,13 @@ module.exports = {
                             taxonomy: ['post', 'tag']
                         }
                     }]
-                }).then(function (result) {
-                    if (!result || !result.postId) {
+                }).then(function (post) {
+                    if (!post || !post.postId) {
                         logger.error(util.getErrorLog({
                             req: req,
                             funcName: 'showPost', // TODO:func.name
                             funcParam: {
-                                postId: result.postId
+                                postId: post.postId
                             },
                             msg: 'Post Not Exist.'
                         }));
@@ -248,16 +249,16 @@ module.exports = {
                         }));
                     }
                     // 无管理员权限不允许访问非公开文章(包括草稿)
-                    if (!util.isAdminUser(req) && result.postStatus !== 'publish') {
+                    if (!util.isAdminUser(req) && post.postStatus !== 'publish') {
                         logger.warn(util.getErrorLog({
                             req: req,
                             funcName: 'showPost',
                             funcParam: {
-                                postId: result.postId,
-                                postTitle: result.postTitle,
-                                postStatus: result.postStatus
+                                postId: post.postId,
+                                postTitle: post.postTitle,
+                                postStatus: post.postStatus
                             },
-                            msg: result.postTitle + ' is ' + result.postStatus
+                            msg: post.postTitle + ' is ' + post.postStatus
                         }));
                         return cb(util.catchError({
                             status: 404,
@@ -265,7 +266,7 @@ module.exports = {
                             message: 'Page Not Found.'
                         }));
                     }
-                    cb(null, result);
+                    cb(null, post);
                 });
             },
             comments: ['post', function (result, cb) {
@@ -325,20 +326,20 @@ module.exports = {
             resData.postCats = [];
             resData.postTags = [];
 
-            let tagArr = [];
+            let keywords = [];
             result.post.TermTaxonomies.forEach((v) => {
                 if (v.taxonomy === 'tag') {
-                    tagArr.push(v.name);
+                    keywords.push(v.name);
                     resData.postTags.push(v);
                 } else if (v.taxonomy === 'post') {
                     resData.postCats.push(v);
                 }
             });
-            tagArr.push(options.site_keywords.optionValue);
+            keywords.push(options.site_keywords.optionValue);
 
             resData.meta.title = util.getTitle([result.post.postTitle, options.site_name.optionValue]);
             resData.meta.description = result.post.postExcerpt || util.cutStr(util.filterHtmlTag(result.post.postContent), 140);
-            resData.meta.keywords = tagArr.join(',') + ',' + options.site_keywords.optionValue;
+            resData.meta.keywords = keywords.join(',') + ',' + options.site_keywords.optionValue;
             resData.meta.author = options.site_author.optionValue;
             resData.post = result.post;
             resData.prevPost = result.prevPost;
@@ -896,6 +897,97 @@ module.exports = {
             resData.curDate = req.query.date;
             resData.curKeyword = req.query.keyword;
             res.render('admin/pages/postList', resData);
+        });
+    },
+    editPost: function (req, res, next) {
+        const postId = req.params.postId;
+        let tasks = {
+            categories: common.getCategoryTree.bind(common),
+            options: common.getInitOptions
+        };
+        if (postId) {
+            if (!idReg.test(postId)) {
+                return util.catchError({
+                    status: 404,
+                    code: 404,
+                    message: '文章不存在'
+                }, next);
+            }
+            let includeOpt = [{
+                model: models.User,
+                attributes: ['userDisplayName']
+            }];
+            if (req.query.type !== 'page') {
+                includeOpt.push({
+                    model: models.TermTaxonomy,
+                    attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'count'],
+                    where: {
+                        taxonomy: ['post', 'tag']
+                    }
+                });
+            }
+            tasks.post = (cb) => {
+                models.Post.findById(postId, {
+                    attributes: ['postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus', 'postType', 'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'],
+                    include: includeOpt
+                }).then(function (post) {
+                    if (!post || !post.postId) {
+                        logger.error(util.getErrorLog({
+                            req: req,
+                            funcName: 'editPost',
+                            funcParam: {
+                                postId: postId
+                            },
+                            msg: 'Post Not Exist.'
+                        }));
+                        return cb(util.catchError({
+                            status: 404,
+                            code: 404,
+                            message: 'Page Not Found.'
+                        }));
+                    }
+                    cb(null, post);
+                });
+            };
+        }
+        async.parallel(tasks, function (err, result) {
+            if (err) {
+                return next(err);
+            }
+            let resData = {
+                categories: result.categories,
+                options: result.options,
+                meta: {},
+                token: req.csrfToken(),
+                util,
+                moment
+            };
+            let title;
+            if (postId) {
+                title = result.post.postType === 'page' ? '编辑页面' : '编辑文章';
+                resData.page = result.post.postType;
+            } else {
+                title = req.query.type === 'page' ? '撰写新页面' : '撰写新文章';
+                resData.page = req.query.type === 'page' ? 'page' : 'post';
+            }
+            resData.title = title;
+            resData.meta.title = util.getTitle([title, '管理后台', result.options.site_name.optionValue]);
+
+            resData.post = result.post || {};
+            resData.postCategories = [];
+            resData.postTags = '';
+            let tagArr = [];
+            if (result.post && result.post.TermTaxonomies) {
+                result.post.TermTaxonomies.forEach((v) => {
+                    if (v.taxonomy === 'tag') {
+                        tagArr.push(v.name);
+                    } else if (v.taxonomy === 'post') {
+                        resData.postCategories.push(v.taxonomyId);
+                    }
+                });
+                resData.postTags = tagArr.join(',');
+            }
+            res.render('admin/pages/postForm', resData);
         });
     }
 };

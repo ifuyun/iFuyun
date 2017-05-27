@@ -25,9 +25,9 @@ module.exports = function (app, router) {
 
     router.get('/post', post.listEdit);
     router.get('/post/page-:page', post.listEdit);
-    // router.get('/post/new', post.newPost);
+    router.get('/post/new', post.editPost);
+    router.get('/post/:postId', post.editPost);
     // router.post('/post/save', post.savePost);
-    // router.get('/post/:postId', post.editPost);
     // router.post('/post/batch', post.batchSave);
     // router.post('/post/remove', post.removePost);//避免误删，采用post
     //
