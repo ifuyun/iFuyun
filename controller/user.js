@@ -22,7 +22,7 @@ module.exports = {
             if (err) {
                 return next(err);
             }
-            res.render('front/pages/login', {
+            res.render(`${appConfig.pathViews}/front/pages/login`, {
                 token: req.csrfToken(),
                 options: result,
                 meta: {

@@ -5,8 +5,10 @@ node_modules
 .npm-debug*
 /config/credentials.js
 /public/dist/**
-/public/dist/static/**
+/public/dev/**
+/public/static/**
 /public/upload/**
 /logs/**
+/views/dist/**
 /**/.DS_Store
 /**/*.css.map

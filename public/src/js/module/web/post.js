@@ -1,11 +1,8 @@
 /*global $, hljs*/
 /*jslint nomen:true*/
-'use strict';
-require('../../../css/xcode.css');
-require('../../../css/ui-dialog.css');
-require('../../vendor/jquery-1.11.0.min');
 require('../../vendor/jquery.poshytip.min');
-require('../../vendor/highlight.pack');
+// require('../../vendor/highlight.pack');
+require('highlight.js');
 require('../../vendor/jquery.qrcode.min');
 
 var service,

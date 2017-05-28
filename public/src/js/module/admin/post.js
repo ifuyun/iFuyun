@@ -1,11 +1,9 @@
 /*global $, tinymce*/
-'use strict';
-require('../../lib/datepicker/themes/theme.css');
-require('../../vendor/jquery-1.11.0.min');
 // require('../vendor/jquery.poshytip.min');
 // require('../vendor/json2');
 // require('../../vendor/tinymce/tinymce.min');
 // require('../../vendor/tinymce/jquery.tinymce.min');
+require('tinymce');
 require('../../lib/jquery.textposition');
 require('../../lib/datepicker/jquery.datepicker');
 

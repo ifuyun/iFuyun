@@ -1,12 +1,13 @@
 /**
  * Created by fuyun on 2017/04/12.
  */
-const models = require('../models/index');
-const common = require('./common');
 const async = require('async');
-const util = require('../helper/util');
 const moment = require('moment');
 const url = require('url');
+const models = require('../models/index');
+const common = require('./common');
+const util = require('../helper/util');
+const appConfig = require('../config/core');
 const logger = require('../helper/logger').sysLog;
 const idReg = /^[0-9a-fA-F]{16}$/i;
 
@@ -201,7 +202,7 @@ module.exports = {
 
             resData.util = util;
             resData.moment = moment;
-            res.render('front/pages/postList', resData);
+            res.render(`${appConfig.pathViews}/front/pages/postList`, resData);
         });
     },
     showPost: function (req, res, next) {
@@ -347,7 +348,7 @@ module.exports = {
             resData.comments = result.comments;
             resData.util = util;
             resData.moment = moment;
-            res.render('front/pages/post', resData);
+            res.render(`${appConfig.pathViews}/front/pages/post`, resData);
         });
     },
     showPage: function (req, res, next) {
@@ -436,7 +437,7 @@ module.exports = {
             resData.comments = result.comments;
             resData.util = util;
             resData.moment = moment;
-            res.render('front/pages/page', resData);
+            res.render(`${appConfig.pathViews}/front/pages/page`, resData);
         });
     },
     listByCategory: function (req, res, next) {
@@ -525,7 +526,7 @@ module.exports = {
 
             resData.util = util;
             resData.moment = moment;
-            res.render('front/pages/postList', resData);
+            res.render(`${appConfig.pathViews}/front/pages/postList`, resData);
         });
     },
     listByTag: function (req, res, next) {
@@ -613,7 +614,7 @@ module.exports = {
 
             resData.util = util;
             resData.moment = moment;
-            res.render('front/pages/postList', resData);
+            res.render(`${appConfig.pathViews}/front/pages/postList`, resData);
         });
     },
     listByDate: function (req, res, next) {
@@ -701,7 +702,7 @@ module.exports = {
 
             resData.util = util;
             resData.moment = moment;
-            res.render('front/pages/postList', resData);
+            res.render(`${appConfig.pathViews}/front/pages/postList`, resData);
         });
     },
     listEdit: function (req, res, next) {
@@ -750,9 +751,6 @@ module.exports = {
             titleArr.push(req.query.keyword, '搜索');
         }
         let includeOpt = [];
-        if (req.query.category) {
-            from = 'category';
-        }
         let tagWhere;
         if (req.query.tag) {
             from = 'tag';
@@ -769,6 +767,7 @@ module.exports = {
             titleArr.push(req.query.tag, '标签');
         }
         if (req.query.category) {
+            from = 'category';
             paramArr.push(`category=${req.query.category}`);
         }
         where.postType = req.query.type === 'page' ? 'page' : 'post';
@@ -896,7 +895,7 @@ module.exports = {
             resData.curStatus = req.query.status || 'all';
             resData.curDate = req.query.date;
             resData.curKeyword = req.query.keyword;
-            res.render('admin/pages/postList', resData);
+            res.render(`${appConfig.pathViews}/admin/pages/postList`, resData);
         });
     },
     editPost: function (req, res, next) {
@@ -987,7 +986,16 @@ module.exports = {
                 });
                 resData.postTags = tagArr.join(',');
             }
-            res.render('admin/pages/postForm', resData);
+            res.render(`${appConfig.pathViews}/admin/pages/postForm`, resData);
         });
+    },
+    savePost: function (req, res, next) {
+        res.send();
+    },
+    listMedia: function (req, res, next) {
+        res.send();
+    },
+    newMedia: function (req, res, next) {
+        res.send();
     }
 };

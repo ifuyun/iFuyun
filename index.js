@@ -57,7 +57,7 @@ if (cluster.isMaster) {
         format: ':remote-addr - :method :status HTTP/:http-version :url - [:response-time ms/:content-length B] ":referrer" ":user-agent"'
     }));
     app.use(compress());
-    app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+    app.use(favicon(path.join(__dirname, 'public', 'static', 'favicon.ico')));
     // 通过req.cookies调用cookie
     app.use(cookieParser(config.cookieSecret));
     app.use(session({
@@ -83,7 +83,7 @@ if (cluster.isMaster) {
     app.enable('trust proxy');
     // 设置全局响应头
     app.use(function (req, res, next) {
-        //config.name:响应头不支持中文
+        // config.name:响应头不支持中文
         res.setHeader('Server', config.author + '/' + config.version);
         res.setHeader('X-Powered-By', config.domain);
         next();

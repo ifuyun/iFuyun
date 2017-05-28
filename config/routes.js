@@ -21,8 +21,8 @@ module.exports = function (app, express) {
     const admin = require('./routes-admin')(app, router);
 
     // 静态文件(若先路由后静态文件，将导致session丢失)
-    app.use(express.static(path.join(__dirname, '..', 'public')));
-    app.use('/doc', express.static(path.join(__dirname, '..', 'views', 'doc')));
+    app.use(express.static(path.join(__dirname, '..', 'public', 'static')));
+    app.use(express.static(path.join(__dirname, '..', 'public', process.env.ENV && process.env.ENV.trim() === 'production' ? 'dist' : 'dev')));
 
     app.use(base.init);
     app.get('/', post.listPosts);

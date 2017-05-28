@@ -27,15 +27,15 @@ module.exports = function (app, router) {
     router.get('/post/page-:page', post.listEdit);
     router.get('/post/new', post.editPost);
     router.get('/post/:postId', post.editPost);
-    // router.post('/post/save', post.savePost);
+    router.post('/post/save', post.savePost);
     // router.post('/post/batch', post.batchSave);
     // router.post('/post/remove', post.removePost);//避免误删，采用post
-    //
-    // router.get('/media', post.listMedia);
-    // router.get('/media/page-:page', post.listMedia);
-    // router.get('/media/new', post.newMedia);
+
+    router.get('/media', post.listMedia);
+    router.get('/media/page-:page', post.listMedia);
+    router.get('/media/new', post.newMedia);
     // router.post('/media/upload', post.uploadFile);
-    //
+
     // router.get('/comment', comment.listComments);
     // router.get('/comment/page-:page', comment.listComments);
     // router.get('/comment/:commentId', comment.editComment);
@@ -46,21 +46,21 @@ module.exports = function (app, router) {
     // // router.post('/comment/remove', comment.removeComment);
     // // router.post('/comment/approve', comment.approveComment);//批准
     // // router.post('/comment/spam', comment.spamComment);//垃圾评论
-    //
+
     // router.get('/category', taxonomy.listCategory);
     // router.get('/category/page-:page', taxonomy.listCategory);
     // router.get('/category/new', taxonomy.newCategory);
     // router.post('/category/save', taxonomy.saveCategory);
     // router.get('/category/:taxonomyId', taxonomy.editCategory);
     // router.post('/category/remove', taxonomy.removeCategory);
-    //
+
     // router.get('/link', link.listLink);
     // router.get('/link/page-:page', link.listLink);
     // router.get('/link/new', link.newLink);
     // router.post('/link/save', link.saveLink);
     // router.get('/link/:linkId', link.editLink);
     // router.post('/link/remove', link.removeLink);
-    //
+
     // router.get('/options/general', admin.setGeneral);
     // router.post('/options/general', admin.saveGeneral);
     // router.get('/options/writing', admin.setWriting);

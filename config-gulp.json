@@ -1,0 +1,15 @@
+{
+  "pathDist": "public/dist",
+  "pathDev": "public/dev",
+  "pathSrc": "public/src",
+  "pathViews": "views",
+  "pathViewsSrc": "src",
+  "pathViewsDist": "dist",
+  "pathLess": "style/less",
+  "pathCss": "style/css",
+  "pathImg": "style/img",
+  "pathFonts": "style/fonts",
+  "pathTmp": ".tmp",
+  "pathTmp1": ".tmp/step1",
+  "pathTmp2": ".tmp/step2"
+}

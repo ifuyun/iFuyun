@@ -9,7 +9,7 @@
  * @version 3.0.0
  * @since 1.0.0
  */
-const config = require('../config/core');
+const appConfig = require('./core');
 const util = require('../helper/util');
 // const logger = require('../helper/logger');
 module.exports = {
@@ -29,9 +29,10 @@ module.exports = {
         const rememberMe = req.cookies.rememberMe;
         const curUser = req.session.user;
         res.locals.isLogin = curUser ? !!curUser : false;
+        // res.locals.staticEnv = process.env.ENV && process.env.ENV.trim() === 'production' ? 'dist' : 'dev';
         if (res.locals.isLogin && rememberMe && rememberMe === '1') {// 2015-07-28：不能regenerate，否则将导致后续请求无法设置session
-            req.session.cookie.expires = new Date(Date.now() + config.cookieExpires);
-            req.session.cookie.maxAge = config.cookieExpires;
+            req.session.cookie.expires = new Date(Date.now() + appConfig.cookieExpires);
+            req.session.cookie.maxAge = appConfig.cookieExpires;
             req.session.save();
             next();
         } else {
@@ -82,7 +83,7 @@ module.exports = {
             });
         } else {
             res.status(err.status || 404).type('text/html');
-            res.render('error/' + (err.status || 404), {
+            res.render(`${appConfig.pathViews}/error/${err.status || 404}`, {
                 status: err.status || 404,
                 code: err.code || 404,
                 message: err.message || err || 'Page Not Found'

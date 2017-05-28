@@ -1,14 +1,12 @@
 /*jslint nomen:true*/
 /*global $*/
-'use strict';
-require('../../../css/login.css');
-require('../../../css/poshytip/poshytip.css');
-require('../../vendor/jquery-1.11.0.min');
 require('../../vendor/jquery.cookie.min');
 require('../../vendor/jquery.poshytip.min');
 require('../../vendor/json2');
 
-var util = require('../../lib/util'), md5 = require('../../vendor/md5.min'), service;
+const util = require('../../lib/util');
+const md5 = require('../../vendor/md5.min');
+let service;
 
 service = {
     // poshytip: function ($input, msg) {
