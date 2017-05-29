@@ -1,4 +1,4 @@
-/*jslint nomen:true*/
+/* jslint nomen:true */
 /**
  * WebPack config file
  * @author Fuyun
@@ -10,7 +10,7 @@ const path = require('path');
 const glob = require('glob');
 const fs = require('fs');
 const argv = require('yargs').argv;
-const isDev = argv.env === 'development' ? true : false;
+const isDev = argv.env === 'development';
 
 const getEntry = function () {
     let entry = {};

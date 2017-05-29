@@ -153,9 +153,28 @@ gulp.task('build', (cb) => {
     runSequence('clean', 'less', 'useref', 'imagemin', 'rev-image', 'revreplace-css', 'rev-css', 'revreplace-ejs', 'webpack', 'copy-build', cb);
 });
 
-gulp.task('dev', function (cb) {
-    // runSequence('ejs-dev', 'less', 'copy-favicon-dev', 'start-server-dev');
-    runSequence('less');
+gulp.task('clean-dev', function () {
+    return gulp.src([config.pathDev, config.pathTmp], {
+        read: false
+    }).pipe(clean());
+});
+
+gulp.task('copy-dev-style', function () {
+    return gulp.src(path.join(config.pathSrc, config.pathStyle, '**'))
+        .pipe(gulp.dest(path.join(config.pathDev, config.pathStyle)));
+});
+
+gulp.task('copy-dev-js-plugin', function () {
+    return gulp.src(path.join(config.pathSrc, config.pathJsPluginSrc, '**'))
+        .pipe(gulp.dest(path.join(config.pathDev, config.pathJsPluginDist)));
+});
+
+gulp.task('develop', (cb) => {
+    runSequence('clean-dev', 'less', 'copy-dev-style', 'webpack', 'copy-dev-js-plugin', cb);
+});
+
+gulp.task('dev', function () {
+    runSequence('clean-dev', 'less', 'copy-dev-style', 'copy-dev-js-plugin');
 
     compiler.watch({
         aggregateTimeout: 300
@@ -168,17 +187,19 @@ gulp.task('dev', function (cb) {
         }));
         tinylr.changed('xxx.js');
     });
+    gulp.watch(['./public/src/js/plugin/**'], function (event) {
+        runSequence('copy-js-plugin');
+        tinylr.changed(event.path);
+    });
     function watchFiles (ext) {
-        gulp.watch(['./src/**/*.' + ext], function (event) {
+        gulp.watch(['./public/src/**/*.' + ext, '!./public/src/js/plugin/**'], function (event) {
             if (ext === 'less') {
-                runSequence('less');
+                runSequence('less', 'copy-dev-style');
             }
             tinylr.changed(event.path);
         });
     }
 
-    watchFiles('html');
-    watchFiles('ejs');
     watchFiles('less');
 });
 gulp.task('default', ['dev']);
