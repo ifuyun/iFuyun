@@ -33,12 +33,8 @@ gulp.task('less', function (cb) {
         .pipe(gulp.dest(path.join(config.pathSrc, config.pathCss)));
 });
 
-/**
- * 针对较大的第三方库（>100KB），通过webpack打包性能较差；
- * 但gulp方式下，useref与webpack的结合不是很优雅（css、js的搜索源及路径问题）
- */
 gulp.task('useref-html', function () {
-    return gulp.src(path.join(config.pathViews, config.pathViewsSrc, '**/*.{html,htm,ejs}'))
+    return gulp.src(path.join(config.pathTmp2, config.pathViews, '**/*.{html,htm,ejs}'))
         .pipe(useref({
             searchPath: config.pathSrc
         }))
@@ -134,7 +130,12 @@ gulp.task('copy-js-plugin', function () {
         .pipe(gulp.dest(path.join(config.pathDist, config.pathJsPluginDist)));
 });
 
-gulp.task('copy-build', ['copy-build-css', 'copy-build-image', 'copy-build-fonts', 'copy-js-plugin', 'copy-build-views']);
+gulp.task('copy-views', function () {
+    return gulp.src(path.join(config.pathViews, config.pathViewsSrc, '**'))
+        .pipe(gulp.dest(path.join(config.pathTmp2, config.pathViews)));
+});
+
+gulp.task('copy-build', ['copy-build-css', 'copy-build-image', 'copy-build-fonts', 'copy-build-views']);
 
 const compiler = webpack(webpackConfig);
 gulp.task('webpack', function (cb) {
@@ -150,7 +151,7 @@ gulp.task('webpack', function (cb) {
 });
 
 gulp.task('build', (cb) => {
-    runSequence('clean', 'less', 'useref', 'imagemin', 'rev-image', 'revreplace-css', 'rev-css', 'revreplace-ejs', 'webpack', 'copy-build', cb);
+    runSequence('clean', 'less', 'copy-views', 'webpack', 'copy-js-plugin', 'useref', 'imagemin', 'rev-image', 'revreplace-css', 'rev-css', 'revreplace-ejs', 'copy-build', cb);
 });
 
 gulp.task('dev', function (cb) {

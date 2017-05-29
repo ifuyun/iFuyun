@@ -3,9 +3,9 @@
 // require('../vendor/json2');
 // require('../../vendor/tinymce/tinymce.min');
 // require('../../vendor/tinymce/jquery.tinymce.min');
-require('tinymce');
+require('../../vendor/tinymce.full.min');
 require('../../lib/jquery.textposition');
-require('../../lib/datepicker/jquery.datepicker');
+require('../../lib/jquery.datepicker');
 
 var service;
 
@@ -50,7 +50,7 @@ service = {
         tinymce.init({
             selector: '#post-content',
             menubar: false,
-            language: 'zh_CN',
+            language: 'tinymce_cn',
             plugins: [
                 // "charmap print advlist autolink", "searchreplace", "save nonbreaking contextmenu directionality", "emoticons template textpattern imagetools", "spellchecker"
                 'lists link image imagetools preview hr anchor pagebreak', 'wordcount visualblocks visualchars code fullscreen', 'insertdatetime media table', 'paste textcolor colorpicker codesample'],

@@ -4,8 +4,8 @@
  * @author Fuyun
  */
 const webpack = require('webpack');
-const md5Hash = require('webpack-md5-hash');
-const md5HashPlugin = new md5Hash();
+const Md5Hash = require('webpack-md5-hash');
+const md5HashPlugin = new Md5Hash();
 const path = require('path');
 const glob = require('glob');
 const fs = require('fs');
@@ -45,7 +45,12 @@ const commonsPlugin = new webpack.optimize.CommonsChunkPlugin({
 const uglifyPlugin = new webpack.optimize.UglifyJsPlugin({
     compress: {
         warnings: false
-    }
+    },
+    exclude: [
+        // path.resolve(__dirname, 'public/src/js/plugin'),
+        // path.resolve(__dirname, 'public/src/js/vendor')
+        /\/(plugin|vendor)\/[\w\W]+(?:.js)?/i
+    ]
 });
 const providePlugin = new webpack.ProvidePlugin({
     '$': 'jquery',
@@ -63,7 +68,12 @@ module.exports = {
         rules: [
             {
                 test: /\.(js|jsx)$/,
-                use: 'babel-loader'
+                use: 'babel-loader',
+                exclude: [
+                    // path.resolve(__dirname, 'public/src/js/plugin'),
+                    // path.resolve(__dirname, 'public/src/js/vendor')
+                    /\/(plugin|vendor)\/[\w\W]+(?:.js)?/i
+                ]
             }
         ]
     },

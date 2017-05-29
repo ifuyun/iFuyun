@@ -5,6 +5,8 @@
   "pathViews": "views",
   "pathViewsSrc": "src",
   "pathViewsDist": "dist",
+  "pathJsPluginSrc": "js/plugin",
+  "pathJsPluginDist": "js",
   "pathLess": "style/less",
   "pathCss": "style/css",
   "pathImg": "style/img",
