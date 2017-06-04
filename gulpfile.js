@@ -3,7 +3,6 @@
  * @author Fuyun
  */
 const gulp = require('gulp');
-const tinylr = require('tiny-lr');
 const path = require('path');
 const runSequence = require('run-sequence');
 const clean = require('gulp-clean');
@@ -185,21 +184,12 @@ gulp.task('dev', function () {
         gutil.log('Webpack Result: ', '\n' + stats.toString({
             colors: true
         }));
-        tinylr.changed('xxx.js');
     });
     gulp.watch(['./public/src/js/plugin/**'], function (event) {
         runSequence('copy-js-plugin');
-        tinylr.changed(event.path);
     });
-    function watchFiles (ext) {
-        gulp.watch(['./public/src/**/*.' + ext, '!./public/src/js/plugin/**'], function (event) {
-            if (ext === 'less') {
-                runSequence('less', 'copy-dev-style');
-            }
-            tinylr.changed(event.path);
-        });
-    }
-
-    watchFiles('less');
+    gulp.watch(['./public/src/**/*.less', '!./public/src/js/plugin/**'], function (event) {
+        runSequence('less', 'copy-dev-style');
+    });
 });
 gulp.task('default', ['dev']);

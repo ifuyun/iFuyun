@@ -1,8 +1,8 @@
-/*global $, hljs*/
-/*jslint nomen:true*/
+/*global $*/
+/* jslint nomen:true */
 require('../../vendor/jquery.poshytip.min');
 // require('../../vendor/highlight.pack');
-require('highlight.js');
+const hljs = require('highlight.js');
 require('../../vendor/jquery.qrcode.min');
 
 var service,

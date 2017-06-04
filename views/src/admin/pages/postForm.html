@@ -28,7 +28,7 @@
                             <div class="form-field form-field-box">
                                 <label class="form-label form-field-split" for="post-url">URL</label>
                                 <div class="form-field-box-sub">
-                                    <input type="text" class="input input-normal" name="postUrl" id="post-url" value="<?= post.postGuid ?>" />
+                                    <input type="text" class="input input-normal" name="postGuid" id="post-url" value="<?= post.postGuid ?>" />
                                 </div>
                             </div>
                             <div class="form-field form-field-box">
@@ -50,7 +50,7 @@
                                     <div class="form-field-input">
                                         <label for="post-status-publish"><input type="radio" class="postStatus" name="postStatus" id="post-status-publish" value="publish"<? if(post.postStatus === 'publish' && !post.postPassword){ ?> checked="checked" <? } ?> />&nbsp;公开</label><br />
                                         <label for="post-status-password"><input type="radio" class="postStatus" name="postStatus" id="post-status-password" value="password"<? if(post.postPassword){ ?> checked="checked" <? } ?> />&nbsp;密码保护</label><br />
-                                        <span id="post-password-wrap"<? if(!post.postPassword){ ?> class="hidden" <? } ?>><input type="text" class="input" name="postPassword" id="post-password" maxlength="20" value="<?= post.postPassowrd ?>" /><br /></span>
+                                        <span id="post-password-wrap"<? if(!post.postPassword){ ?> class="hidden" <? } ?>><input type="text" class="input" name="postPassword" id="post-password" maxlength="20" value="<?= post.postPassword ?>" /><br /></span>
                                         <label for="post-status-private"><input type="radio" class="postStatus" name="postStatus" id="post-status-private" value="private"<? if(post.postStatus === 'private'){ ?> checked="checked" <? } ?> />&nbsp;私密</label>
                                     </div>
                                 </div>
@@ -66,9 +66,9 @@
                                 <div class="form-field-box-sub">
                                     <div class="form-field-text">评论状态</div>
                                     <div class="form-field-input">
-                                        <label for="post-comment-on"><input type="radio" name="postComment" id="post-comment-on" value="1"<? if(post.commentFlag === 'open'){ ?> checked="checked" <? } ?> />&nbsp;允许</label><br />
-                                        <label for="post-comment-verify"><input type="radio" name="postComment" id="post-comment-verify" value="2"<? if(post.commentFlag === 'verify'){ ?> checked="checked" <? } ?> />&nbsp;审核</label><br />
-                                        <label for="post-comment-off"><input type="radio" name="postComment" id="post-comment-off" value="0"<? if(post.commentFlag === 'closed'){ ?> checked="checked" <? } ?> />&nbsp;禁止</label><br />
+                                        <label for="post-comment-on"><input type="radio" name="commentFlag" id="post-comment-on" value="open"<? if(post.commentFlag === 'open'){ ?> checked="checked" <? } ?> />&nbsp;允许</label><br />
+                                        <label for="post-comment-verify"><input type="radio" name="commentFlag" id="post-comment-verify" value="verify"<? if(post.commentFlag === 'verify'){ ?> checked="checked" <? } ?> />&nbsp;审核</label><br />
+                                        <label for="post-comment-off"><input type="radio" name="commentFlag" id="post-comment-off" value="closed"<? if(post.commentFlag === 'closed'){ ?> checked="checked" <? } ?> />&nbsp;禁止</label><br />
                                     </div>
                                 </div>
                                 <div class="form-field-box-sub">

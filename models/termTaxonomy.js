@@ -70,8 +70,8 @@ module.exports = function (sequelize, DataTypes) {
         }
     }, {
         tableName: 'term_taxonomy',
-        createdAt: 'created',
-        updatedAt: 'modified',
+        createdAt: false, // 'created',
+        updatedAt: false, // 'modified',
         deletedAt: false,
         classMethods: {
             associate: function (models) {

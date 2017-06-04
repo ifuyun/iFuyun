@@ -33,7 +33,9 @@ service = {
                     }
                 },
                 error: function (xhr, s, err) {
-                    return false;
+                    var result = xhr.responseJSON || JSON.parse(xhr.responseText);
+                    $('#csrfToken').val(result.token);
+                    alert(result.message);
                 }
             });
             return false;

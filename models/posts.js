@@ -20,7 +20,7 @@ module.exports = function (sequelize, DataTypes) {
         },
         postDateGmt: {
             type: DataTypes.DATE,
-            allowNull: false,
+            allowNull: true,
             defaultValue: 'sequelize.literal(\'CURRENT_TIMESTAMP\')',
             field: 'post_date_gmt'
         },
@@ -77,7 +77,7 @@ module.exports = function (sequelize, DataTypes) {
         },
         postModifiedGmt: {
             type: DataTypes.DATE,
-            allowNull: false,
+            allowNull: true,
             defaultValue: 'sequelize.literal(\'CURRENT_TIMESTAMP\')',
             field: 'post_modified_gmt'
         },
