@@ -15,7 +15,7 @@ module.exports = function (app, router) {
     const post = require('../controller/post');
     // const user = require('../controllers/user');
     const admin = require('../controller/admin');
-    // const comment = require('../controllers/comment');
+    const comment = require('../controller/comment');
     // const taxonomy = require('../controllers/taxonomy');
     // const link = require('../controllers/link');
 
@@ -36,8 +36,8 @@ module.exports = function (app, router) {
     router.get('/media/new', post.newMedia);
     // router.post('/media/upload', post.uploadFile);
 
-    // router.get('/comment', comment.listComments);
-    // router.get('/comment/page-:page', comment.listComments);
+    router.get('/comment', comment.listComments);
+    router.get('/comment/page-:page', comment.listComments);
     // router.get('/comment/:commentId', comment.editComment);
     // router.get('/comment/reply/:commentId', comment.replyComment);
     // router.post('/comment/save', comment.saveComment);

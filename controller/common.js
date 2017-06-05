@@ -3,7 +3,6 @@
  */
 
 const models = require('../models/index');
-// const async = require('async');
 const util = require('../helper/util');
 
 module.exports = {

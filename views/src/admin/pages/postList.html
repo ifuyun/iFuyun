@@ -75,8 +75,7 @@
                         </tfoot>
                         <tbody>
                             <? if(posts && posts.length > 0) { ?>
-                            <? var rowIdx = 0; ?>
-                            <? posts.forEach(function(postItem){ ?>
+                            <? posts.forEach(function(postItem, rowIdx){ ?>
                             <? var post = postItem.post ?>
                             <tr<? if(rowIdx % 2 === 0) { ?> class="alternate"<? } ?>>
                                 <td class="column-check"><input type="checkbox" class="checkRow" /></td>
@@ -97,13 +96,12 @@
                                 <td class="column-count"><?= post.postViewCount ?></td>
                                 <td class="column-count"><?= post.commentCount ?></td>
                                 <td><a rel="author" href="/admin/post?author=<?= post.postAuthor ?>"><?- post.User.userDisplayName ?></a></td>
-                                <td><a href="/admin/post?status=<?= post.postStatus ?>"><?= post.postStatus ?></a></td>
+                                <td><a href="/admin/post?status=<?= post.postStatus ?>"><?= formatter.postStatus(post.postStatus) ?></a></td>
                                 <td>
                                     <!-- <input type="button" class="button button-not-last btn-edit" value="编辑" /><input type="button" class="button btn-delete" value="删除" /> -->
                                     <a class="button button-not-last btn-edit" href="/admin/post/<?= post.postId + '?type=' + type ?>">编辑</a><a class="button btn-delete" href="javascript:;">删除</a>
                                 </td>
                             </tr>
-                            <? rowIdx += 1; ?>
                             <? }) ?>
                             <? } else { ?>
                                 <tr class="alternate">

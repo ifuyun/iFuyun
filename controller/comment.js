@@ -3,10 +3,13 @@
  */
 // const common = require('./common');
 const async = require('async');
-const util = require('../helper/util');
-// const moment = require('moment');
+const moment = require('moment');
 const xss = require('sanitizer');
 const models = require('../models/index');
+const common = require('./common');
+const appConfig = require('../config/core');
+const util = require('../helper/util');
+const formatter = require('../helper/formatter');
 const logger = require('../helper/logger').sysLog;
 const idReg = /^[0-9a-fA-F]{16}$/i;
 
@@ -72,6 +75,7 @@ module.exports = {
         }
         async.auto({
             post: (cb) => {
+                // 权限校验
                 models.Post.findById(data.postId, {
                     attributes: ['postId', 'postTitle', 'postGuid', 'postStatus', 'commentFlag']
                 }).then(function (post) {
@@ -221,6 +225,95 @@ module.exports = {
                     commentVote: result.commentVote.commentVote
                 }
             });
+        });
+    },
+    listComments: function (req, res, next) {
+        let page = parseInt(req.params.page, 10) || 1;
+        let where = {};
+        let titleArr = [];
+        let paramArr = [];
+
+        if (req.query.status) {
+            where.commentStatus = req.query.status;
+            paramArr.push(`status=${req.query.status}`);
+            titleArr.push(req.query.status, '状态');
+        } else {
+            where.commentStatus = ['normal', 'pending', 'spam', 'trash', 'reject'];
+        }
+        if (req.query.keyword) {
+            where.commentContent = {
+                $like: `%${req.query.keyword}%`
+            };
+            paramArr.push(`keyword=${req.query.keyword}`);
+            titleArr.push(req.query.keyword, '搜索');
+        }
+        async.auto({
+            options: common.getInitOptions,
+            commentsCount: (cb) => {
+                models.Comment.count({
+                    where
+                }).then((data) => cb(null, data));
+            },
+            comments: ['commentsCount', (result, cb) => {
+                page = (page > result.commentsCount / 10 ? Math.ceil(result.commentsCount / 10) : page) || 1;
+                models.Comment.findAll({
+                    where,
+                    attributes: ['commentId', 'postId', 'commentContent', 'commentStatus', 'commentAuthor', 'commentAuthorEmail', 'commentIp', 'commentCreated', 'commentModified', 'commentVote'],
+                    include: [{
+                        model: models.Post,
+                        attributes: ['postId', 'postGuid', 'postTitle']
+                    }],
+                    order: [['commentCreated', 'desc']],
+                    limit: 10,
+                    offset: 10 * (page - 1),
+                    subQuery: false
+                }).then((comments) => cb(null, comments));
+            }],
+            typeCount: (cb) => {
+                models.Comment.findAll({
+                    attributes: [
+                        'commentStatus',
+                        ['count(1)', 'count']
+                    ],
+                    group: ['commentStatus']
+                }).then((data) => cb(null, data));
+            }
+        }, function (err, result) {
+            if (err) {
+                return next(err);
+            }
+            let resData = {
+                meta: {},
+                page: 'comment',
+                token: req.csrfToken(),
+                options: result.options,
+                comments: result.comments,
+                typeCount: {
+                    all: 0
+                },
+                curStatus: req.query.status,
+                curKeyword: req.query.keyword,
+                util,
+                formatter,
+                moment
+            };
+            resData.paginator = util.paginator(page, Math.ceil(result.commentsCount / 10), 9);
+            resData.paginator.linkUrl = '/admin/comment/page-';
+            resData.paginator.linkParam = paramArr.length > 0 ? '?' + paramArr.join('&') : '';
+            resData.paginator.pageLimit = 10;
+            resData.paginator.total = result.commentsCount;
+
+            if (page > 1) {
+                resData.meta.title = util.getTitle(titleArr.concat(['第' + page + '页', '评论列表', '管理后台', result.options.site_name.optionValue]));
+            } else {
+                resData.meta.title = util.getTitle(titleArr.concat(['评论列表', '管理后台', result.options.site_name.optionValue]));
+            }
+
+            result.typeCount.forEach((item) => {
+                resData.typeCount[item.commentStatus] = item.get('count');
+                resData.typeCount.all += item.get('count');
+            });
+            res.render(`${appConfig.pathViews}/admin/pages/commentList`, resData);
         });
     }
 };

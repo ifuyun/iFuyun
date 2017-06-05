@@ -1,0 +1,97 @@
+<? include ../common/header.html ?>
+<div id="body-wrapper">
+    <? include ../elements/leftNav.html ?>
+    <div id="content">
+        <? include ../elements/topBar.html ?>
+        <div id="control-panel">
+            <div id="control-body">
+                <h2>评论</h2>
+                <div class="split-line"><div class="split-corner">&nbsp;</div></div>
+                <div id="status-type">
+                    <ul>
+                        <li><a href="/admin/comment"<? if(!curStatus){ ?> class="font-bold"<? } ?>>全部 (<?= typeCount.all || 0 ?>)</a> | </li>
+                        <li><a href="/admin/comment?status=pending"<? if(curStatus === 'pending'){ ?> class="font-bold"<? } ?>>待审 (<?= typeCount.pending || 0 ?>)</a> | </li>
+                        <li><a href="/admin/comment?status=normal"<? if(curStatus === 'normal'){ ?> class="font-bold"<? } ?>>获准 (<?= typeCount.normal || 0 ?>)</a> | </li>
+                        <li><a href="/admin/comment?status=spam"<? if(curStatus === 'spam'){ ?> class="font-bold"<? } ?>>垃圾评论 (<?= typeCount.spam || 0 ?>)</a> | </li>
+                        <li><a href="/admin/comment?status=trash"<? if(curStatus === 'trash'){ ?> class="font-bold"<? } ?>>回收站 (<?= typeCount.trash || 0 ?>)</a> | </li>
+                        <li><a href="/admin/comment?status=reject"<? if(curStatus === 'reject'){ ?> class="font-bold"<? } ?>>驳回 (<?= typeCount.reject || 0 ?>)</a></li>
+                    </ul>
+                </div>
+                <div id="search-bar">
+                    <form method="get" action="#">
+                        <input type="text" class="input keyword" id="keyword" name="keyword" placeholder="搜索..." />
+                        <input type="submit" class="button" value="搜索评论" />
+                        <input type="hidden" name="_csrf" id="csrfToken" value="<?- token ?>" />
+                    </form>
+                </div>
+                <div class="table-nav clear-both">
+                    <span><input type="button" class="button" value="批准" /></span>
+                    <span><input type="button" class="button" value="驳回" /></span>
+                    <span><input type="button" class="button" value="标记垃圾评论" /></span>
+                    <span><input type="button" class="button button-spacing" value="删除" /></span>
+                </div>
+                <div>
+                    <table class="list-table">
+                        <thead>
+                            <tr>
+                                <th class="column-check"><input type="checkbox" class="checkAll" /></th>
+                                <th>评论内容</th>
+                                <th>文章</th>
+                                <th>邮箱</th>
+                                <th>日期</th>
+                                <th>作者</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tfoot>
+                            <tr>
+                                <th class="column-check"><input type="checkbox" class="checkAll" /></th>
+                                <th>评论内容</th>
+                                <th>文章</th>
+                                <th>邮箱</th>
+                                <th>日期</th>
+                                <th>作者</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </tfoot>
+                        <tbody>
+                            <? if(comments && comments.length > 0) { ?>
+                            <? comments.forEach(function(comment, rowIdx){ ?>
+                            <tr<? if(rowIdx % 2 === 0) { ?> class="alternate"<? } ?>>
+                                <td class="column-check"><input type="checkbox" class="checkRow" /></td>
+                                <td><?= util.cutStr(comment.commentContent, 20) ?></td>
+                                <td><a href="<?= comment.Post.postGuid ?>"><?= comment.Post.postTitle ?></a></td>
+                                <td><?= comment.commentAuthorEmail ?></td>
+                                <td><?= moment(comment.commentCreated).format('YYYY-MM-DD HH:mm:ss') ?></td>
+                                <td><?= comment.commentAuthor ?></td>
+                                <td><a href="/admin/comment?status=<?= comment.commentStatus ?>"><?= formatter.commentStatus(comment.commentStatus) ?></a></td>
+                                <td>
+                                    <? if(comment.commentStatus === 'pending'){ ?><a class="button button-not-last btn-approve" data-id="<?= comment.commentId ?>" href="javascript:;">批准</a><a class="button button-not-last btn-reject" data-id="<?= comment.commentId ?>" href="javascript:;">驳回</a><a class="button button-not-last btn-spam" data-id="<?= comment.commentId ?>" href="javascript:;">垃圾评论</a><? } ?><a class="button button-not-last btn-reply" href="/admin/comment/reply/<?= comment.commentId ?>">回复</a><a class="button button-not-last btn-edit" href="/admin/comment/<?= comment.commentId ?>">编辑</a><a class="button btn-delete" data-id="<?= comment.commentId ?>" href="javascript:;">删除</a>
+                                </td>
+                            </tr>
+                            <? }) ?>
+                            <? } else { ?>
+                                <tr class="alternate">
+                                    <td colspan="8">无记录</td>
+                                </tr>
+                            <? } ?>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="table-nav">
+                    <span><input type="button" class="button" value="批准" /></span>
+                    <span><input type="button" class="button" value="驳回" /></span>
+                    <span><input type="button" class="button" value="标记垃圾评论" /></span>
+                    <span><input type="button" class="button" value="删除" /></span>
+                </div>
+                <? include ../elements/pageBar.html ?>
+            </div>
+        </div>
+    </div>
+    <? include ../elements/pageFooter.html ?>
+</div>
+<script type="text/javascript" src="<?- options.static_host.optionValue ?>/js/common.js"></script>
+<script type="text/javascript" src="<?- options.static_host.optionValue ?>/js/admin/comment.js"></script>
+<? include ../common/footer.html ?>

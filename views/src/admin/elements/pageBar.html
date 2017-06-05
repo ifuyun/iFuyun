@@ -1,15 +1,15 @@
-<? if(posts && posts.paginator) { ?>
+<? if(paginator) { ?>
 <div class="pageBar">
     <ul class="pageList">
-        <? if(posts.paginator.curPage > 1){ ?><li><a title="上一页" href="<?= posts.linkUrl + posts.paginator.prevPage + posts.linkParam ?>">Prev</a></li><? } ?>
-        <? for(var page = posts.paginator.startPage; page <= posts.paginator.endPage; page += 1){ ?>
-            <? if(page === posts.paginator.curPage){ ?>
+        <? if(paginator.curPage > 1){ ?><li><a title="上一页" href="<?= paginator.linkUrl + paginator.prevPage + paginator.linkParam ?>">Prev</a></li><? } ?>
+        <? for(var page = paginator.startPage; page <= paginator.endPage; page += 1){ ?>
+            <? if(page === paginator.curPage){ ?>
                 <li><span class="curPage"><?= page ?></span></li>
             <? } else { ?>
-                <li><a title="第<?= page ?>页(<?= ((page - 1) * posts.paginator.pageLimit + 1) + '-' + (page * posts.paginator.pageLimit > posts.paginator.total ? posts.paginator.total : page * posts.paginator.pageLimit) ?>)" href="<?= posts.linkUrl + page + posts.linkParam ?>"><?= page ?></a></li>
+                <li><a title="第<?= page ?>页(<?= ((page - 1) * paginator.pageLimit + 1) + '-' + (page * paginator.pageLimit > paginator.total ? paginator.total : page * paginator.pageLimit) ?>)" href="<?= paginator.linkUrl + page + paginator.linkParam ?>"><?= page ?></a></li>
             <? } ?>
         <? } ?>
-        <? if(posts.paginator.curPage < posts.paginator.endPage){ ?><li><a title="下一页" href="<?= posts.linkUrl + posts.paginator.nextPage + posts.linkParam ?>">Next</a></li><? } ?>
+        <? if(paginator.curPage < paginator.endPage){ ?><li><a title="下一页" href="<?= paginator.linkUrl + paginator.nextPage + paginator.linkParam ?>">Next</a></li><? } ?>
     </ul>
 </div>
 <? } ?>

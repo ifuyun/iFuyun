@@ -7,8 +7,9 @@ const url = require('url');
 const xss = require('sanitizer');
 const models = require('../models/index');
 const common = require('./common');
-const util = require('../helper/util');
 const appConfig = require('../config/core');
+const util = require('../helper/util');
+const formatter = require('../helper/formatter');
 const logger = require('../helper/logger').sysLog;
 const idReg = /^[0-9a-fA-F]{16}$/i;
 
@@ -862,11 +863,14 @@ module.exports = {
                 posts: result.posts,
                 comments: result.comments,
                 util,
+                formatter,
                 moment
             };
-            resData.posts.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), 9);
-            resData.posts.linkUrl = '/admin/post/page-';
-            resData.posts.linkParam = paramArr.length > 0 ? '?' + paramArr.join('&') : '';
+            resData.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), 9);
+            resData.paginator.linkUrl = '/admin/post/page-';
+            resData.paginator.linkParam = paramArr.length > 0 ? '?' + paramArr.join('&') : '';
+            resData.paginator.pageLimit = 10;
+            resData.paginator.total = result.postsCount;
 
             if (page > 1) {
                 resData.meta.title = util.getTitle(titleArr.concat(['第' + page + '页', where.postType === 'page' ? '页面列表' : '文章列表', '管理后台', result.options.site_name.optionValue]));
