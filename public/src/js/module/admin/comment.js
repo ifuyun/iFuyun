@@ -47,7 +47,7 @@ $(function () {
     });
 
     //评论表单
-    $('#comment-content').focus();
+    $('.j-focus:first').focus();
     $('#form-comment').on('submit', function (e) {
         var $that = $(this);
         $.ajax({

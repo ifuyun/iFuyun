@@ -6,10 +6,9 @@
  * @param {Object} router 路由对象
  * @return {Object} router 路由对象
  * @author Fuyun
- * @version 3.0.0
+ * @version 2.0.0
  * @since 1.1.0
  */
-'use strict';
 module.exports = function (app, router) {
     // const base = require('../controllers/base');
     const post = require('../controller/post');
@@ -38,14 +37,12 @@ module.exports = function (app, router) {
 
     router.get('/comment', comment.listComments);
     router.get('/comment/page-:page', comment.listComments);
-    // router.get('/comment/:commentId', comment.editComment);
+    router.get('/comment/:commentId', comment.editComment);
     // router.get('/comment/reply/:commentId', comment.replyComment);
-    // router.post('/comment/save', comment.saveComment);
+    router.post('/comment/save', comment.saveComment);
     // router.post('/comment/saveReply', comment.saveReply);
-    // router.post('/comment/status', comment.updateStatus);
-    // // router.post('/comment/remove', comment.removeComment);
-    // // router.post('/comment/approve', comment.approveComment);//批准
-    // // router.post('/comment/spam', comment.spamComment);//垃圾评论
+    router.post('/comment/status', comment.updateStatus);
+    router.post('/comment/remove', comment.removeComments);
 
     // router.get('/category', taxonomy.listCategory);
     // router.get('/category/page-:page', taxonomy.listCategory);

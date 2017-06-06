@@ -315,5 +315,61 @@ module.exports = {
             });
             res.render(`${appConfig.pathViews}/admin/pages/commentList`, resData);
         });
+    },
+    editComment: function (req, res, next) {
+        let action = req.query.action;
+        if (action !== 'edit' && action !== 'reply') {
+            action = 'show';
+        }
+        const commentId = req.params.commentId || '';
+        if (!commentId || !idReg.test(commentId)) {
+            return util.catchError({
+                status: 404,
+                code: 404,
+                message: 'Comment Not Found'
+            }, next);
+        }
+        req.session.referer = req.headers.referer;
+        async.parallel({
+            options: common.getInitOptions,
+            comment: function (cb) {
+                models.Comment.findById(commentId, {
+                    attributes: ['commentId', 'postId', 'commentContent', 'commentStatus', 'commentAuthor', 'commentAuthorEmail', 'commentIp', 'commentCreated', 'commentModified'],
+                    include: [{
+                        model: models.Post,
+                        attributes: ['postId', 'postGuid', 'postTitle']
+                    }]
+                }).then((comment) => cb(null, comment));
+            }
+        }, function (err, result) {
+            if (err) {
+                return next(err);
+            }
+            if (!result.comment) {
+                return util.catchError({
+                    status: 404,
+                    code: 404,
+                    message: 'Comment Not Found'
+                }, next);
+            }
+            const title = action === 'edit' ? '编辑评论' : action === 'reply' ? '回复评论' : '查看评论';
+            let resData = {
+                meta: {},
+                page: 'comment',
+                token: req.csrfToken(),
+                options: result.options,
+                comment: result.comment,
+                title,
+                action
+            };
+            resData.meta.title = util.getTitle([result.comment.commentContent, title, '管理后台', result.options.site_name.optionValue]);
+            res.render(`${appConfig.pathViews}/admin/pages/commentForm`, resData);
+        });
+    },
+    updateStatus: function (req, res, next) {
+        res.send();
+    },
+    removeComments: function (req, res, next) {
+        res.send();
     }
 };

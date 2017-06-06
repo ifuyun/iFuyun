@@ -1,0 +1,58 @@
+<? include ../common/header.html ?>
+<div id="body-wrapper">
+    <? include ../elements/leftNav.html ?>
+    <div id="content">
+        <? include ../elements/topBar.html ?>
+        <div id="control-panel">
+            <div id="control-body">
+                <h2><?= title ?></h2>
+                <div class="split-line"><div class="split-corner">&nbsp;</div></div>
+                <form id="form-comment" method="post" action="/admin/comment/save">
+                    <div class="form-wrap">
+                        <form>
+                            <div class="form-field">
+                                <label class="form-label-left">评论文章</label>
+                                <span><a href="/post/<?- comment.Post.postId ?>"><?= comment.Post.postTitle+action ?></a></span>
+                            </div>
+                            <? if(action === 'edit') { ?>
+                            <div class="form-field">
+                                <label class="form-label-left" for="comment-content">评论内容</label>
+                                <input type="text" class="input form-input j-focus" name="commentContent" value="<?= comment.commentContent ?>" />
+                            </div>
+                            <? } else if(action === 'reply') { ?>
+                            <div class="form-field">
+                                <label class="form-label-left">原评论</label>
+                                <span><?= comment.commentContent ?></span>
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label-left" for="comment-content">回复评论</label>
+                                <input type="text" class="input form-input j-focus" name="commentContent" />
+                            </div>
+                            <? } else { ?>
+                            <div class="form-field">
+                                <label class="form-label-left">评论内容</label>
+                                <span><?= comment.commentContent ?></span>
+                            </div>
+                            <? } ?>
+                            <? if(action !== 'show') { ?>
+                            <div class="form-field">
+                                <label class="form-label-left">&nbsp;</label>
+                                <input type="submit" class="submit" value="保存" />
+                            </div>
+                            <input type="hidden" name="_csrf" id="csrfToken" value="<?- token ?>" />
+                            <input type="hidden" name="commentId" value="<?= comment.commentId ?>" />
+                            <input type="hidden" name="commentAuthorLink" value="<?= options.site_url.optionValue ?>" />
+                            <input type="hidden" name="postId" value="<?= comment.Post.postId ?>" />
+                            <input type="hidden" name="from" value="admin" />
+                            <? } ?>
+                        </form>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <? include ../elements/pageFooter.html ?>
+</div>
+<script type="text/javascript" src="<?- options.static_host.optionValue ?>/js/common.js"></script>
+<script type="text/javascript" src="<?- options.static_host.optionValue ?>/js/admin/comment.js"></script>
+<? include ../common/footer.html ?>
