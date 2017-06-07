@@ -21,7 +21,7 @@
 </div>
 <? } ?>
 <div class="m-diag">&nbsp;</div>
-<div class="m-comment-form j-post-comment" id="respond">
+<div class="m-comment-form" id="respond">
     <form method="post" action="/post/comment/save" class="j-form-comment">
         <p class="m-row">
             <input type="text" class="u-input" name="commentUser" maxlength="8" placeholder="昵称" value="<?= user.userName ?>" /><span class="u-label-required">*</span>
@@ -30,7 +30,7 @@
             <input type="text" class="u-input" name="commentEmail" maxlength="100" placeholder="Email" value="<?= user.userEmail ?>" /><span class="u-label-required">*</span>
         </p>
         <p class="m-row">
-            <input type="text" class="u-input" name="commentSite" maxlength="100" placeholder="站点" />
+            <input type="text" class="u-input" name="commentLink" maxlength="100" placeholder="站点" />
         </p>
         <p class="m-row">
             <textarea class="u-input u-textarea-comment" name="commentContent" maxlength="400" placeholder="评论内容"></textarea><span class="u-label-required">*</span>

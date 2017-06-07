@@ -30,20 +30,26 @@ module.exports = {
         data.commentContent = xss.sanitize(param.commentContent || '').trim();
         data.parentId = xss.sanitize(param.parentId || '').trim();
         data.postId = xss.sanitize(param.postId || '').trim();
-        // param.type = 'reply';
-        data.commentIp = req.ip || req._remoteAddress;
-        data.commentAgent = req.headers['user-agent'];
         data.commentAuthor = xss.sanitize(param.commentUser || '').trim() || user.userDisplayName || '';
         data.commentAuthorEmail = xss.sanitize(param.commentEmail || '').trim() || user.userEmail || '';
+        data.commentAuthorLink = xss.sanitize(param.commentLink || '').trim() || '';
+        data.commentStatus = isAdmin ? 'normal' : 'pending';
+        data.commentIp = req.ip || req._remoteAddress;// TODO:nginx代理前的IP
+        data.commentAgent = req.headers['user-agent'];
         data.userId = user.userId || '';
-        data.commentAuthorLink = xss.sanitize(param.commentSite || '').trim() || '';
-        data.commentStatus = 'pending';
 
         if (!commentId || !idReg.test(commentId)) {
             commentId = '';
         }
         if (!data.postId || !idReg.test(data.postId)) {
             data.postId = '';
+        }
+        if (!data.postId) {
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: '评论文章不存在'
+            }, next);
         }
         if (!data.commentAuthor) {
             return util.catchError({
@@ -64,13 +70,6 @@ module.exports = {
                 status: 200,
                 code: 400,
                 message: '评论内容不能为空'
-            }, next);
-        }
-        if (!data.postId) {
-            return util.catchError({
-                status: 200,
-                code: 400,
-                message: '评论文章不存在'
             }, next);
         }
         async.auto({

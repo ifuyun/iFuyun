@@ -18,6 +18,7 @@
                             <div class="form-field">
                                 <label class="form-label-left" for="comment-content">评论内容</label>
                                 <input type="text" class="input form-input j-focus" name="commentContent" value="<?= comment.commentContent ?>" />
+                                <input type="hidden" name="commentId" value="<?= comment.commentId ?>" />
                             </div>
                             <? } else if(action === 'reply') { ?>
                             <div class="form-field">
@@ -27,6 +28,7 @@
                             <div class="form-field">
                                 <label class="form-label-left" for="comment-content">回复评论</label>
                                 <input type="text" class="input form-input j-focus" name="commentContent" />
+                                <input type="hidden" name="parentId" value="<?= comment.commentId ?>" />
                             </div>
                             <? } else { ?>
                             <div class="form-field">
@@ -40,10 +42,9 @@
                                 <input type="submit" class="submit" value="保存" />
                             </div>
                             <input type="hidden" name="_csrf" id="csrfToken" value="<?- token ?>" />
-                            <input type="hidden" name="commentId" value="<?= comment.commentId ?>" />
-                            <input type="hidden" name="commentAuthorLink" value="<?= options.site_url.optionValue ?>" />
+                            <input type="hidden" name="commentLink" value="<?= options.site_url.optionValue ?>" />
                             <input type="hidden" name="postId" value="<?= comment.Post.postId ?>" />
-                            <input type="hidden" name="from" value="admin" />
+                            <!--<input type="hidden" name="from" value="admin" />-->
                             <? } ?>
                         </form>
                     </div>
