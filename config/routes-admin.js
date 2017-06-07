@@ -38,9 +38,7 @@ module.exports = function (app, router) {
     router.get('/comment', comment.listComments);
     router.get('/comment/page-:page', comment.listComments);
     router.get('/comment/:commentId', comment.editComment);
-    // router.get('/comment/reply/:commentId', comment.replyComment);
     router.post('/comment/save', comment.saveComment);
-    // router.post('/comment/saveReply', comment.saveReply);
     router.post('/comment/status', comment.updateStatus);
     router.post('/comment/remove', comment.removeComments);
 

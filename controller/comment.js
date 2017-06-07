@@ -366,7 +366,52 @@ module.exports = {
         });
     },
     updateStatus: function (req, res, next) {
-        res.send();
+        let param = req.body;
+        let data = {};
+        const referer = req.session.referer;
+        const commentId = xss.sanitize(param.commentId.trim()) || '';
+
+        param.action = (param.action || '').toLowerCase();
+
+        if (!['approve', 'reject', 'spam', 'delete'].includes(param.action)) {
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: '不支持该操作'
+            }, next);
+        }
+        if (!idReg.test(commentId)) {
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: '参数错误'
+            }, next);
+        }
+        const statusMap = {
+            approve: 'normal',
+            reject: 'reject',
+            spam: 'spam',
+            delete: 'trash'
+        };
+        data.commentStatus = statusMap[param.action];
+
+        models.Comment.update(data, {
+            where: {
+                commentId
+            }
+        }).then((comment) => {
+            delete req.session.referer;
+
+            res.set('Content-type', 'application/json');
+            res.send({
+                status: 200,
+                code: 0,
+                message: null,
+                data: {
+                    url: referer || '/admin/comment'
+                }
+            });
+        });
     },
     removeComments: function (req, res, next) {
         res.send();
