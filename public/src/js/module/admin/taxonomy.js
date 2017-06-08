@@ -55,4 +55,8 @@ $(function () {
         });
         return false;
     });
+    $('#form-search').on('submit', function () {
+        location.href = $(this).attr('action') + '&' + $(this).serialize();
+        return false;
+    });
 });

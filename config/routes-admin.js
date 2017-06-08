@@ -15,7 +15,7 @@ module.exports = function (app, router) {
     // const user = require('../controllers/user');
     const admin = require('../controller/admin');
     const comment = require('../controller/comment');
-    // const taxonomy = require('../controllers/taxonomy');
+    const taxonomy = require('../controller/taxonomy');
     // const link = require('../controllers/link');
 
     router.use(admin.checkAuth);
@@ -42,8 +42,8 @@ module.exports = function (app, router) {
     router.post('/comment/status', comment.updateStatus);
     router.post('/comment/remove', comment.removeComments);
 
-    // router.get('/category', taxonomy.listCategory);
-    // router.get('/category/page-:page', taxonomy.listCategory);
+    router.get('/taxonomy', taxonomy.listTaxonomy);
+    router.get('/taxonomy/page-:page', taxonomy.listTaxonomy);
     // router.get('/category/new', taxonomy.newCategory);
     // router.post('/category/save', taxonomy.saveCategory);
     // router.get('/category/:taxonomyId', taxonomy.editCategory);

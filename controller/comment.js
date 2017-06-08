@@ -1,7 +1,6 @@
 /**
  * Created by fuyun on 2017/05/19.
  */
-// const common = require('./common');
 const async = require('async');
 const moment = require('moment');
 const xss = require('sanitizer');
@@ -372,7 +371,6 @@ module.exports = {
         const commentId = xss.sanitize(param.commentId.trim()) || '';
 
         param.action = (param.action || '').toLowerCase();
-
         if (!['approve', 'reject', 'spam', 'delete'].includes(param.action)) {
             return util.catchError({
                 status: 200,

@@ -5,7 +5,11 @@
         <? include ../elements/topBar.html ?>
         <div id="control-panel">
             <div id="control-body">
+                <? if(type === 'post') { ?>
                 <h2>文章<a class="button button-add-h2" href="/admin/post/new">写文章</a></h2>
+                <? } else { ?>
+                <h2>页面<a class="button button-add-h2" href="/admin/post/new?type=page">撰写新页面</a></h2>
+                <? } ?>
                 <div class="split-line"><div class="split-corner">&nbsp;</div></div>
                 <div id="status-type">
                     <ul>
@@ -17,9 +21,9 @@
                     </ul>
                 </div>
                 <div id="search-bar">
-                    <form id="search-form" method="get" action="/admin/post">
+                    <form id="form-search" method="get" action="/admin/post?type=<?= type ?>">
                         <input type="text" class="input keyword" id="keyword" name="keyword" placeholder="搜索..." value="<?= curKeyword ?>" />
-                        <input type="submit" class="button" value="搜索文章" />
+                        <input type="submit" class="button" value="<?= type === 'post' ? '搜索文章' : '搜索页面' ?>" />
                     </form>
                 </div>
                 <div class="table-nav clear-both">
@@ -121,4 +125,6 @@
     </div>
     <? include ../elements/pageFooter.html ?>
 </div>
+<script type="text/javascript" src="<?- options.static_host.optionValue ?>/js/common.js"></script>
+<script type="text/javascript" src="<?- options.static_host.optionValue ?>/js/admin/post.js"></script>
 <? include ../common/footer.html ?>

@@ -40,6 +40,10 @@ service = {
             });
             return false;
         });
+        $('#form-search').on('submit', function () {
+            location.href = $(this).attr('action') + '&' + $(this).serialize();
+            return false;
+        });
         $('#form-post .postStatus').on('click', function (e) {
             if ($('#post-status-password').is(':checked')) {
                 $('#post-password-wrap').show();

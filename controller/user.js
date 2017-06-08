@@ -3,7 +3,6 @@
  * @author fuyun
  * @since 2017/05/23
  */
-// const async = require('async');
 const util = require('../helper/util');
 const xss = require('sanitizer');
 const models = require('../models/index');
