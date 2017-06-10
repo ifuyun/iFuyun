@@ -74,9 +74,9 @@ module.exports = {
     error: function (err, req, res, next) {// TODO: IE can not custom page
         // app.get('env') === 'development'
         if (req.xhr) {
-            res.status(err.status || 500).type('application/json');
+            res.status(err.status || 200).type('application/json');
             res.send({
-                status: err.status || 500,
+                // status: err.status || 200,
                 code: err.code || 500,
                 message: err.message || err || '未知错误',
                 token: req.csrfToken ? req.csrfToken() : ''

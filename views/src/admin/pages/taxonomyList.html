@@ -10,6 +10,7 @@
                 <form id="form-search" method="get" action="/admin/taxonomy?type=<?= type ?>">
                     <input type="text" class="input keyword" id="keyword" name="keyword" placeholder="搜索..." />
                     <input type="submit" class="button" value="搜索<?= title ?>" />
+                    <input type="hidden" name="_csrf" id="csrfToken" value="<?- token ?>" />
                 </form>
             </div>
             <div class="clear-right">
@@ -52,7 +53,7 @@
                                 <td><?= cat.termOrder ?></td>
                                 <td class="column-count"><?= cat.count ?></td>
                                 <td>
-                                    <? if(type !== 'tag') { ?><a class="button button-not-last" href="/admin/taxonomy/detail?action=create&type=<?= type ?>&parent=<?= cat.taxonomyId ?>">新增子类</a><? } ?><a class="button button-not-last btn-edit" href="/admin/taxonomy/detail?action=edit&type=<?= type ?>&taxonomyId=<?= cat.taxonomyId ?>">编辑</a><a class="button button-not-last btn-delete" href="javascript:;" data-term="<?= cat.taxonomyId ?>" data-taxonomy="<?= cat.taxonomyId ?>">删除</a><a class="button btn-view" href="/admin/post?tag=<?= cat.slug ?>">查看</a>
+                                    <? if(type !== 'tag') { ?><a class="button button-not-last" href="/admin/taxonomy/detail?action=create&type=<?= type ?>&parent=<?= cat.taxonomyId ?>">新增子类</a><? } ?><a class="button button-not-last btn-edit" href="/admin/taxonomy/detail?action=edit&type=<?= type ?>&taxonomyId=<?= cat.taxonomyId ?>">编辑</a><a class="button button-not-last btn-delete" href="javascript:;" data-type="<?= type ?>" data-taxonomy="<?= cat.taxonomyId ?>">删除</a><a class="button btn-view" href="/admin/post?tag=<?= cat.slug ?>">查看</a>
                                 </td>
                             </tr>
                             <? }) ?>

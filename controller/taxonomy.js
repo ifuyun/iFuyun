@@ -4,6 +4,7 @@
  * @since 2017/06/08
  */
 const async = require('async');
+const xss = require('sanitizer');
 const models = require('../models/index');
 const common = require('./common');
 const appConfig = require('../config/core');
@@ -70,7 +71,7 @@ module.exports = {
                 models.TermTaxonomy.findAll({
                     where,
                     attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'termOrder', 'count', 'created', 'modified'],
-                    order: [['termOrder', 'asc']],
+                    order: [['termOrder', 'asc'], ['created', 'desc']],
                     limit: 10,
                     offset: 10 * (page - 1),
                     subQuery: false
@@ -176,6 +177,204 @@ module.exports = {
             Object.assign(resData, result);
             resData.meta.title = util.getTitle(titleArr);
             res.render(`${appConfig.pathViews}/admin/pages/taxonomyForm`, resData);
+        });
+    },
+    saveTaxonomy: function (req, res, next) {
+        const type = (req.query.type || 'post').toLowerCase();
+        if (!['post', 'tag', 'link'].includes(type)) {
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: '不支持该操作'
+            }, next);
+        }
+        const referer = req.session.referer;
+        const param = req.body;
+        let taxonomyId = xss.sanitize(param.taxonomyId) || '';
+        let data = {};
+        data.name = (xss.sanitize(param.name) || '').trim();
+        data.slug = (xss.sanitize(param.slug) || '').trim();
+        data.description = (xss.sanitize(param.description) || '').trim();
+        data.parent = (type === 'post' || type === 'link') ? (xss.sanitize(param.parent) || '').trim() : '';
+        data.termOrder = xss.sanitize(param.termOrder);
+        data.taxonomy = type;
+
+        if (!idReg.test(taxonomyId)) {
+            taxonomyId = '';
+        }
+        let rules = [{
+            rule: !data.name,
+            message: '名称不能为空'
+        }, {
+            rule: !data.slug,
+            message: '别名不能为空'
+        }, {
+            rule: !data.description,
+            message: '描述不能为空'
+        }, {
+            rule: type !== 'tag' && !/^\d+$/i.test(data.termOrder),
+            message: '排序只能为数字'
+        }];
+        for (let i = 0; i < rules.length; i += 1) {
+            if (rules[i].rule) {
+                return util.catchError({
+                    status: 200,
+                    code: 400,
+                    message: rules[i].message
+                }, next);
+            }
+        }
+        async.auto({
+            checkSlug: function (cb) {
+                let where = {
+                    slug: data.slug
+                };
+                if (taxonomyId) {
+                    where.taxonomyId = {
+                        $ne: taxonomyId
+                    };
+                }
+                models.TermTaxonomy.count({
+                    where
+                }).then((count) => cb(null, count));
+            },
+            taxonomy: ['checkSlug', function (result, cb) {
+                if (result.checkSlug > 0) {
+                    return cb('slug已存在');
+                }
+                const nowTime = new Date();
+                if (taxonomyId) {
+                    data.modified = nowTime;
+                    models.TermTaxonomy.update(data, {
+                        where: {
+                            taxonomyId
+                        }
+                    }).then((taxonomy) => cb(null, taxonomy));
+                } else {
+                    data.taxonomyId = util.getUuid();
+                    data.created = nowTime;
+                    data.modified = nowTime;
+                    models.TermTaxonomy.create(data).then((taxonomy) => cb(null, taxonomy));
+                }
+            }]
+        }, function (err, result) {
+            if (err) {
+                return next(err);
+            }
+            delete (req.session.referer);
+
+            res.set('Content-type', 'application/json');
+            res.send({
+                // status: 200,
+                code: 0,
+                message: null,
+                data: {
+                    url: referer || ('/admin/taxonomy?type=' + type)
+                }
+            });
+        });
+    },
+    removeTaxonomy: function (req, res, next) {
+        const referer = req.session.referer;
+        const param = req.body;
+        let taxonomyIds = param.taxonomyIds;
+        const type = (req.query.type || 'post').toLowerCase();
+
+        if (!['post', 'tag', 'link'].includes(type)) {
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: '不支持该操作'
+            }, next);
+        }
+        if (typeof taxonomyIds === 'string') {
+            taxonomyIds = xss.sanitize(taxonomyIds).split(',');
+        } else if (!util.isArray(taxonomyIds)) {
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: '不支持的参数格式'
+            }, next);
+        }
+        for (let i = 0; i < taxonomyIds.length; i += 1) {
+            if (!idReg.test(taxonomyIds[i])) {
+                return util.catchError({
+                    status: 200,
+                    code: 400,
+                    message: '参数错误'
+                }, next);
+            }
+        }
+        models.sequelize.transaction(function (t) {
+            let tasks = {
+                taxonomy: function (cb) {
+                    models.TermTaxonomy.destroy({
+                        where: {
+                            taxonomyId: taxonomyIds
+                        },
+                        transaction: t
+                    }).then((taxonomy) => cb(null, taxonomy));
+                },
+                posts: function (cb) {
+                    if (type === 'tag') {
+                        models.TermRelationship.destroy({
+                            where: {
+                                termTaxonomyId: taxonomyIds
+                            },
+                            transaction: t
+                        }).then((termRel) => cb(null, termRel));
+                    } else {
+                        models.TermRelationship.update({
+                            termTaxonomyId: type === 'post' ? '0000000000000000' : '0000000000000001'
+                        }, {
+                            where: {
+                                termTaxonomyId: taxonomyIds
+                            },
+                            transaction: t
+                        }).then((termRel) => cb(null, termRel)).catch((e) => {
+                            cb(e);
+                        });
+                    }
+                }
+            };
+            if (type !== 'tag') {// 标签没有父子关系
+                tasks.children = function (cb) {
+                    models.TermTaxonomy.update({
+                        parent: type === 'post' ? '0000000000000000' : '0000000000000001'
+                    }, {
+                        where: {
+                            parent: taxonomyIds
+                        },
+                        transaction: t
+                    }).then((taxonomy) => cb(null, taxonomy));
+                };
+            }
+            // 需要返回promise实例
+            return new Promise((resolve, reject) => {
+                async.auto(tasks, function (err, result) {
+                    if (err) {
+                        reject(new Error(err));
+                    } else {
+                        resolve(result);
+                    }
+                });
+            });
+        }).then(() => {
+            delete req.session.referer;
+            res.set('Content-type', 'application/json');
+            res.send({
+                code: 0,
+                message: null,
+                data: {
+                    url: referer || '/admin/taxonomy?type=' + type
+                }
+            });
+        }, (err) => {
+            next({
+                // status: 200,
+                code: 500,
+                message: err.message || err
+            });
         });
     }
 };
