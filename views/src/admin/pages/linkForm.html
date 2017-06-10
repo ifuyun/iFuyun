@@ -1,0 +1,70 @@
+<? include ../common/header.html ?>
+<div id="body-wrapper">
+    <? include ../elements/leftNav.html ?>
+    <div id="content">
+        <? include ../elements/topBar.html ?>
+        <div id="control-panel">
+            <div id="control-body">
+                <h2><?= title ?></h2>
+                <div class="split-line"><div class="split-corner">&nbsp;</div></div>
+                <form id="form-link" method="post" action="/admin/link/save">
+                    <div class="form-wrap">
+                        <form>
+                            <div class="form-field">
+                                <label class="form-label-left" for="link-name">名称</label>
+                                <input type="text" class="input form-input" id="link-name" name="linkName" value="<?= link.linkName ?>" />
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label-left" for="link-url">URL</label>
+                                <input type="text" class="input form-input" id="link-url" name="linkUrl" value="<?= link.linkUrl ?>" />
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label-left" for="link-desc">描述</label>
+                                <input type="text" class="input form-input" id="link-desc" name="linkDesc" value="<?= link.linkDescription ?>" />
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label-left" for="link-visible">可见性</label>
+                                <select class="input form-input" id="link-visible" name="linkVisible">
+                                    <option value="site"<? if(link.linkVisible === 'site') { ?> selected="selected"<? } ?>>全站</option>
+                                    <option value="homepage"<? if(link.linkVisible === 'homepage') { ?> selected="selected"<? } ?>>首页</option>
+                                    <option value="invisible"<? if(link.linkVisible === 'invisible') { ?> selected="selected"<? } ?>>不可见</option>
+                                </select>
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label-left" for="link-target">打开方式</label>
+                                <select class="input form-input" id="link-target" name="linkTarget">
+                                    <option value="_blank"<? if(link.linkTarget === '_blank') { ?> selected="selected"<? } ?>>新页面</option>
+                                    <option value="_self"<? if(link.linkTarget === '_self') { ?> selected="selected"<? } ?>>当前页</option>
+                                    <option value="_top"<? if(link.linkTarget === '_top') { ?> selected="selected"<? } ?>>父页面</option>
+                                </select>
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label-left" for="link-rating">排序</label>
+                                <input type="text" class="input form-input" id="link-rating" name="linkRating" value="<?= link.linkRating ?>" />
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label-left" for="link-type">分类</label>
+                                <select class="input form-input" id="link-type" name="linkType">
+                                    <option value="">无</option>
+                                    <? categories.catArray.forEach(function (cat){?>
+                                    <option value="<?= cat.taxonomyId ?>"<? if(cat.taxonomyId === link.TermTaxonomies[0].taxonomyId){?> selected="selected"<? } ?>><? for(var idx = 1; idx < cat.level; idx += 1){ ?>&nbsp;&nbsp;&nbsp;&nbsp;<? } ?><?= cat.name ?></option>
+                                    <? }) ?>
+                                </select>
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label-left">&nbsp;</label>
+                                <input type="submit" class="submit" value="保存" />
+                            </div>
+                            <input type="hidden" name="_csrf" id="csrfToken" value="<?- token ?>" />
+                            <input type="hidden" name="linkId" value="<?= link.linkId ?>" />
+                        </form>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <? include ../elements/pageFooter.html ?>
+</div>
+<script type="text/javascript" src="<?- options.static_host.optionValue ?>/js/common.js"></script>
+<script type="text/javascript" src="<?- options.static_host.optionValue ?>/js/admin/link.js"></script>
+<? include ../common/footer.html ?>

@@ -15,7 +15,7 @@ module.exports = function (app, router) {
     const admin = require('../controller/admin');
     const comment = require('../controller/comment');
     const taxonomy = require('../controller/taxonomy');
-    // const link = require('../controllers/link');
+    const link = require('../controller/link');
 
     router.use(admin.checkAuth);
     router.get('/', admin.welcome);
@@ -47,12 +47,12 @@ module.exports = function (app, router) {
     router.post('/taxonomy/save', taxonomy.saveTaxonomy);
     router.post('/taxonomy/remove', taxonomy.removeTaxonomy);
 
-    // router.get('/link', link.listLink);
-    // router.get('/link/page-:page', link.listLink);
-    // router.get('/link/new', link.newLink);
-    // router.post('/link/save', link.saveLink);
+    router.get('/link', link.listLink);
+    router.get('/link/page-:page', link.listLink);
+    router.get('/link/detail', link.editLink);
+    router.post('/link/save', link.saveLink);
     // router.get('/link/:linkId', link.editLink);
-    // router.post('/link/remove', link.removeLink);
+    router.post('/link/remove', link.removeLink);
 
     // router.get('/options/general', admin.setGeneral);
     // router.post('/options/general', admin.saveGeneral);

@@ -24,5 +24,21 @@ module.exports = {
             trash: '删除'
         }
         return statusMap[status];
+    },
+    linkVisible: function (visible) {
+        const visibleMap = {
+            site: '全站',
+            homepage: '首页',
+            invisible: '不可见'
+        };
+        return visibleMap[visible];
+    },
+    linkTarget: function (visible) {
+        const visibleMap = {
+            _blank: '新页面',
+            _top: '父页面',
+            _self: '当前页'
+        };
+        return visibleMap[visible];
     }
 };

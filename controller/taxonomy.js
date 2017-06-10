@@ -73,8 +73,7 @@ module.exports = {
                     attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'termOrder', 'count', 'created', 'modified'],
                     order: [['termOrder', 'asc'], ['created', 'desc']],
                     limit: 10,
-                    offset: 10 * (page - 1),
-                    subQuery: false
+                    offset: 10 * (page - 1)
                 }).then((categories) => cb(null, categories));
             }]
         }, function (err, result) {
@@ -158,7 +157,7 @@ module.exports = {
                 titleArr.unshift(title);
             } else {
                 title = type === 'tag' ? '编辑标签' : '编辑分类';
-                titleArr = [result.taxonomy.name, title].concat(titleArr);
+                titleArr.unshift(result.taxonomy.name, title);
             }
             const menu = {
                 post: 'category',
@@ -172,7 +171,9 @@ module.exports = {
                 title,
                 type,
                 action,
-                taxonomy: {}
+                taxonomy: {
+                    parent: req.query.parent || ''
+                }
             };
             Object.assign(resData, result);
             resData.meta.title = util.getTitle(titleArr);
