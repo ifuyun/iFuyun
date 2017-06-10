@@ -332,9 +332,7 @@ module.exports = {
                                 termTaxonomyId: taxonomyIds
                             },
                             transaction: t
-                        }).then((termRel) => cb(null, termRel)).catch((e) => {
-                            cb(e);
-                        });
+                        }).then((termRel) => cb(null, termRel)).catch((e) => cb(e));
                     }
                 }
             };

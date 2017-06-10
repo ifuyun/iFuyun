@@ -20,7 +20,7 @@
                             </div>
                             <div class="form-field">
                                 <label class="form-label-left" for="link-desc">描述</label>
-                                <input type="text" class="input form-input" id="link-desc" name="linkDesc" value="<?= link.linkDescription ?>" />
+                                <input type="text" class="input form-input" id="link-desc" name="linkDescription" value="<?= link.linkDescription ?>" />
                             </div>
                             <div class="form-field">
                                 <label class="form-label-left" for="link-visible">可见性</label>
@@ -44,7 +44,7 @@
                             </div>
                             <div class="form-field">
                                 <label class="form-label-left" for="link-type">分类</label>
-                                <select class="input form-input" id="link-type" name="linkType">
+                                <select class="input form-input" id="link-type" name="linkTaxonomy">
                                     <option value="">无</option>
                                     <? categories.catArray.forEach(function (cat){?>
                                     <option value="<?= cat.taxonomyId ?>"<? if(cat.taxonomyId === link.TermTaxonomies[0].taxonomyId){?> selected="selected"<? } ?>><? for(var idx = 1; idx < cat.level; idx += 1){ ?>&nbsp;&nbsp;&nbsp;&nbsp;<? } ?><?= cat.name ?></option>

@@ -127,7 +127,114 @@ module.exports = {
         });
     },
     saveLink: function (req, res, next) {
-        res.send();
+        const referer = req.session.referer;
+        const param = req.body;
+        let linkId = xss.sanitize(param.linkId) || '';
+        const taxonomyId = (xss.sanitize(param.linkTaxonomy) || '').trim();
+        let data = {};
+        data.linkName = (xss.sanitize(param.linkName) || '').trim();
+        data.linkUrl = (xss.sanitize(param.linkUrl) || '').trim();
+        data.linkDescription = (xss.sanitize(param.linkDescription) || '').trim();
+        data.linkVisible = (xss.sanitize(param.linkVisible) || '').trim();
+        data.linkTarget = (xss.sanitize(param.linkTarget) || '').trim();
+        data.linkRating = (xss.sanitize(param.linkRating) || '').trim();
+
+        if (!idReg.test(linkId)) {
+            linkId = '';
+        }
+        let rules = [{
+            rule: !data.linkName,
+            message: '名称不能为空'
+        }, {
+            rule: !data.linkUrl,
+            message: 'URL不能为空'
+        }, {
+            rule: !data.linkDescription,
+            message: '描述不能为空'
+        }, {
+            rule: !taxonomyId,
+            message: '请选择分类'
+        }, {
+            rule: !/^\d+$/i.test(data.linkRating),
+            message: '排序只能为数字'
+        }];
+        for (let i = 0; i < rules.length; i += 1) {
+            if (rules[i].rule) {
+                return util.catchError({
+                    status: 200,
+                    code: 400,
+                    message: rules[i].message
+                }, next);
+            }
+        }
+        models.sequelize.transaction(function (t) {
+            const newLinkId = util.getUuid();
+            let tasks = {
+                link: function (cb) {
+                    if (!linkId) {
+                        data.linkId = newLinkId;
+                        models.Link.create(data, {
+                            transaction: t
+                        }).then((link) => {
+                            cb(null, link);
+                        });
+                    } else {
+                        models.Link.update(data, {
+                            where: {
+                                linkId
+                            },
+                            transaction: t
+                        }).then((link) => {
+                            cb(null, link);
+                        });
+                    }
+                },
+                taxonomy: function (cb) {
+                    if (!linkId) {
+                        models.TermRelationship.create({
+                            objectId: newLinkId,
+                            termTaxonomyId: taxonomyId
+                        }, {
+                            transaction: t
+                        }).then((termRel) => cb(null, termRel));
+                    } else {
+                        models.TermRelationship.update({
+                            termTaxonomyId: taxonomyId
+                        }, {
+                            where: {
+                                objectId: linkId
+                            },
+                            transaction: t
+                        }).then((termRel) => cb(null, termRel));
+                    }
+                }
+            };
+            // 需要返回promise实例
+            return new Promise((resolve, reject) => {
+                async.auto(tasks, function (err, result) {
+                    if (err) {
+                        reject(new Error(err));
+                    } else {
+                        resolve(result);
+                    }
+                });
+            });
+        }).then(() => {
+            delete req.session.referer;
+            res.set('Content-type', 'application/json');
+            res.send({
+                code: 0,
+                message: null,
+                data: {
+                    url: referer || ('/admin/link')
+                }
+            });
+        }, (err) => {
+            next({
+                code: 500,
+                message: err.message || err
+            });
+        });
     },
     removeLink: function (req, res, next) {
         res.send();

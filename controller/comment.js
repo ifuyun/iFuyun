@@ -109,17 +109,13 @@ module.exports = {
                 if (!commentId) {
                     data.commentId = util.getUuid();
                     data.commentCreatedGmt = data.commentModifiedGmt = new Date();
-                    models.Comment.create(data).then((comment) => {
-                        cb(null, comment);
-                    });
+                    models.Comment.create(data).then((comment) => cb(null, comment));
                 } else {
                     models.Comment.update(data, {
                         where: {
                             commentId
                         }
-                    }).then((comment) => {
-                        cb(null, comment);
-                    });
+                    }).then((comment) => cb(null, comment));
                 }
             }]
         }, function (err, result) {

@@ -74,8 +74,8 @@ module.exports = function (sequelize, DataTypes) {
         }
     }, {
         tableName: 'links',
-        createdAt: 'linkCreated',
-        updatedAt: 'linkModified',
+        createdAt: 'link_created',
+        updatedAt: 'link_modified',
         deletedAt: false,
         classMethods: {
         }
