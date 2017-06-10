@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>controllers\link.js - YUIDoc Tool for iFuyun</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
+    <link rel="icon" href="../assets/favicon.ico">
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body class="yui3-skin-sam">
+
+<div id="doc">
+    <div id="hd" class="yui3-g header">
+        <div class="yui3-u-3-4">
+                <h1><img src="../assets/css/logo.png" title="YUIDoc Tool for iFuyun" width="117" height="52"></h1>
+        </div>
+        <div class="yui3-u-1-4 version">
+            <em>API Docs for: 1.0.0</em>
+        </div>
+    </div>
+    <div id="bd" class="yui3-g">
+
+        <div class="yui3-u-1-4">
+            <div id="docs-sidebar" class="sidebar apidocs">
+                <div id="api-list">
+                    <h2 class="off-left">APIs</h2>
+                    <div id="api-tabview" class="tabview">
+                        <ul class="tabs">
+                            <li><a href="#api-classes">Classes</a></li>
+                            <li><a href="#api-modules">Modules</a></li>
+                        </ul>
+                
+                        <div id="api-tabview-filter">
+                            <input type="search" id="api-filter" placeholder="Type to filter APIs">
+                        </div>
+                
+                        <div id="api-tabview-panel">
+                            <ul id="api-classes" class="apis classes">
+                                <li><a href="../classes/C_Admin.html">C_Admin</a></li>
+                                <li><a href="../classes/C_Base.html">C_Base</a></li>
+                                <li><a href="../classes/C_Comment.html">C_Comment</a></li>
+                                <li><a href="../classes/C_Link.html">C_Link</a></li>
+                                <li><a href="../classes/C_Post.html">C_Post</a></li>
+                                <li><a href="../classes/C_Taxonomy.html">C_Taxonomy</a></li>
+                                <li><a href="../classes/C_User.html">C_User</a></li>
+                                <li><a href="../classes/Logger.html">Logger</a></li>
+                                <li><a href="../classes/M_Comment.html">M_Comment</a></li>
+                                <li><a href="../classes/M_Link.html">M_Link</a></li>
+                                <li><a href="../classes/M_Option.html">M_Option</a></li>
+                                <li><a href="../classes/M_Post.html">M_Post</a></li>
+                                <li><a href="../classes/M_TermRelationship.html">M_TermRelationship</a></li>
+                                <li><a href="../classes/M_TermTaxonomy.html">M_TermTaxonomy</a></li>
+                                <li><a href="../classes/M_User.html">M_User</a></li>
+                                <li><a href="../classes/M_Vote.html">M_Vote</a></li>
+                                <li><a href="../classes/Util.html">Util</a></li>
+                            </ul>
+                
+                
+                            <ul id="api-modules" class="apis modules">
+                                <li><a href="../modules/c_admin.html">c_admin</a></li>
+                                <li><a href="../modules/c_base.html">c_base</a></li>
+                                <li><a href="../modules/c_comment.html">c_comment</a></li>
+                                <li><a href="../modules/c_link.html">c_link</a></li>
+                                <li><a href="../modules/c_post.html">c_post</a></li>
+                                <li><a href="../modules/c_taxonomy.html">c_taxonomy</a></li>
+                                <li><a href="../modules/c_user.html">c_user</a></li>
+                                <li><a href="../modules/cfg_core.html">cfg_core</a></li>
+                                <li><a href="../modules/cfg_database.html">cfg_database</a></li>
+                                <li><a href="../modules/cfg_redis.html">cfg_redis</a></li>
+                                <li><a href="../modules/cfg_routes.html">cfg_routes</a></li>
+                                <li><a href="../modules/cfg_routes_admin.html">cfg_routes_admin</a></li>
+                                <li><a href="../modules/index.html">index</a></li>
+                                <li><a href="../modules/logger.html">logger</a></li>
+                                <li><a href="../modules/m_base.html">m_base</a></li>
+                                <li><a href="../modules/m_comment.html">m_comment</a></li>
+                                <li><a href="../modules/m_link.html">m_link</a></li>
+                                <li><a href="../modules/m_option.html">m_option</a></li>
+                                <li><a href="../modules/m_post.html">m_post</a></li>
+                                <li><a href="../modules/m_term_relationship.html">m_term_relationship</a></li>
+                                <li><a href="../modules/m_term_taxonomy.html">m_term_taxonomy</a></li>
+                                <li><a href="../modules/m_user.html">m_user</a></li>
+                                <li><a href="../modules/m_vote.html">m_vote</a></li>
+                                <li><a href="../modules/util.html">util</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="yui3-u-3-4">
+                <div id="api-options">
+                    Show:
+                    <label for="api-show-inherited">
+                        <input type="checkbox" id="api-show-inherited" checked>
+                        Inherited
+                    </label>
+            
+                    <label for="api-show-protected">
+                        <input type="checkbox" id="api-show-protected">
+                        Protected
+                    </label>
+            
+                    <label for="api-show-private">
+                        <input type="checkbox" id="api-show-private">
+                        Private
+                    </label>
+                    <label for="api-show-deprecated">
+                        <input type="checkbox" id="api-show-deprecated">
+                        Deprecated
+                    </label>
+            
+                </div>
+            
+            <div class="apidocs">
+                <div id="docs-main">
+                    <div class="content">
+<h1 class="file-heading">File: controllers\link.js</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+/**
+ * 控制器：链接管理
+ * @module c_link
+ * @class C_Link
+ * @static
+ * @requires async, sanitizer, moment, c_base, m_base, util, m_link, m_term_taxonomy
+ * @author Fuyun
+ * @version 1.2.0
+ * @since 1.2.0
+ */
+var async = require(&#x27;async&#x27;),
+    xss = require(&#x27;sanitizer&#x27;),
+    moment = require(&#x27;moment&#x27;),
+
+    base = require(&#x27;./base&#x27;),
+    pool = require(&#x27;../model/base&#x27;).pool,
+    util = require(&#x27;../helper/util&#x27;),
+
+    LinkModel = require(&#x27;../model/link&#x27;),
+    TaxonomyModel = require(&#x27;../model/termTaxonomy&#x27;),
+
+    link = new LinkModel(pool),
+    taxonomy = new TaxonomyModel(pool),
+
+    pagesOut = 9,
+    idReg = /^[0-9a-fA-F]{16}$/i;
+
+module.exports = {
+    /**
+     * 链接列表，管理链接
+     * @method listLink
+     * @static
+     * @param {Object} req 请求对象
+     * @param {Object} res 响应对象
+     * @param {Object} next 路由对象
+     * @return {void}
+     * @author Fuyun
+     * @version 1.2.0
+     * @since 1.2.0
+     */
+    listLink: function (req, res, next) {
+        &#x27;use strict&#x27;;
+        var page = parseInt(req.params.page, 10) || 1,
+            resData;
+
+        resData = {
+            meta: {
+                title: &#x27;&#x27;
+            },
+            page: &#x27;link&#x27;,
+            token: req.csrfToken(),
+            catData: false
+        };
+        async.parallel({
+            links: function (cb) {
+                link.getAllLinks({
+                    page: page
+                }, cb);
+            },
+            options: base.initOption
+        }, function (err, results) {
+            if (err) {
+                return next(err);
+            }
+            var options = results.options;
+            if (results.links) {
+                resData.paginator = util.paginator(page, results.links.pages, pagesOut);
+                resData.paginator.pageLimit = results.links.pageLimit;
+                resData.paginator.total = results.links.total;
+                resData.paginator.linkUrl = &#x27;/admin/link/page-&#x27;;
+                resData.paginator.linkParam = &#x27;&#x27;;
+            }
+            if (page &gt; 1) {
+                resData.meta.title = util.getTitle([&#x27;第&#x27; + page + &#x27;页&#x27;, &#x27;链接列表&#x27;, &#x27;管理后台&#x27;, options.site_name.option_value]);
+            } else {
+                resData.meta.title = util.getTitle([&#x27;链接列表&#x27;, &#x27;管理后台&#x27;, options.site_name.option_value]);
+            }
+
+            resData.linkData = results.links;
+            resData.options = options;
+            resData.util = util;
+            resData.moment = moment;
+
+            res.render(&#x27;admin/pages/p_link&#x27;, resData);
+        });
+    },
+    /**
+     * 新增链接
+     * @method newLink
+     * @static
+     * @param {Object} req 请求对象
+     * @param {Object} res 响应对象
+     * @param {Object} next 路由对象
+     * @return {void}
+     * @author Fuyun
+     * @version 1.2.0
+     * @since 1.2.0
+     */
+    newLink: function (req, res, next) {
+        &#x27;use strict&#x27;;
+        var resData;
+
+        resData = {
+            meta: {
+                title: &#x27;&#x27;
+            },
+            page: &#x27;link&#x27;,
+            categories: false,
+            token: req.csrfToken(),
+            link: {},
+            linkType: {}
+        };
+
+        req.session.referer = req.headers.referer;
+
+        async.parallel({
+            categories: function (cb) {
+                taxonomy.getCategoryArray(&#x27;link&#x27;, cb);
+            },
+            options: base.initOption
+        }, function (err, results) {
+            if (err) {
+                return next(err);
+            }
+            var options = results.options;
+
+            resData.options = options;
+
+            resData.meta.title = util.getTitle([&#x27;新增链接&#x27;, &#x27;管理后台&#x27;, options.site_name.option_value]);
+            resData.categories = results.categories;
+
+            res.render(&#x27;admin/pages/p_link_form&#x27;, resData);
+        });
+    },
+    /**
+     * 修改链接
+     * @method editLink
+     * @static
+     * @param {Object} req 请求对象
+     * @param {Object} res 响应对象
+     * @param {Object} next 路由对象
+     * @return {void}
+     * @author Fuyun
+     * @version 1.2.0
+     * @since 1.2.0
+     */
+    editLink: function (req, res, next) {
+        &#x27;use strict&#x27;;
+        var resData,
+            linkId = req.params.linkId || &#x27;&#x27;;
+
+        if (!linkId || !idReg.test(linkId)) {
+            return util.catchError({
+                status: 404,
+                code: 404,
+                message: &#x27;Page Not Found&#x27;
+            }, next);
+        }
+
+        req.session.referer = req.headers.referer;
+
+        resData = {
+            meta: {
+                title: &#x27;&#x27;
+            },
+            page: &#x27;link&#x27;,
+            categories: false,
+            token: req.csrfToken()
+        };
+
+        async.parallel({
+            linkData: function (cb) {
+                link.getLinkById(linkId, function (err, data) {
+                    if (err) {
+                        return cb(err, data);
+                    }
+                    cb(null, data);
+                });
+            },
+            categories: function (cb) {
+                taxonomy.getCategoryArray(&#x27;link&#x27;, cb);
+            },
+            options: base.initOption
+        }, function (err, results) {
+            if (err) {
+                return next(err);
+            }
+            var options = results.options;
+
+            resData.link = results.linkData.link[0];
+            resData.linkType = results.linkData.linkType[0];
+            resData.options = options;
+
+            resData.meta.title = util.getTitle([resData.link.link_name, &#x27;编辑链接&#x27;, &#x27;管理后台&#x27;, options.site_name.option_value]);
+            resData.categories = results.categories;
+
+            res.render(&#x27;admin/pages/p_link_form&#x27;, resData);
+        });
+    },
+    /**
+     * 保存链接
+     * @method saveLink
+     * @static
+     * @param {Object} req 请求对象
+     * @param {Object} res 响应对象
+     * @param {Object} next 路由对象
+     * @return {void}
+     * @author Fuyun
+     * @version 1.2.0
+     * @since 1.2.0
+     */
+    saveLink: function (req, res, next) {
+        &#x27;use strict&#x27;;
+        var params = req.body,
+            referer = req.session.referer;
+
+        params.linkName = xss.sanitize(params.linkName);
+        params.linkUrl = xss.sanitize(params.linkUrl);
+        params.linkDesc = xss.sanitize(params.linkDesc);
+        params.linkVisible = xss.sanitize(params.linkVisible);
+        params.linkTarget = xss.sanitize(params.linkTarget);
+        params.linkRating = xss.sanitize(params.linkRating);
+        params.linkType = xss.sanitize(params.linkType);
+        params.user = req.session.user;
+
+        if (!params.linkId || !idReg.test(params.linkId)) {//空或者不符合ID规则
+            params.linkId = &#x27;&#x27;;
+        }
+        //trim shouldn&#x27;t be null or undefined
+        // params.linkId = params.linkId.trim();
+        if (!params.linkName.trim()) {
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: &#x27;名称不能为空&#x27;
+            }, next);
+        }
+        if (!params.linkUrl.trim()) {
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: &#x27;URL不能为空&#x27;
+            }, next);
+        }
+        if (!params.linkDesc.trim()) {
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: &#x27;描述不能为空&#x27;
+            }, next);
+        }
+        if (!params.linkType.trim()) {
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: &#x27;请选择分类&#x27;
+            }, next);
+        }
+
+        async.auto({
+            link: function (cb) {
+                link.saveLink(params, cb);
+            }
+        }, function (err, results) {
+            if (err) {
+                next(err);
+            } else {
+                delete (req.session.referer);
+
+                res.set(&#x27;Content-type&#x27;, &#x27;application/json&#x27;);
+                res.send({
+                    status: 200,
+                    code: 0,
+                    message: null,
+                    data: {
+                        url: referer || (&#x27;/admin/link&#x27;)
+                    }
+                });
+            }
+        });
+    },
+    /**
+     * 删除链接
+     * @method removeLink
+     * @static
+     * @param {Object} req 请求对象
+     * @param {Object} res 响应对象
+     * @param {Object} next 路由对象
+     * @return {void}
+     * @author Fuyun
+     * @version 1.2.0
+     * @since 1.2.0
+     */
+    removeLink: function (req, res, next) {
+        &#x27;use strict&#x27;;
+        var params = req.body,
+            referer = req.session.referer;
+
+        params.linkId = xss.sanitize(params.linkId.trim());
+
+        if (!idReg.test(params.linkId)) {//不符合ID规则
+            params.linkId = &#x27;&#x27;;
+        }
+        if (!params.linkId) {
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: &#x27;参数错误&#x27;
+            }, next);
+        }
+        async.auto({
+            link: function (cb) {
+                link.removeLink(params, cb);
+            }
+        }, function (err, results) {
+            if (err) {
+                next(err);
+            } else {
+                delete (req.session.referer);
+
+                res.set(&#x27;Content-type&#x27;, &#x27;application/json&#x27;);
+                res.send({
+                    status: 200,
+                    code: 0,
+                    message: null,
+                    data: {
+                        url: referer || (&#x27;/admin/link&#x27;)
+                    }
+                });
+            }
+        });
+    }
+};
+
+    </pre>
+</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>

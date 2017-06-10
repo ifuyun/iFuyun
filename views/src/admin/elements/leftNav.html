@@ -1,0 +1,50 @@
+<div id="menu-tree-back">&nbsp;</div>
+<div id="menu-tree">
+    <ul class="menu-main">
+        <!-- <li id="menu-home"><a href="/admin"><span class="link-icon">&nbsp;</span><span>首页</span><span class="cur-icon">&nbsp;</span></a></li>
+        <li id="menu-post" class="curmain-menu">
+            <a href="/admin/post"><span class="link-icon">&nbsp;</span><span>文章</span><span class="cur-icon">&nbsp;</span></a>
+            <ul class="sub-menu">
+                <li><a href="/admin/post">所有文章</a></li>
+                <li class="cursub-menu"><a href="/admin/post/new">写文章</a></li>
+            </ul>
+        </li>
+        <li id="menu-category"><a href="/admin/category"><span class="link-icon">&nbsp;</span><span>分类目录</span><span class="cur-icon">&nbsp;</span></a></li>
+        <li id="menu-tag"><a href="/admin/tag"><span class="link-icon">&nbsp;</span><span>标签</span><span class="cur-icon">&nbsp;</span></a></li>
+        <li id="menu-page">
+            <a href="/admin/post?type=page"><span class="link-icon">&nbsp;</span><span>页面</span><span class="cur-icon">&nbsp;</span></a>
+            <ul class="sub-menu">
+                <li><a href="/admin/post?type=page">所有页面</a></li>
+                <li><a href="/admin/post/new?type=page">新建页面</a></li>
+            </ul>
+        </li>
+        <li id="menu-comment"><a href="/admin/comment"><span class="link-icon">&nbsp;</span><span>评论</span><span class="cur-icon">&nbsp;</span></a></li>
+        <li id="menu-options">
+            <a href="/admin/options/general"><span class="link-icon">&nbsp;</span><span>设置</span><span class="cur-icon">&nbsp;</span></a>
+            <ul class="sub-menu">
+                <li><a href="/admin/options/general">常规</a></li>
+                <li><a href="/admin/options/writing">撰写</a></li>
+                <li><a href="/admin/options/reading">阅读</a></li>
+                <li><a href="/admin/options/discussion">讨论</a></li>
+            </ul>
+        </li> -->
+        <li id="menu-home" class="menu-first<? if(page ==='welcome'){ ?> menu-active<? } ?>">
+            <a href="/admin"><span class="menu-color">&nbsp;</span><span class="menu-icon-bg"><span class="menu-icon">&nbsp;</span></span><span class="menu-text">首页</span></a></li>
+        <li id="menu-post"<? if(page ==='post'){ ?> class="menu-active"<? } ?>>
+            <a href="/admin/post"><span class="menu-color">&nbsp;</span><span class="menu-icon-bg"><span class="menu-icon">&nbsp;</span></span><span class="menu-text">文章</span></a></li>
+        <li id="menu-comment"<? if(page ==='comment'){ ?> class="menu-active"<? } ?>>
+            <a href="/admin/comment"><span class="menu-color">&nbsp;</span><span class="menu-icon-bg"><span class="menu-icon">&nbsp;</span></span><span class="menu-text">评论</span></a></li>
+        <li id="menu-category"<? if(page ==='category'){ ?> class="menu-active"<? } ?>>
+            <a href="/admin/taxonomy?type=post"><span class="menu-color">&nbsp;</span><span class="menu-icon-bg"><span class="menu-icon">&nbsp;</span></span><span class="menu-text">分类目录</span></a></li>
+        <li id="menu-tag"<? if(page ==='tag'){ ?> class="menu-active"<? } ?>>
+            <a href="/admin/taxonomy?type=tag"><span class="menu-color">&nbsp;</span><span class="menu-icon-bg"><span class="menu-icon">&nbsp;</span></span><span class="menu-text">标签</span></a></li>
+        <li id="menu-page"<? if(page ==='page'){ ?> class="menu-active"<? } ?>>
+            <a href="/admin/post?type=page"><span class="menu-color">&nbsp;</span><span class="menu-icon-bg"><span class="menu-icon">&nbsp;</span></span><span class="menu-text">页面</span></a></li>
+        <li id="menu-link"<? if(page ==='link'){ ?> class="menu-active"<? } ?>>
+            <a href="/admin/link"><span class="menu-color">&nbsp;</span><span class="menu-icon-bg"><span class="menu-icon">&nbsp;</span></span><span class="menu-text">链接</span></a></li>
+        <li id="menu-media"<? if(page ==='media'){ ?> class="menu-active"<? } ?>>
+            <a href="/admin/media"><span class="menu-color">&nbsp;</span><span class="menu-icon-bg"><span class="menu-icon">&nbsp;</span></span><span class="menu-text">多媒体</span></a></li>
+        <li id="menu-options"<? if(page ==='settings'){ ?> class="menu-active"<? } ?>>
+            <a href="/admin/options/general"><span class="menu-color">&nbsp;</span><span class="menu-icon-bg"><span class="menu-icon">&nbsp;</span></span><span class="menu-text">设置</span></a></li>
+    </ul>
+</div>

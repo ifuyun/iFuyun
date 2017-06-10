@@ -1,0 +1,14 @@
+{
+  "name": "YUIDoc Tool for iFuyun",
+  "description": "Generate Docs for iFuyun.",
+  "version": "1.0.0",
+  "url": "http://www.ifuyun.com/",
+  "options": {
+    "linkNatives": true,
+    "outdir": "./views/doc",
+    "paths": [
+      "."
+    ],
+    "exclude": "node_modules,public,views"
+  }
+}

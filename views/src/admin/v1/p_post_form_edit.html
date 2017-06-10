@@ -1,0 +1,110 @@
+<? include ../common/header-post.html ?>
+<div id="body-wrapper">
+    <? include ../elements/leftNav.html ?>
+    <div id="content">
+        <? include ../elements/topBar.html ?>
+        <div id="control-panel">
+            <div id="control-body">
+                <h2>编辑文章</h2>
+                <div class="split-line"><div class="split-corner">&nbsp;</div></div>
+                <form id="form-post" method="post" action="/admin/post/save">
+                    <div class="form-wrap form-box">
+                        <div class="form-basic">
+                            <div>
+                                <input type="text" class="input input-normal" id="post-title" name="postTitle" placeholder="在此输入标题" value="<?= post.post.post_title ?>" />
+                            </div>
+                            <div class="form-field">
+                                <textarea class="input" id="post-content" name="postContent"><?= post.post.post_content ?></textarea>
+                            </div>
+                            <div class="form-field form-field-box">
+                                <label class="form-label form-field-split" for="post-tag">标签</label>
+                                <div class="form-field-box-sub">
+                                    <input type="text" class="input input-normal" name="postTag" id="post-tag" value="<?= postTags ?>" /><!-- <input type="button" class="button input-button" value="添加" /> -->
+                                </div>
+                                <p class="form-field-box-sub">多个标签请用英文逗号（,）或空格分开（10个之内）</p>
+                            </div>
+                            <div class="form-field form-field-box">
+                                <label class="form-label form-field-split" for="post-url">URL</label>
+                                <div class="form-field-box-sub">
+                                    <input type="text" class="input input-normal" name="postUrl" id="post-url" value="<?= post.post.post_guid ?>" />
+                                </div>
+                            </div>
+                            <div class="form-field form-field-box">
+                                <label class="form-label form-field-split" for="post-excerpt">摘要</label>
+                                <div class="form-field-box-sub">
+                                    <textarea class="input multitext" id="post-excerpt" name="postExcerpt"><?= post.post.post_excerpt ?></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-advanced">
+                            <div class="form-field-box">
+                                <span class="form-label form-field-split">发布</span>
+                                <span class="form-button-corner">
+                                    <input type="button" class="button" value="预览" />
+                                    <input type="submit" class="submit input-button" value="发布" />
+                                </span>
+                                <div class="form-field-box-sub">
+                                    <div class="form-field-text">公开度</div>
+                                    <div class="form-field-input">
+                                        <label for="post-status-publish"><input type="radio" class="postStatus" name="postStatus" id="post-status-publish" value="publish"<? if(post.post.post_status === 'publish' && !post.post.post_password) { ?> checked="checked"<? } ?> />&nbsp;公开</label><br />
+                                        <label for="post-status-password"><input type="radio" class="postStatus" name="postStatus" id="post-status-password" value="password"<? if(post.post.post_password) { ?> checked="checked"<? } ?> />&nbsp;密码保护</label><br />
+                                        <span id="post-password-wrap"<? if(!post.post.post_password){ ?> class="hidden"<? } ?>><input type="text" class="input" name="postPassword" id="post-password" maxlength="20" value="<?= post.post.post_password ?>" /><br /></span>
+                                        <label for="post-status-private"><input type="radio" class="postStatus" name="postStatus" id="post-status-private" value="private"<? if(post.post.post_status === 'private') { ?> checked="checked"<? } ?> />&nbsp;私密</label>
+                                    </div>
+                                </div>
+                                <div class="form-field-box-sub">
+                                    <div class="form-field-text">来源</div>
+                                    <div class="form-field-input">
+                                        <label for="post-original-true"><input type="radio" name="postOriginal" id="post-original-true" value="1"<? if(post.post.post_original === 1) { ?> checked="checked"<? } ?> />&nbsp;原创</label><br />
+                                        <label for="post-original-false"><input type="radio" name="postOriginal" id="post-original-false" value="0"<? if(post.post.post_original === 0) { ?> checked="checked"<? } ?> />&nbsp;转载</label><br />
+                                    </div>
+                                </div>
+                                <div class="form-field-box-sub">
+                                    <div class="form-field-text">评论状态</div>
+                                    <div class="form-field-input">
+                                        <label for="post-comment-on"><input type="radio" name="postComment" id="post-comment-on" value="1"<? if(post.post.comment_flag === 'open') { ?> checked="checked"<? } ?> />&nbsp;允许</label><br />
+                                        <label for="post-comment-verify"><input type="radio" name="postComment" id="post-comment-verify" value="2"<? if(post.post.comment_flag === 'verify') { ?> checked="checked"<? } ?> />&nbsp;审核</label><br />
+                                        <label for="post-comment-off"><input type="radio" name="postComment" id="post-comment-off" value="0"<? if(post.post.comment_flag === 'closed') { ?> checked="checked"<? } ?> />&nbsp;禁止</label><br />
+                                    </div>
+                                </div>
+                                <div class="form-field-box-sub">
+                                    <div class="form-field-text">发布时间</div>
+                                    <div class="form-field-input">
+                                        <input type="text" class="input" name="postDate" id="post-date" maxlength="10" placeholder="Y-m-d" value="<?= post.post.display_date ?>" />
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- <div class="form-field form-field-box">
+                                <span class="form-label form-field-split">形式</span>
+                                <div class="form-field-box-sub">
+                                    <label for="post-format-diary"><input type="radio" name="postFormat" id="post-format-diary" value="diary" checked="checked" />&nbsp;日志</label><br />
+                                    <label for="post-format-status"><input type="radio" name="postFormat" id="post-format-status" value="status" />&nbsp;状态</label><br />
+                                    <label for="post-format-image"><input type="radio" name="postFormat" id="post-format-image" value="image" />&nbsp;图像</label>
+                                </div>
+                            </div> -->
+                            <div class="form-field form-field-box">
+                                <span class="form-label form-field-split">分类目录</span>
+                                <div class="form-field-box-sub">
+                                    <? var cate; for(var catIdx = 0; catIdx < categories.length; catIdx += 1){ ?>
+                                        <? cate = categories[catIdx]; ?>
+                                        <label for="post-cate-<?= cate.taxonomyId ?>">
+                                            <? for(var idx = 1; idx < cate.level; idx += 1){ ?>&nbsp;&nbsp;&nbsp;&nbsp;<? } ?>
+                                            <input type="checkbox" name="postCategory" id="post-cate-<?= cate.taxonomyId ?>" value="<?= cate.taxonomyId ?>"<? if(util.inArray(cate.taxonomyId, postCategories) >= 0) { ?> checked="checked"<? } ?> />&nbsp;<?= cate.name ?></label>
+                                        <? if(catIdx < categories.length - 1){ ?><br /><? } ?>
+                                    <? } ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" name="_csrf" id="csrfToken" value="<?- token ?>" />
+                    <input type="hidden" name="postId" value="<?= post.post.post_id ?>" />
+                </form>
+            </div>
+        </div>
+    </div>
+    <? include ../elements/pageFooter.html ?>
+</div>
+<script type="text/javascript" src="<?- options.static_host.option_value ?>/dist/js/vendor/tinymce/tinymce.min.js"></script>
+<script type="text/javascript" src="<?- options.static_host.option_value ?>/dist/js/common_99219e3a.js"></script>
+<script type="text/javascript" src="<?- options.static_host.option_value ?>/dist/js/admin/post_99219e3a.js"></script>
+<? include ../common/footer.html ?>

@@ -5,22 +5,18 @@
  * @static
  * @requires async, sanitizer, c_base, m_base, util, m_term_taxonomy
  * @author Fuyun
- * @version 1.1.0(2015-11-11)
- * @since 1.1.0(2015-02-26)
+ * @version 3.0.0
+ * @since 1.1.0
  */
-var async = require('async'),
-    xss = require('sanitizer'),
-
-    base = require('./base'),
-    pool = require('../model/base').pool,
-    util = require('../helper/util'),
-
-    TaxonomyModel = require('../model/termTaxonomy'),
-
-    taxonomy = new TaxonomyModel(pool),
-
-    pagesOut = 9,
-    idReg = /^[0-9a-fA-F]{16}$/i;
+const async = require('async');
+const xss = require('sanitizer');
+const base = require('./base');
+const pool = require('../model/base').pool;
+const util = require('../helper/util');
+const TaxonomyModel = require('../model/termTaxonomy');
+const taxonomy = new TaxonomyModel(pool);
+const pagesOut = 9;
+const idReg = /^[0-9a-fA-F]{16}$/i;
 
 module.exports = {
     /**
@@ -36,7 +32,6 @@ module.exports = {
      * @since 1.1.0
      */
     listCategory: function (req, res, next) {
-        'use strict';
         var page = parseInt(req.params.page, 10) || 1,
             resData,
             type = req.query.type || 'post',
@@ -121,7 +116,6 @@ module.exports = {
      * @since 1.1.0
      */
     newCategory: function (req, res, next) {
-        'use strict';
         var resData,
             type = req.query.type || 'post';
 
@@ -196,7 +190,6 @@ module.exports = {
      * @since 1.1.0
      */
     editCategory: function (req, res, next) {
-        'use strict';
         var resData,
             taxonomyId = req.params.taxonomyId || '';
 
@@ -278,7 +271,6 @@ module.exports = {
      * @since 1.1.0
      */
     saveCategory: function (req, res, next) {
-        'use strict';
         var params = req.body,
             type = req.query.type || 'post',
             referer = req.session.referer;
@@ -363,7 +355,6 @@ module.exports = {
      * @since 1.1.0
      */
     removeCategory: function (req, res, next) {
-        'use strict';
         var params = req.body,
             referer = req.session.referer;
 

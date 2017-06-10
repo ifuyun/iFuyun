@@ -1,0 +1,130 @@
+<? include ../common/header.html ?>
+<div id="body-wrapper">
+    <? include ../elements/leftNav.html ?>
+    <div id="content">
+        <? include ../elements/topBar.html ?>
+        <div id="control-panel">
+            <div id="control-body">
+                <? if(type === 'post') { ?>
+                <h2>文章<a class="button button-add-h2" href="/admin/post/new">写文章</a></h2>
+                <? } else { ?>
+                <h2>页面<a class="button button-add-h2" href="/admin/post/new?type=page">撰写新页面</a></h2>
+                <? } ?>
+                <div class="split-line"><div class="split-corner">&nbsp;</div></div>
+                <div id="status-type">
+                    <ul>
+                        <li><a href="/admin/post"<? if(curStatus === 'all'){ ?> class="font-bold"<? } ?>>全部 (<?= count.all ?>)</a> | </li>
+                        <li><a href="/admin/post?status=publish"<? if(curStatus === 'publish'){ ?> class="font-bold"<? } ?>>已发布 (<?= count.publish ?>)</a> | </li>
+                        <li><a href="/admin/post?status=private"<? if(curStatus === 'private'){ ?> class="font-bold"<? } ?>>私密 (<?= count.private ?>)</a> | </li>
+                        <li><a href="/admin/post?status=draft"<? if(curStatus === 'draft'){ ?> class="font-bold"<? } ?>>草稿 (<?= count.draft ?>)</a> | </li>
+                        <li><a href="/admin/post?status=trash"<? if(curStatus === 'trash'){ ?> class="font-bold"<? } ?>>回收站 (<?= count.trash ?>)</a></li>
+                    </ul>
+                </div>
+                <div id="search-bar">
+                    <form id="form-search" method="get" action="/admin/post?type=<?= type ?>">
+                        <input type="text" class="input keyword" id="keyword" name="keyword" placeholder="搜索..." value="<?= curKeyword ?>" />
+                        <input type="submit" class="button" value="<?= type === 'post' ? '搜索文章' : '搜索页面' ?>" />
+                    </form>
+                </div>
+                <div class="table-nav clear-both">
+                    <form method="get" action="/admin/post">
+                        <span><input type="button" class="button" value="编辑" /></span>
+                        <span><input type="button" class="button button-spacing" value="删除" /></span>
+                        <span><select class="input" name="date">
+                            <option value="">全部日期</option>
+                            <? archiveDates.forEach(function(archive){ archive = archive.get(); ?><option value="<?= archive.linkDate ?>"<? if(archive.linkDate === curDate){?> selected="selected"<? } ?>><?= archive.displayDate ?></option><? }) ?>
+                        </select></span>
+                        <span><select class="input" name="category">
+                            <option value="">所有分类</option>
+                            <? categories.catArray.forEach(function (cat){?>
+                                <option value="<?= cat.slug || cat.name ?>"<? if(cat.slug === curCategory || cat.name === curCategory){?> selected="selected"<? } ?>><? for(var idx = 1; idx < cat.level; idx += 1){ ?>&nbsp;&nbsp;&nbsp;&nbsp;<? } ?><?= cat.name ?></option>
+                            <? }) ?>
+                        </select></span>
+                        <span><input type="submit" class="button" value="筛选" /></span>
+                    </form>
+                </div>
+                <div>
+                    <table class="list-table">
+                        <thead>
+                            <tr>
+                                <th width="2%" class="column-check"><input type="checkbox" class="checkAll" /></th>
+                                <th width="18%">标题</th>
+                                <th width="8%">日期</th>
+                                <th width="10%">分类目录</th>
+                                <th width="16%">标签</th>
+                                <th width="8%">修改时间</th>
+                                <th width="8%">创建时间</th>
+                                <th width="5%" class="column-count">访问</th>
+                                <th width="5%" class="column-count">评论</th>
+                                <th width="5%">作者</th>
+                                <th width="5%">状态</th>
+                                <th width="10%">操作</th>
+                            </tr>
+                        </thead>
+                        <tfoot>
+                            <tr>
+                                <th class="column-check"><input type="checkbox" class="checkAll" /></th>
+                                <th>标题</th>
+                                <th>日期</th>
+                                <th>分类目录</th>
+                                <th>标签</th>
+                                <th>修改时间</th>
+                                <th>创建时间</th>
+                                <th class="column-count">访问</th>
+                                <th class="column-count">评论</th>
+                                <th>作者</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </tfoot>
+                        <tbody>
+                            <? if(posts && posts.length > 0) { ?>
+                            <? posts.forEach(function(postItem, rowIdx){ ?>
+                            <? var post = postItem.post ?>
+                            <tr<? if(rowIdx % 2 === 0) { ?> class="alternate"<? } ?>>
+                                <td class="column-check"><input type="checkbox" class="checkRow" /></td>
+                                <td><a rel="bookmark" title="<?- post.postTitle ?>" href="<?= post.postGuid ?>" target="_blank"><?- util.cutStr(post.postTitle, 20) ?></a></td>
+                                <td><?= moment(post.postDate).format('YYYY-MM-DD') ?></td>
+                                <td>
+                                    <? postItem.categories.forEach(function(category){ ?>
+                                        <a rel="category" href="/admin/post?category=<?= category.slug ? category.slug : category.name ?>"><?= category.name ?></a>
+                                    <? }) ?>
+                                </td>
+                                <td>
+                                    <? postItem.tags.forEach(function(tag){ ?>
+                                        <a rel="category" href="/admin/post?tag=<?= encodeURIComponent(tag.slug ? tag.slug : tag.name) ?>"><?= tag.name ?></a>
+                                    <? }) ?>
+                                </td>
+                                <td title="<?= moment(post.postModified).format('YYYY-MM-DD HH:mm:ss') ?>"><?= moment(post.postModified).format('YYYY-MM-DD HH:mm:ss') ?></td>
+                                <td title="<?= moment(post.postCreated).format('YYYY-MM-DD HH:mm:ss') ?>"><?= moment(post.postCreated).format('YYYY-MM-DD HH:mm:ss') ?></td>
+                                <td class="column-count"><?= post.postViewCount ?></td>
+                                <td class="column-count"><?= post.commentCount ?></td>
+                                <td><a rel="author" href="/admin/post?author=<?= post.postAuthor ?>"><?- post.User.userDisplayName ?></a></td>
+                                <td><a href="/admin/post?status=<?= post.postStatus ?>"><?= formatter.postStatus(post.postStatus) ?></a></td>
+                                <td>
+                                    <!-- <input type="button" class="button button-not-last btn-edit" value="编辑" /><input type="button" class="button btn-delete" value="删除" /> -->
+                                    <a class="button button-not-last btn-edit" href="/admin/post/<?= post.postId + '?type=' + type ?>">编辑</a><a class="button btn-delete" href="javascript:;">删除</a>
+                                </td>
+                            </tr>
+                            <? }) ?>
+                            <? } else { ?>
+                                <tr class="alternate">
+                                    <td colspan="12">无记录</td>
+                                </tr>
+                            <? } ?>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="table-nav">
+                    <span><input type="button" class="button" value="编辑" /></span>
+                    <span><input type="button" class="button" value="删除" /></span>
+                </div>
+                <? include ../elements/pageBar.html ?>
+            </div>
+        </div>
+    </div>
+    <? include ../elements/pageFooter.html ?>
+</div>
+<script type="text/javascript" src="<?- options.static_host.optionValue ?>/js/common.js"></script>
+<script type="text/javascript" src="<?- options.static_host.optionValue ?>/js/admin/post.js"></script>
+<? include ../common/footer.html ?>

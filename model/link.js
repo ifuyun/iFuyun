@@ -5,11 +5,11 @@
  * @module m_link
  * @requires util, async
  * @author Fuyun
- * @version 1.0.0(2014-06-01)
- * @since 1.0.0(2014-03-08)
+ * @version 3.0.0
+ * @since 1.0.0
  */
-var util = require('../helper/util'),
-    async = require('async');
+const util = require('../helper/util');
+const async = require('async');
 /**
  * 链接(Link)模型：封装链接查询操作
  * @class M_Link
@@ -17,8 +17,8 @@ var util = require('../helper/util'),
  * @param {Object} pool 连接池对象
  * @return {void}
  * @author Fuyun
- * @version 0.0.2(2014-03-15)
- * @since 1.0.0(2014-03-08)
+ * @version 1.0.0
+ * @since 1.0.0
  */
 var Link = function Link(pool) {
     /**
@@ -44,8 +44,8 @@ Link.prototype = {
      * @param {Function} callback 回调函数
      * @return {void}
      * @author Fuyun
-     * @version 1.0.0(2014-06-01)
-     * @since 1.0.0(2014-03-08)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     getHomeLinks: function(callback) {
         var that = this;
@@ -67,8 +67,8 @@ Link.prototype = {
      * @param {Function} callback 回调函数
      * @return {void}
      * @author Fuyun
-     * @version 1.0.0(2014-06-01)
-     * @since 1.0.0(2014-03-08)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     getSiteLinks: function(callback) {
         this.pool.getConnection(function(err, conn) {
@@ -89,8 +89,8 @@ Link.prototype = {
      * @param {Function} callback 回调函数
      * @return {void}
      * @author Fuyun
-     * @version 1.0.0(2014-06-01)
-     * @since 1.0.0(2014-05-31)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     getQuickLinks: function(callback) {//可以和以上两个方法合并
         var that = this;

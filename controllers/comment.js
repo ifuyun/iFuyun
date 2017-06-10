@@ -5,26 +5,22 @@
  * @static
  * @requires async, sanitizer, c_base, m_base, util, m_user, m_comment, m_vote
  * @author Fuyun
- * @version 1.1.0(2015-02-26)
- * @since 1.1.0(2015-02-26)
+ * @version 3.0.0
+ * @since 1.1.0
  */
-var async = require('async'),
-    xss = require('sanitizer'),
-
-    base = require('./base'),
-    pool = require('../model/base').pool,
-    util = require('../helper/util'),
-
-    UserModel = require('../model/user'),
-    CommentModel = require('../model/comment'),
-    VoteModel = require('../model/vote'),
-
-    user = new UserModel(pool),
-    comment = new CommentModel(pool),
-    vote = new VoteModel(pool),
-
-    pagesOut = 9,
-    idReg = /^[0-9a-fA-F]{16}$/i;
+const async = require('async');
+const xss = require('sanitizer');
+const base = require('./base');
+const pool = require('../model/base').pool;
+const util = require('../helper/util');
+const UserModel = require('../model/user');
+const CommentModel = require('../model/comment');
+const VoteModel = require('../model/vote');
+const user = new UserModel(pool);
+const comment = new CommentModel(pool);
+const vote = new VoteModel(pool);
+const pagesOut = 9;
+const idReg = /^[0-9a-fA-F]{16}$/i;
 
 module.exports = {
     /**
@@ -40,7 +36,6 @@ module.exports = {
      * @since 1.1.0
      */
     listComments: function (req, res, next) {
-        'use strict';
         var page = parseInt(req.params.page, 10) || 1,
             resData,
             param;
@@ -120,7 +115,6 @@ module.exports = {
      * @since 1.1.0
      */
     editComment: function (req, res, next) {
-        'use strict';
         var resData,
             commentId = req.params.commentId || '';
 
@@ -187,7 +181,6 @@ module.exports = {
      * @since 1.1.0
      */
     replyComment: function (req, res, next) {
-        'use strict';
         var resData,
             commentId = req.params.commentId || '';
 
@@ -254,7 +247,6 @@ module.exports = {
      * @since 1.1.0
      */
     saveComment: function (req, res, next) {
-        'use strict';
         var params = req.body,
             referer = req.session.referer;
 
@@ -316,7 +308,6 @@ module.exports = {
      * @since 1.1.0
      */
     saveReply: function (req, res, next) {//TODO:需要判断评论关闭的状态
-        'use strict';
         var params = req.body,
             user = {},
             usermeta = {},
@@ -424,7 +415,6 @@ module.exports = {
      * @since 1.1.0
      */
     updateStatus: function (req, res, next) {
-        'use strict';
         var params = req.body,
             referer = req.session.referer;
 
@@ -498,7 +488,6 @@ module.exports = {
      * @since 1.1.0
      */
     saveVote: function (req, res, next) {
-        'use strict';
         var params = req.body,
             user = {};
 

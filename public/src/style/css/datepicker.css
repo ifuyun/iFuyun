@@ -1,0 +1,116 @@
+.datepicker {
+  background-color: #fff;
+  border: 1px solid #bbb;
+  padding: 2px;
+  width: 180px;
+  z-index: 9999;
+}
+.datepicker * {
+  font-size: 12px;
+  font-family: "宋体,Arial";
+}
+.dateDiv {
+  clear: both;
+}
+.dateDiv table {
+  border: 1px solid #C5D9E8;
+}
+.dateDiv th,
+.dateDiv td {
+  line-height: 20px;
+  text-align: center;
+  font-weight: normal;
+}
+/*.dateDiv td {cursor:pointer;}*/
+.dateDiv .weekTitle {
+  background: #C4E9FF;
+}
+.dateDiv .active {
+  background: #D6F0FF;
+}
+.dateDiv .today {
+  color: #00f;
+}
+.dateDiv .invalid,
+.controlDiv .invalid {
+  color: #aaa;
+}
+.dateDiv .hover {
+  background: #C5E9FF;
+  cursor: pointer;
+}
+.controlDiv {
+  height: 22px;
+  padding: 2px;
+  margin-bottom: 2px;
+}
+.controlDiv div {
+  float: left;
+}
+.controlDiv .prevYear,
+.controlDiv .prevMonth,
+.controlDiv .nextMonth,
+.controlDiv .nextYear {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+.controlDiv .prevYear {
+  background: url("/style/img/datepicker.gif") no-repeat scroll 0 0;
+}
+.controlDiv .prevMonth {
+  background: url("/style/img/datepicker.gif") no-repeat scroll -16px 0;
+}
+.controlDiv .nextMonth {
+  background: url("/style/img/datepicker.gif") no-repeat scroll -32px 0;
+  margin-left: 12px;
+}
+.controlDiv .nextYear {
+  background: url("/style/img/datepicker.gif") no-repeat scroll -48px 0;
+}
+.controlDiv .monthMenu,
+.controlDiv .yearMenu {
+  width: 50px;
+}
+.controlDiv .pickMonth,
+.controlDiv .pickYear,
+.controlDiv .closeYear,
+.controlDiv .ctrlYear {
+  cursor: pointer;
+}
+.controlDiv .monthTitle,
+.controlDiv .yearTitle {
+  width: 100%;
+  text-align: center;
+  line-height: 20px;
+  cursor: pointer;
+}
+.controlDiv .monthInput,
+.controlDiv .yearInput {
+  border: 1px solid #ccc;
+  color: #00f;
+  font-weight: bold;
+  height: 16px;
+  text-align: center;
+  width: 100%;
+}
+.controlDiv .monthDiv,
+.controlDiv .yearDiv {
+  position: absolute;
+  background: #fff;
+  border: solid 1px #ccc;
+  z-index: 1;
+  margin-top: 19px;
+}
+/*原本无需设置padding，此处用于覆盖继承的样式，同时取消设置cellpadding*/
+.controlDiv .monthDiv td,
+.controlDiv .yearDiv td,
+.controlDiv .yearBtnTable td {
+  padding: 3px;
+}
+.controlDiv .yearBtnTable {
+  padding: 0 3px;
+}
+.controlDiv .menuHover {
+  background: #C4E9FF;
+}

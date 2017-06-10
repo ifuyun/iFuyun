@@ -4,70 +4,34 @@
  * @module c_post
  * @class C_Post
  * @static
- * @requires fs, path, url, iconv-lite, async, sanitizer, formidable, moment, c_base, m_base, util, logger, m_post, m_link, m_term_taxonomy
+ * @requires fs, path, url, async, sanitizer, formidable, moment, c_base, m_base, util, logger, m_post, m_link, m_term_taxonomy
  * @author Fuyun
- * @version 1.2.0
- * @since 1.0.0(2014-05-16)
+ * @version 2.0.0
+ * @since 1.0.0
  */
-var fs = require('fs'),
-    path = require('path'),
-    url = require('url'),
-    iconv = require('iconv-lite'),
-    async = require('async'),
-    xss = require('sanitizer'),
-    formidable = require('formidable'),
-    moment = require('moment'),
-    
-    base = require('./base'),
-    pool = require('../model/base').pool,
-    util = require('../helper/util'),
-    Logger = require('../helper/logger'),
-    logger = Logger.sysLog,
-    
-    PostModel = require('../model/post'),
-    LinkModel = require('../model/link'),
-    TaxonomyModel = require('../model/termTaxonomy'),
-    
-    post = new PostModel (pool),
-    link = new LinkModel (pool),
-    taxonomy = new TaxonomyModel (pool),
-    
-    pagesOut = 9,
-    idReg = /^[0-9a-fA-F]{16}$/i,
-    // pageReg = /^[1-9][0-9]*$/i,
-    
-    common;
+const fs = require('fs');
+const path = require('path');
+const url = require('url');
+// const iconv = require('iconv-lite');
+const async = require('async');
+const xss = require('sanitizer');
+const formidable = require('formidable');
+const moment = require('moment');
+const base = require('./base');
+const pool = require('../model/base').pool;
+const util = require('../helper/util');
+const logger = require('../helper/logger').sysLog;
+const PostModel = require('../model/post');
+const LinkModel = require('../model/link');
+const TaxonomyModel = require('../model/termTaxonomy');
+const post = new PostModel(pool);
+const link = new LinkModel(pool);
+const taxonomy = new TaxonomyModel(pool);
+const pagesOut = 9;
+const idReg = /^[0-9a-fA-F]{16}$/i;
 
 //共用方法
-common = {
-    /**
-     * 公共方法：查询首页链接
-     * @method getHomeLinks
-     * @static
-     * @param {Function} cb 回调
-     * @return {void}
-     * @author Fuyun
-     * @version 1.0.0
-     * @since 1.0.0
-     */
-    getHomeLinks: function (cb) {
-        'use strict';
-        link.getHomeLinks(cb);
-    },
-    /**
-     * 公共方法：查询站点（非首页）链接
-     * @method getSiteLinks
-     * @static
-     * @param {Function} cb 回调
-     * @return {void}
-     * @author Fuyun
-     * @version 1.0.0
-     * @since 1.0.0
-     */
-    getSiteLinks: function (cb) {
-        'use strict';
-        link.getSiteLinks(cb);
-    },
+let common = {
     /**
      * 公共方法：根据前序遍历查询目录(包含子目录)
      * @method getCategoryArray
@@ -79,22 +43,7 @@ common = {
      * @since 1.0.0
      */
     getCategoryArray: function (cb) {
-        'use strict';
         taxonomy.getCategoryArray('post', cb);
-    },
-    /**
-     * 公共方法：查询全局自动加载的配置项
-     * @method getOptions
-     * @static
-     * @param {Function} cb 回调
-     * @return {void}
-     * @author Fuyun
-     * @version 1.0.0
-     * @since 1.0.0
-     */
-    getOptions: function (cb) {
-        'use strict';
-        base.initOption(cb);
     },
     /**
      * 公共方法：查询公共的基础数据：归档日期、最近post、随机post、热门post、友情链接、顶部链接、分类目录、主导航、站点配置
@@ -107,36 +56,21 @@ common = {
      * @since 1.0.0
      */
     getCommonData: function (param, cb) {
-        'use strict';
         async.parallel({
             archiveDates: function (cb) {//查询post归档日期, TODO:不能直接用post.getArchiveDates，否则this将引用异常(apply)
                 post.getArchiveDates('post', cb);
             },
-            recentPosts: function (cb) {//查询最近post
-                post.getRecentPosts(cb);
-            },
-            randPosts: function (cb) {//查询随机post
-                post.getRandPosts(cb);
-            },
-            hotPosts: function(cb) {//查询热门post
-                post.getHotPosts(cb);
-            },
-            friendLinks: param.from !== 'list' || param.page > 1 ? common.getSiteLinks : common.getHomeLinks,
-            quickLinks: function (cb) {//查询顶部链接
-                link.getQuickLinks(cb);
-            },
-            // categories: function (cb) {//查询目录(包含子目录)HTML
-            //     taxonomy.getCategoryDom(cb);
-            // },
-            categories: function (cb) {//查询目录(包含子目录)
-                taxonomy.getCategoryTree(cb);
-            },
-            mainNavs: function (cb) {//查询主导航
-                taxonomy.getMainNavs(cb);
-            },
-            options: common.getOptions
+            recentPosts: post.getRecentPosts.bind(post),
+            randPosts: post.getRandPosts.bind(post),
+            hotPosts: post.getHotPosts.bind(post),
+            friendLinks: param.from !== 'list' || param.page > 1 ? link.getSiteLinks.bind(link) : link.getHomeLinks.bind(link),
+            quickLinks: link.getQuickLinks.bind(link),//查询顶部链接
+            // categories: taxonomy.getCategoryDom.bind(taxonomy),//查询目录(包含子目录)HTML
+            categories: taxonomy.getCategoryTree.bind(taxonomy),//查询目录(包含子目录)
+            mainNavs: taxonomy.getMainNavs.bind(taxonomy),//查询主导航
+            options: base.getInitOptions.bind(base)
         }, function (err, results) {
-            if(err) {
+            if (err) {
                 cb(err);
             } else {
                 cb(null, results);
@@ -155,11 +89,10 @@ module.exports = {
      * @param {Object} next 路由对象
      * @return {void}
      * @author Fuyun
-     * @version 1.0.0(2014-06-12)
-     * @since 1.0.0(2014-05-25)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     listPosts: function (req, res, next) {
-        'use strict';
         var page = parseInt(req.params.page, 10) || 1, resData;
 
         resData = {
@@ -194,7 +127,10 @@ module.exports = {
                 }, cb);
             },
             commonData: function (cb) {
-                common.getCommonData({page: page, from: 'list'}, cb);
+                common.getCommonData({
+                    page: page,
+                    from: 'list'
+                }, cb);
             }
         }, function (err, results) {
             if (err) {
@@ -241,11 +177,10 @@ module.exports = {
      * @param {Object} next 路由对象
      * @return {void}
      * @author Fuyun
-     * @version 1.0.0(2015-02-25)
-     * @since 1.0.0(2014-05-25)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     showPost: function (req, res, next) {
-        'use strict';
         var postId = req.params.postId, page = req.params.page || 1, resData;
 
         if (!postId || !idReg.test(postId)) {
@@ -281,8 +216,8 @@ module.exports = {
             },
             token: req.csrfToken()
         };
-        
-        if(req.session.user){
+
+        if (req.session.user) {
             resData.user.userName = req.session.user.user.user_display_name;
             resData.user.userEmail = req.session.user.user.user_email;
         }
@@ -305,7 +240,7 @@ module.exports = {
                             message: 'Page Not Found'
                         }));
                     }
-                    if(!util.isAdminUser(req) && data.post.post_status !== 'publish'){//无管理员权限不允许访问非公开文章(包括草稿)
+                    if (!util.isAdminUser(req) && data.post.post_status !== 'publish') {//无管理员权限不允许访问非公开文章(包括草稿)
                         // logger.warn(util.getAccessUser(req), '- "postId: ' + data.post.post_id + ' is ' + data.post.post_status + '"');
                         logger.warn(util.getErrorLog({
                             req: req,
@@ -334,10 +269,10 @@ module.exports = {
                         taxonomy.getParentCategories(results.post.category[0].parent, cb);
                     }
                 }],
-            getPrev: ['post', function(cb, results){
+            getPrev: ['post', function (cb, results) {
                 post.getPrevPost(postId, cb);
             }],
-            getNext: ['post', function(cb, results){
+            getNext: ['post', function (cb, results) {
                 post.getNextPost(postId, cb);
             }],
             //@formatter:on
@@ -345,14 +280,15 @@ module.exports = {
                 common.getCommonData({}, cb);
             }
         }, function (err, results) {
-            var crumb = [], curPost = results.post, crumbData = results.crumb, crumbIdx, options = results.commonData.options, tagIdx, tagArr = [];
+            var crumb = [], curPost = results.post, crumbData = results.crumb, crumbIdx, options, tagIdx, tagArr = [];
 
             if (err) {
                 return next(err);
             }
-            if(!curPost.category[0]){
+            if (!curPost.category[0]) {
                 return next('分类不存在');
             }
+            options = results.commonData.options;
 
             crumb.push({
                 'title': '首页',
@@ -363,7 +299,7 @@ module.exports = {
 
             if (crumbData) {
                 resData.curNav = crumbData[0].slug;
-                for ( crumbIdx = 0; crumbIdx < crumbData.length; crumbIdx += 1) {
+                for (crumbIdx = 0; crumbIdx < crumbData.length; crumbIdx += 1) {
                     crumb.push({
                         'title': crumbData[crumbIdx].name,
                         'tooltip': crumbData[crumbIdx].description,
@@ -387,7 +323,7 @@ module.exports = {
             } else {
                 resData.meta.title = util.getTitle([curPost.post.post_title, options.site_name.option_value]);
             }
-            for ( tagIdx = 0; tagIdx < curPost.tag.length; tagIdx += 1) {
+            for (tagIdx = 0; tagIdx < curPost.tag.length; tagIdx += 1) {
                 tagArr.push(curPost.tag[tagIdx].name);
             }
             tagArr.push(options.site_keywords.option_value);
@@ -395,7 +331,6 @@ module.exports = {
             resData.meta.description = (page > 1 ? '(第' + page + '页)' : '') + (curPost.post.post_excerpt || util.cutStr(util.filterHtmlTag(curPost.post.post_content), 140));
             resData.meta.keywords = tagArr.join(',');
             resData.meta.author = options.site_author.option_value;
-            //curPost.author.user_display_name + ',' +
 
             resData.post = curPost;
             resData.comments = curPost.comments;
@@ -421,8 +356,7 @@ module.exports = {
      * @version 1.0.0
      * @since 1.0.0
      */
-    showPage: function(req, res, next){//req.connection.remoteAddress,req.url,req.originalUrl
-        'use strict';
+    showPage: function (req, res, next) {//req.connection.remoteAddress,req.url,req.originalUrl
         var reqUrl = url.parse(req.url), reqPath = reqUrl.pathname, resData;
 
         resData = {
@@ -450,8 +384,8 @@ module.exports = {
             },
             token: req.csrfToken()
         };
-        
-        if(req.session.user){
+
+        if (req.session.user) {
             resData.user.userName = req.session.user.user.user_display_name;
             resData.user.userEmail = req.session.user.user.user_email;
         }
@@ -474,7 +408,7 @@ module.exports = {
                             message: 'Page Not Found'
                         }));
                     }
-                    if(!util.isAdminUser(req) && data.post.post_status !== 'publish'){//无管理员权限不允许访问非公开文章(包括草稿)
+                    if (!util.isAdminUser(req) && data.post.post_status !== 'publish') {//无管理员权限不允许访问非公开文章(包括草稿)
                         // logger.warn(util.getAccessUser(req), '- "postId: ' + data.post.post_id + ' is ' + data.post.post_status + '"');
                         logger.warn(util.getErrorLog({
                             req: req,
@@ -498,19 +432,19 @@ module.exports = {
                 common.getCommonData({}, cb);
             }
         }, function (err, results) {
-            var curPost = results.post, options = results.commonData.options, tagArr = [];
+            var curPost = results.post, options, tagArr = [];
 
             if (err) {
                 return next(err);
             }
+            options = results.commonData.options
 
             tagArr.push(options.site_keywords.option_value);
-            
+
             resData.meta.title = util.getTitle([curPost.post.post_title, options.site_name.option_value]);
             resData.meta.description = (curPost.post.post_excerpt || util.cutStr(util.filterHtmlTag(curPost.post.post_content), 140));//TODO
             resData.meta.keywords = tagArr.join(',');
             resData.meta.author = options.site_author.option_value;
-            //curPost.author.user_display_name + ',' +
 
             resData.post = curPost;
             resData.comments = curPost.comments;
@@ -521,7 +455,6 @@ module.exports = {
 
             res.render('v2/pages/page', resData);
         });
-        // next();
     },
     /**
      * 根据日期(年月)显示归档文章列表
@@ -536,7 +469,6 @@ module.exports = {
      * @since 1.0.0
      */
     listByDate: function (req, res, next) {
-        'use strict';
         var page = parseInt(req.params.page, 10) || 1,
             year = parseInt(req.params.year, 10) || new Date().getFullYear(),
             month = parseInt(req.params.month, 10) || (new Date().getMonth() + 1),
@@ -580,10 +512,11 @@ module.exports = {
                 common.getCommonData({}, cb);
             }
         }, function (err, results) {
-            var crumb = [], options = results.commonData.options, title = '';
+            var crumb = [], options, title = '';
             if (err) {
                 next(err);
             } else {
+                options = results.commonData.options;
                 crumb = [{
                     'title': '首页',
                     'tooltip': 'iFuyun',
@@ -648,12 +581,9 @@ module.exports = {
      * @since 1.0.0
      */
     listByCategory: function (req, res, next) {
-        'use strict';
-        //@formatter:off
         var page = parseInt(req.params.page, 10) || 1,
             category = req.params.category,
             resData;
-        //@formatter:on
 
         resData = {
             curNav: '',
@@ -692,7 +622,7 @@ module.exports = {
                 common.getCommonData({}, cb);
             }
         }, function (err, results) {
-            var crumb = [], crumbIdx, crumbData, options = results.commonData.options, title = '';
+            var crumb = [], crumbIdx, crumbData, options, title = '';
             if (err) {
                 return next(err);
             }
@@ -703,6 +633,7 @@ module.exports = {
                     message: 'Page Not Found'
                 }, next);
             }
+            options = results.commonData.options;
             crumbData = results.allPosts.crumb;
             crumb = [{
                 'title': '首页',
@@ -710,7 +641,7 @@ module.exports = {
                 'url': '/',
                 'headerFlag': false
             }];
-            for ( crumbIdx = 0; crumbIdx < crumbData.length; crumbIdx += 1) {
+            for (crumbIdx = 0; crumbIdx < crumbData.length; crumbIdx += 1) {
                 crumb.push({
                     'title': crumbData[crumbIdx].name,
                     'tooltip': crumbData[crumbIdx].description,
@@ -759,12 +690,9 @@ module.exports = {
      * @since 1.0.0
      */
     listByTag: function (req, res, next) {
-        'use strict';
-        //@formatter:off
         var page = parseInt(req.params.page, 10) || 1,
             tag = req.params.tag,
             resData;
-        //@formatter:on
 
         resData = {
             curNav: '',
@@ -803,7 +731,7 @@ module.exports = {
                 common.getCommonData({}, cb);
             }
         }, function (err, results) {
-            var crumb = [], crumbData, options = results.commonData.options, tagName;
+            var crumb = [], crumbData, options, tagName;
             if (err) {
                 return next(err);
             }
@@ -814,6 +742,7 @@ module.exports = {
                     message: 'Page Not Found'
                 }, next);
             }
+            options = results.commonData.options;
             crumbData = results.allPosts.crumb;
             tagName = crumbData.tagName;
             crumb = [{
@@ -871,7 +800,6 @@ module.exports = {
      * @since 1.0.0
      */
     listEdit: function (req, res, next) {
-        'use strict';
         var page = parseInt(req.params.page, 10) || 1, resData = {
             meta: {
                 title: ''
@@ -892,15 +820,15 @@ module.exports = {
         if (req.query.type === 'page') {
             resData.page = 'page';
             param.type = 'page';
-            
+
             async.parallel({
                 allPosts: function (cb) {
                     post.getAllPosts(param, cb);
                 },
-                archiveDates: function(cb){
+                archiveDates: function (cb) {
                     post.getArchiveDates(param.type, cb);
                 },
-                options: common.getOptions,
+                options: base.getInitOptions.bind(base),
                 countAll: function (cb) {
                     post.getPostCount(['publish', 'private', 'draft', 'auto-draft', 'trash'], 'page', cb);
                 },
@@ -983,10 +911,10 @@ module.exports = {
                     }
                 },
                 categories: common.getCategoryArray,
-                archiveDates: function(cb){
+                archiveDates: function (cb) {
                     post.getArchiveDates(param.type, cb);
                 },
-                options: common.getOptions,
+                options: base.getInitOptions.bind(base),
                 countAll: function (cb) {
                     post.getPostCount(['publish', 'private', 'draft', 'auto-draft', 'trash'], 'post', cb);
                 },
@@ -1082,7 +1010,6 @@ module.exports = {
      * @since 1.0.0
      */
     newPost: function (req, res, next) {
-        'use strict';
         var resData = {
             meta: {
                 title: ''
@@ -1093,7 +1020,7 @@ module.exports = {
 
         async.parallel({
             categories: common.getCategoryArray,
-            options: common.getOptions
+            options: base.getInitOptions.bind(base)
         }, function (err, results) {
             var options = results.options;
             if (err) {
@@ -1126,15 +1053,14 @@ module.exports = {
      * @since 1.0.0
      */
     savePost: function (req, res, next) {
-        'use strict';
         var params = req.body,
             referer = req.session.referer,
             type = req.query.type;
-        
-        if(!type || type !== 'page'){
+
+        if (!type || type !== 'page') {
             type = 'post';
         }
-        
+
         //postTitle, postContent, postExcerpt, postTag;
         //params.postContent不能过滤，否则将过滤掉属性
         params.postTitle = xss.sanitize(params.postTitle);
@@ -1146,7 +1072,7 @@ module.exports = {
         params.postUrl = xss.sanitize(params.postUrl);
         params.type = type;
 
-        if ( typeof params.postTag === 'string') {
+        if (typeof params.postTag === 'string') {
             params.postTag = params.postTag.trim();
             if (params.postTag === '') {
                 params.postTag = [];
@@ -1220,16 +1146,19 @@ module.exports = {
         }
 
         async.auto({
-            options: common.getOptions,
-            post: ['options', function (cb, result) {
-                post.savePost(params, result.options, cb);
-            }]
+            // options: base.getInitOptions.bind(base),
+            // post: ['options', function (cb, result) {
+            //     post.savePost(params, result.options, cb);
+            // }]
+            post: function (cb) {
+                post.savePost(params, cb);
+            }
         }, function (err, results) {
             if (err) {
                 next(err);
             } else {
                 delete(req.session.referer);
-                
+
                 res.set('Content-type', 'application/json');
                 res.send({
                     status: 200,
@@ -1255,7 +1184,6 @@ module.exports = {
      * @since 1.0.0
      */
     editPost: function (req, res, next) {
-        'use strict';
         var postId = req.params.postId, resData;
 
         if (!postId || !idReg.test(postId)) {
@@ -1298,7 +1226,7 @@ module.exports = {
                 });
             },
             categories: common.getCategoryArray,
-            options: common.getOptions
+            options: base.getInitOptions.bind(base)
         }, function (err, results) {
             var curPost = results.post, options = results.options, tagIdx, tagArr = [], catIdx, catArr = [], postType;
             if (err) {
@@ -1307,10 +1235,10 @@ module.exports = {
             postType = results.post.post.post_type;
             resData.meta.title = util.getTitle([postType === 'post' ? '编辑文章' : '编辑页面', '管理后台', options.site_name.option_value]);
 
-            for ( tagIdx = 0; tagIdx < curPost.tag.length; tagIdx += 1) {
+            for (tagIdx = 0; tagIdx < curPost.tag.length; tagIdx += 1) {
                 tagArr.push(curPost.tag[tagIdx].name);
             }
-            for ( catIdx = 0; catIdx < curPost.category.length; catIdx += 1) {
+            for (catIdx = 0; catIdx < curPost.category.length; catIdx += 1) {
                 catArr.push(curPost.category[catIdx].taxonomy_id);
             }
             resData.util = util;
@@ -1342,7 +1270,6 @@ module.exports = {
      * @unimplemented
      */
     batchSave: function (req, res, next) {//TODO
-        'use strict';
     },
     /**
      * 删除文章
@@ -1356,7 +1283,6 @@ module.exports = {
      * @unimplemented
      */
     removePost: function (req, res, next) {//TODO
-        'use strict';
     },
     /**
      * 多媒体列表
@@ -1370,8 +1296,7 @@ module.exports = {
      * @version 1.2.0
      * @since 1.2.0
      */
-    listMedia: function(req, res, next){
-        'use strict';
+    listMedia: function (req, res, next) {
         var page = parseInt(req.params.page, 10) || 1, resData = {
             meta: {
                 title: ''
@@ -1390,11 +1315,11 @@ module.exports = {
             fromAdmin: true
         };
         async.parallel({
-            allMedia: function(cb){
+            allMedia: function (cb) {
                 post.getAllPosts(param, cb);
             },
-            options: common.getOptions,
-            archiveDates: function(cb){
+            options: base.getInitOptions.bind(base),
+            archiveDates: function (cb) {
                 post.getArchiveDates(param.type, cb);
             },
             countAll: function (cb) {
@@ -1403,7 +1328,7 @@ module.exports = {
             countDeleted: function (cb) {
                 post.getPostCount('trash', param.type, cb);
             }
-        }, function(err, results){
+        }, function (err, results) {
             var paramArr = [], titleArr = [], options = results.options;
 
             if (param.keyword) {
@@ -1467,8 +1392,7 @@ module.exports = {
      * @version 1.2.0
      * @since 1.2.0
      */
-    newMedia: function(req, res, next){
-        'use strict';
+    newMedia: function (req, res, next) {
         var resData = {
             meta: {
                 title: ''
@@ -1478,7 +1402,7 @@ module.exports = {
         };
 
         async.parallel({
-            options: common.getOptions
+            options: base.getInitOptions.bind(base)
         }, function (err, results) {
             var options = results.options;
             if (err) {
@@ -1503,39 +1427,38 @@ module.exports = {
      * @version 1.2.0
      * @since 1.2.0
      */
-    uploadFile: function(req, res, next) {
-        var form = new formidable.IncomingForm(), yearPath, uploadPath, now = moment();
+    uploadFile: function (req, res, next) {
+        var form = new formidable.IncomingForm(), yearPath, uploadPath, now = moment(), curYear = now.format('YYYY'), curMonth = now.format('MM');
 
-        yearPath = path.join(__dirname, '..', 'public', 'upload', now.format('YYYY'));
-        uploadPath = path.join(yearPath, now.format('MM'));
-        if(!fs.existsSync(yearPath)){
+        yearPath = path.join(__dirname, '..', 'public', 'upload', curYear);
+        uploadPath = path.join(yearPath, curMonth);
+        if (!fs.existsSync(yearPath)) {
             fs.mkdirSync(yearPath);
         }
-        if(!fs.existsSync(uploadPath)){
+        if (!fs.existsSync(uploadPath)) {
             fs.mkdirSync(uploadPath);
         }
         form.uploadDir = uploadPath;
         form.keepExtensions = true;
         form.maxFieldsSize = 200 * 1024 * 1024;
 
-        form.on('progress', function(bytesReceived, bytesExpected) {
+        form.on('progress', function (bytesReceived, bytesExpected) {
             // console.log(bytesReceived, bytesExpected);
         });
-        form.on('field', function(name, value) {
+        form.on('field', function (name, value) {
             // console.log('field', name, value);
         });
-        form.on('file', function(name, file) {
+        form.on('file', function (name, file) {
             // console.log('file', name, file);
         });
-        form.on('end', function() {
-            res.set('Content-type', 'application/json');
-            // res.status(200);
-            res.send({
-                code: 200,
-                msg: 'test'
-            });
+        form.on('end', function () {
+            // res.set('Content-type', 'application/json');
+            // res.send({
+            //     code: 200,
+            //     msg: 'test'
+            // });
         });
-        form.on('error', function(err) {
+        form.on('error', function (err) {
             logger.error(util.getErrorLog({
                 req: req,
                 funcName: 'uploadFile',//TODO:func.name
@@ -1545,15 +1468,49 @@ module.exports = {
                 msg: err
             }));
         });
-        form.parse(req, function(err, fields, files){
-            var fileExt = files.mediafile.name.split('.'), filename;
-            if(fileExt.length > 1){
+        form.parse(req, function (err, fields, files) {
+            var fileExt = files.mediafile.name.split('.');
+            if (fileExt.length > 1) {
                 fileExt = '.' + fileExt.pop();
             } else {
                 fileExt = '';
             }
-            filename = path.join(uploadPath, util.getUuid() + fileExt);
-            fs.renameSync(files.mediafile.path, filename);
+            var filename = util.getUuid() + fileExt;
+            var filepath = path.join(uploadPath, filename);
+            var fileData = {};
+            fs.renameSync(files.mediafile.path, filepath);
+
+            fileData.postTitle = fileData.postExcerpt = fileData.postContent = xss.sanitize(files.mediafile.name);
+            fileData.postCategory = '';
+            fileData.user = req.session.user;
+            fileData.postUrl = '';
+            fileData.postStatus = 'publish';
+            fileData.type = 'attachment';
+            fileData.postTag = [];
+            fileData.postId = '';
+            fileData.postUrl = '/static/' + curYear + '/' + curMonth + '/' + filename;
+
+            async.auto({
+                post: function (cb) {
+                    post.savePost(fileData, cb);
+                }
+            }, function (err, results) {
+                if (err) {
+                    next(err);
+                } else {
+                    delete(req.session.referer);
+
+                    res.set('Content-type', 'application/json');
+                    res.send({
+                        status: 200,
+                        code: 0,
+                        message: null,
+                        data: {
+                            url: '/admin/media'
+                        }
+                    });
+                }
+            });
 
             logger.info(util.getInfoLog({
                 req: req,

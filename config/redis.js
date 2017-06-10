@@ -1,11 +1,13 @@
 ﻿/**
  * Redis配置
+ * @module cfg_redis
  * @author Fuyun
- * @version 1.0.0(2014-05-16)
- * @since 1.0.0(2014-05-16)
+ * @version 3.0.0
+ * @since 1.0.0
  */
+const credential = require('./credentials');
 module.exports = {
     host: '127.0.0.1',
     port: 6379,
-    passwd: 'pwd@Redis'
+    passwd: credential.redis[(process.env.ENV && process.env.ENV.trim()) || 'development'].password
 };

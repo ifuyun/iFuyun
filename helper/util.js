@@ -6,10 +6,10 @@
  * @static
  * @requires crypto
  * @author Fuyun
- * @version 2.2.0
- * @since 1.0.0(2014-05-20)
+ * @version 3.0.0
+ * @since 1.0.0
  */
-var crypto = require('crypto');
+const crypto = require('crypto');
 
 module.exports = {
     /**
@@ -21,11 +21,10 @@ module.exports = {
      * @param {Number} pagesOut 每页显示页数
      * @return {Object} 分页数据对象
      * @author Fuyun
-     * @version 1.0.0(2014-06-01)
-     * @since 1.0.0(2014-05-20)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     formatPages: function (page, pages, pagesOut) {
-        'use strict';
         var pageData = {
             start: 1,
             end: 1
@@ -63,14 +62,13 @@ module.exports = {
      * @param {Number} [pagesOut=9] 每页显示页数
      * @return {Object} 分页对象
      * @author Fuyun
-     * @version 1.0.0(2014-06-01)
-     * @since 1.0.0(2014-05-20)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     paginator: function (page, pages, pagesOut) {
-        'use strict';
         var pageData, data;
 
-        if ( typeof page === 'string') {//page是字符串
+        if (typeof page === 'string') {//page是字符串
             page = parseInt(page, 10);
         }
         page = page || 1;
@@ -92,6 +90,26 @@ module.exports = {
         };
         return data;
     },
+    createCrumb: function (crumbData, separator) {
+        let crumbArr = [];
+        separator = separator || '&nbsp;→&nbsp;';
+        crumbData.unshift({
+            'title': '首页',
+            'tooltip': 'iFuyun',
+            'url': '/',
+            'headerFlag': false
+        });
+        crumbData.forEach((crumb) => {
+            if (crumb.url !== '' && !crumb.headerFlag) {
+                crumbArr.push('<a title="' + crumb.tooltip + '" href="' + crumb.url + '">' + crumb.title + '</a>');
+            } else if (crumb.url !== '' && crumb.headerFlag) {
+                crumbArr.push('<h3><a title="' + crumb.tooltip + '" href="' + crumb.url + '">' + crumb.title + '</a></h3>');
+            } else {
+                crumbArr.push('<span title="' + crumb.tooltip + '">' + crumb.title + '</span>');
+            }
+        });
+        return crumbArr.join(separator);
+    },
     /**
      * 根据月份返回月份名称
      * @method getMonthName
@@ -99,11 +117,10 @@ module.exports = {
      * @param {Number} [month=1] 月份(1-12)，默认1
      * @return {String} 月份名称
      * @author Fuyun
-     * @version 1.0.0(2014-05-20)
-     * @since 1.0.0(2014-05-20)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     getMonthName: function (month) {
-        'use strict';
         var monthNames = {
             '1': '一月',
             '2': '二月',
@@ -133,11 +150,10 @@ module.exports = {
      * @param {Number} 指定长度
      * @return {String} 截取结果字符串
      * @author Fuyun
-     * @version 1.0.0(2014-06-03)
-     * @since 1.0.0(2014-05-20)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     cutStr: function (srcStr, cutLength) {
-        'use strict';
         var resultStr = '', i = 0, n = 0, curChar;
 
         srcStr = srcStr || '';
@@ -168,13 +184,12 @@ module.exports = {
      * @param {String} srcStr 源字符串
      * @return {String} 过滤结果字符串
      * @author Fuyun
-     * @version 1.0.0(2014-05-20)
-     * @since 1.0.0(2014-03-10)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     filterHtmlTag: function (srcStr) {
-        'use strict';
         return srcStr.replace(/<\/?[^>]*>/ig, '');
-        //\w\s~!@#$%^&*\(\)\-=+\[\]\{\}\\\|;:'",\.\/<\?\u4E00-\uFA29
+        // \w\s~!@#$%^&*\(\)\-=+\[\]\{\}\\\|;:'",\.\/<\?\u4E00-\uFA29
     },
     /**
      * 获取访问者IP
@@ -187,7 +202,6 @@ module.exports = {
      * @since 1.0.0
      */
     getRemoteIp: function (req) {
-        'use strict';
         return req.headers['x-real-ip'] || req.headers['x-forwarded-for'] || req.ip || req._remoteAddress || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress;
     },
     /**
@@ -201,7 +215,6 @@ module.exports = {
      * @since 1.0.0
      */
     getHttpMethod: function (req) {
-        'use strict';
         return req.method;
     },
     /**
@@ -215,7 +228,6 @@ module.exports = {
      * @since 1.0.0
      */
     getUrl: function (req) {
-        'use strict';
         return req.originalUrl || req.url;
     },
     /**
@@ -229,7 +241,6 @@ module.exports = {
      * @since 1.0.0
      */
     getHttpStatus: function (res) {
-        'use strict';
         return res.statusCode || '';
     },
     /**
@@ -243,7 +254,6 @@ module.exports = {
      * @since 1.0.0
      */
     getUserAgent: function (req) {
-        'use strict';
         return req.headers['user-agent'];
     },
     /**
@@ -257,7 +267,6 @@ module.exports = {
      * @since 1.0.0
      */
     getHttpVersion: function (req) {
-        'use strict';
         return req.httpVersionMajor + '.' + req.httpVersionMinor;
     },
     /**
@@ -271,7 +280,6 @@ module.exports = {
      * @since 1.0.0
      */
     getReferrer: function (req) {
-        'use strict';
         return req.headers.referer || req.headers.referrer;
     },
     /**
@@ -286,7 +294,6 @@ module.exports = {
      * @since 1.0.0
      */
     getResponseHeader: function (res, field) {
-        'use strict';
         if (!res._header) {
             return;
         }
@@ -306,7 +313,6 @@ module.exports = {
      * @since 1.0.0
      */
     getContentLength: function (res) {
-        'use strict';
         return this.getResponseHeader(res, 'content-length');
     },
     /**
@@ -321,7 +327,6 @@ module.exports = {
      * @since 1.0.0
      */
     getAccessLog: function (req, res) {
-        'use strict';
         return this.getRemoteIp(req) + ' - ' + this.getHttpMethod(req) + ' ' + this.getHttpStatus(res) + ' ' + this.getUrl(req);
     },
     /**
@@ -334,8 +339,7 @@ module.exports = {
      * @version 1.0.0
      * @since 1.0.0
      */
-    getAccessUser: function(req){
-        'use strict';
+    getAccessUser: function (req) {
         return this.getRemoteIp(req) + ' - "' + this.getUserAgent(req) + '"';
     },
     /**
@@ -353,7 +357,6 @@ module.exports = {
      * @since 1.0.0
      */
     catchError: function (msgObj, next) {
-        'use strict';
         msgObj.message = msgObj.message || 'Page Not Found';
         msgObj.status = msgObj.status || 404;
         msgObj.code = msgObj.code || 404;
@@ -373,7 +376,6 @@ module.exports = {
      * @since 1.0.0
      */
     md5: function (str) {
-        'use strict';
         var md5sum = crypto.createHash('md5');
         md5sum.update(str);
         return md5sum.digest('hex');
@@ -390,9 +392,11 @@ module.exports = {
      * @since 1.0.0
      */
     getTitle: function (titleArr, delimiter) {
-        'use strict';
         delimiter = delimiter || ' - ';
-        if ( typeof titleArr === 'string') {
+        if (!titleArr) {
+            titleArr = [];
+        }
+        if (typeof titleArr === 'string') {
             titleArr = [titleArr];
         }
 
@@ -408,11 +412,10 @@ module.exports = {
      * @since 1.0.0(2014-06-17)
      */
     getUuid: function () {
-        'use strict';
         //1e12 + 0x4ba0000000
-        var timeStamp = new Date ().getTime() - 1324806901760, uuid = timeStamp.toString(16), idx = 0, tmpStr = '';
+        var timeStamp = new Date().getTime() - 1324806901760, uuid = timeStamp.toString(16), idx = 0, tmpStr = '';
 
-        for ( idx = 0; idx < 16 - uuid.length; idx += 1) {
+        for (idx = 0; idx < 16 - uuid.length; idx += 1) {
             tmpStr += Math.floor(Math.random() * 16).toString(16);
         }
 
@@ -429,9 +432,8 @@ module.exports = {
      * @since 1.0.0
      */
     isEmptyObject: function (obj) {
-        'use strict';
         var name;
-        for (name in obj ) {
+        for (name in obj) {
             if (obj.hasOwnProperty(name)) {
                 return false;
             }
@@ -451,7 +453,6 @@ module.exports = {
      * @since 1.0.0
      */
     inArray: function (elem, arr, i) {
-        'use strict';
         var len;
         if (arr) {
             len = arr.length;
@@ -478,8 +479,7 @@ module.exports = {
      * @version 1.0.0
      * @since 1.0.0
      */
-    isArray: function(obj){
-        'use strict';
+    isArray: function (obj) {
         return Object.prototype.toString.call(obj) === '[object Array]';
     },
     /**
@@ -492,8 +492,7 @@ module.exports = {
      * @version 1.0.0
      * @since 1.0.0
      */
-    isLogin: function(req){
-        'use strict';
+    isLogin: function (req) {
         var curUser = req.session.user;
         return curUser ? !!curUser : false;
     },
@@ -507,8 +506,7 @@ module.exports = {
      * @version 1.0.0
      * @since 1.0.0
      */
-    isAdminUser: function(req) {
-        'use strict';
+    isAdminUser: function (req) {
         var curUser = req.session.user;
         return this.isLogin(req) && curUser.usermeta && curUser.usermeta.role === 'admin';
     },
@@ -522,20 +520,19 @@ module.exports = {
      * @version 2.2.0
      * @since 2.2.0
      */
-    getErrorLog: function(logObj){
-        'use strict';
+    getErrorLog: function (logObj) {
         // logObj = {
-            // req: '',
-            // funcName: '',
-            // funcParam: {},
-            // msg: ''
+        // req: '',
+        // funcName: '',
+        // funcParam: {},
+        // msg: ''
         // };
         // IP - "UserAgent" - "Function: function, Param: {"a":"b","c":"d"}, Error: some error"
         var errStr = '';
-        
+
         errStr += this.getAccessUser(logObj.req);
         errStr += ' - "Function: ' + logObj.funcName + ', Param: ' + JSON.stringify(logObj.funcParam) + ', Error: ' + logObj.msg + '"';
-        
+
         return errStr;
     },
     /**
@@ -548,8 +545,7 @@ module.exports = {
      * @version 2.2.0
      * @since 2.2.0
      */
-    getInfoLog: function(logObj){
-        'use strict';
+    getInfoLog: function (logObj) {
         var logStr = '';
 
         logStr += this.getAccessUser(logObj.req);

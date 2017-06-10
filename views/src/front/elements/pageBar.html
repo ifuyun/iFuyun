@@ -1,0 +1,15 @@
+<? if(posts && posts.paginator) { ?>
+<div class="m-pagination">
+    <ul>
+        <? if(posts.paginator.curPage > 1){ ?><li><a title="上一页" href="<?= posts.linkUrl + posts.paginator.prevPage + posts.linkParam ?>">Prev</a></li><? } ?>
+        <? for(var page = posts.paginator.startPage; page <= posts.paginator.endPage; page += 1){ ?>
+            <? if(page === posts.paginator.curPage){ ?>
+                <li class="active"><span><?= page ?></span></li>
+            <? } else { ?>
+                <li><a title="第<?= page ?>页" href="<?= posts.linkUrl + page + posts.linkParam ?>"><?= page ?></a></li>
+            <? } ?>
+        <? } ?>
+        <? if(posts.paginator.curPage < posts.paginator.endPage){ ?><li><a title="下一页" href="<?= posts.linkUrl + posts.paginator.nextPage + posts.linkParam ?>">Next</a></li><? } ?>
+    </ul>
+</div>
+<? } ?>

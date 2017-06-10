@@ -3,12 +3,12 @@
  * @module m_comment
  * @requires moment, util, async
  * @author Fuyun
- * @version 1.0.0(2015-11-30)
- * @since 1.0.0(2015-11-30)
+ * @version 3.0.0
+ * @since 1.0.0
  */
-var moment = require('moment'),
-    util = require('../helper/util'),
-    async = require('async');
+const moment = require('moment');
+const util = require('../helper/util');
+const async = require('async');
 
 /**
  * 评论(Comment)模型：封装评论查询操作
@@ -17,11 +17,10 @@ var moment = require('moment'),
  * @param {Object} pool 连接池对象
  * @return {void}
  * @author Fuyun
- * @version 1.0.0(2015-11-30)
- * @since 1.0.0(2015-11-30)
+ * @version 1.0.0
+ * @since 1.0.0
  */
 var Comment = function Comment(pool) {
-    'use strict';
     /**
      * 连接池对象
      * @attribute pool
@@ -50,7 +49,6 @@ var common = {
      * @since 1.0.0
      */
     getDisplayStatus: function(status) {
-        'use strict';
         var statusArr = {
             'normal': '获准',
             'pending': '待审',
@@ -73,7 +71,6 @@ Comment.prototype = {
      * @since 1.0.0
      */
     getAllComments: function(param, callback) {
-        'use strict';
         var that = this,
             sqlParam = [],
             sqlWhere = 'where ';
@@ -176,7 +173,6 @@ Comment.prototype = {
      * @since 1.0.0
      */
     getCommentById: function(commentId, callback) {
-        'use strict';
         this.pool.getConnection(function(err, conn) {
             if (err) {
                 return callback(err);
@@ -205,7 +201,6 @@ Comment.prototype = {
      * @since 1.0.0
      */
     getCommentsByPostId: function(postId, callback) {
-        'use strict';
         this.pool.getConnection(function(err, conn) {
             if (err) {
                 return callback(err);
@@ -234,7 +229,6 @@ Comment.prototype = {
      * @since 1.0.0
      */
     getCommentCountByPostId: function(postId, callback) {
-        'use strict';
         this.pool.getConnection(function(err, conn) {
             if (err) {
                 return callback(err);
@@ -259,7 +253,6 @@ Comment.prototype = {
      * @since 1.0.0
      */
     saveComment: function(data, callback) {
-        'use strict';
         this.pool.getConnection(function(err, conn) {
             if (err) {
                 return callback(err);
@@ -317,7 +310,6 @@ Comment.prototype = {
      * @since 1.0.0
      */
     updateStatus: function(data, callback) {
-        'use strict';
         this.pool.getConnection(function(err, conn) {
             if (err) {
                 return callback(err);
@@ -355,7 +347,6 @@ Comment.prototype = {
      * @since 1.0.0
      */
     updateCommentVote: function(data, callback) {
-        'use strict';
         this.pool.getConnection(function(err, conn) {
             if (err) {
                 return callback(err);

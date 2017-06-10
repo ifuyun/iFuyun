@@ -3,10 +3,10 @@
  * @module m_option
  * @requires async
  * @author Fuyun
- * @version 1.0.0(2014-06-01)
- * @since 1.0.0(2014-03-08)
+ * @version 3.0.0
+ * @since 1.0.0
  */
-var async = require('async');
+const async = require('async');
 
 /**
  * 配置(Option)模型：站点配置查询等
@@ -15,8 +15,8 @@ var async = require('async');
  * @param {Object} pool 连接池对象
  * @return {void}
  * @author Fuyun
- * @version 1.0.0(2014-03-15)
- * @since 1.0.0(2014-03-08)
+ * @version 1.0.0
+ * @since 1.0.0
  */
 var Option = function Option (pool) {
     'use strict';
@@ -36,11 +36,10 @@ Option.prototype = {
      * @param {Function} callback 回调函数
      * @return {void}
      * @author Fuyun
-     * @version 1.0.0(2014-06-01)
-     * @since 1.0.0(2014-03-08)
+     * @version 1.0.0
+     * @since 1.0.0
      */
     getAutoloadOptions: function (callback) {
-        'use strict';
         this.pool.getConnection(function (err, conn) {
             if (err) {
                 return callback(err);
@@ -63,7 +62,6 @@ Option.prototype = {
      * @since 1.0.0
      */
     saveGeneral: function(data, callback) {
-        'use strict';
         this.pool.getConnection(function(err, conn) {
             if (err) {
                 return callback(err);

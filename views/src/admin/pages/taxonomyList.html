@@ -1,0 +1,78 @@
+<? include ../common/header.html ?>
+<div id="body-wrapper">
+    <? include ../elements/leftNav.html ?>
+    <div id="content">
+        <? include ../elements/topBar.html ?>
+        <div id="control-panel">
+            <h2><?= title ?></h2>
+            <div class="split-line"><div class="split-corner">&nbsp;</div></div>
+            <div id="search-bar">
+                <form id="form-search" method="get" action="/admin/taxonomy?type=<?= type ?>">
+                    <input type="text" class="input keyword" id="keyword" name="keyword" placeholder="搜索..." />
+                    <input type="submit" class="button" value="搜索<?= title ?>" />
+                </form>
+            </div>
+            <div class="clear-right">
+                <div class="table-nav">
+                    <span><a class="button button-spacing" href="javascript:;">删除</a></span>
+                    <span><a class="button" href="/admin/taxonomy/detail?action=create&type=<?= type ?>"><?= type === 'tag' ? '新增标签' : '新增一级分类' ?></a></span>
+                </div>
+                <div>
+                    <table class="list-table">
+                        <thead>
+                            <tr>
+                                <th width="2%" class="column-check"><input type="checkbox" class="checkAll" /></th>
+                                <th width="15%">名称</th>
+                                <th width="16%">别名</th>
+                                <th width="20%">描述</th>
+                                <th width="10%">排序</th>
+                                <th width="10%" class="column-count">总数</th>
+                                <th width="27%">操作</th>
+                            </tr>
+                        </thead>
+                        <tfoot>
+                            <tr>
+                                <th class="column-check"><input type="checkbox" class="checkAll" /></th>
+                                <th>名称</th>
+                                <th>别名</th>
+                                <th>描述</th>
+                                <th>排序</th>
+                                <th class="column-count">总数</th>
+                                <th>操作</th>
+                            </tr>
+                        </tfoot>
+                        <tbody>
+                            <? if(categories && categories.length > 0) { ?>
+                            <? categories.forEach(function(cat, rowIdx){ ?>
+                            <tr<? if(rowIdx % 2 === 0) { ?> class="alternate"<? } ?>>
+                                <td class="column-check"><input type="checkbox" class="checkRow" /></td>
+                                <td><?= util.cutStr(cat.name, 20) ?></td>
+                                <td><?= cat.slug ?></td>
+                                <td><?= util.cutStr(cat.description, 20) ?></td>
+                                <td><?= cat.termOrder ?></td>
+                                <td class="column-count"><?= cat.count ?></td>
+                                <td>
+                                    <? if(type !== 'tag') { ?><a class="button button-not-last" href="/admin/taxonomy/detail?action=create&type=<?= type ?>&parent=<?= cat.taxonomyId ?>">新增子类</a><? } ?><a class="button button-not-last btn-edit" href="/admin/taxonomy/detail?action=edit&type=<?= type ?>&taxonomyId=<?= cat.taxonomyId ?>">编辑</a><a class="button button-not-last btn-delete" href="javascript:;" data-term="<?= cat.taxonomyId ?>" data-taxonomy="<?= cat.taxonomyId ?>">删除</a><a class="button btn-view" href="/admin/post?tag=<?= cat.slug ?>">查看</a>
+                                </td>
+                            </tr>
+                            <? }) ?>
+                            <? } else { ?>
+                                <tr class="alternate">
+                                    <td colspan="6">无记录</td>
+                                </tr>
+                            <? } ?>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="table-nav">
+                    <span><a class="button" href="javascript:;">删除</a></span>
+                </div>
+                <? include ../elements/pageBar.html ?>
+            </div>
+        </div>
+    </div>
+    <? include ../elements/pageFooter.html ?>
+</div>
+<script type="text/javascript" src="<?- options.static_host.optionValue ?>/js/common.js"></script>
+<script type="text/javascript" src="<?- options.static_host.optionValue ?>/js/admin/taxonomy.js"></script>
+<? include ../common/footer.html ?>

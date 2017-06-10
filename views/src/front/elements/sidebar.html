@@ -1,0 +1,35 @@
+<aside class="m-sidebar">
+    <div class="m-search">
+        <form class="m-form-search" method="get">
+            <input type="text" class="u-input u-input-search" name="keyword" placeholder="Search..." /><input type="submit" class="u-btn u-btn-submit" value="搜索" />
+        </form>
+    </div>
+    <div class="m-widget">
+        <h3 class="m-widget-title"><span class="glyphicon glyphicons-blog"></span><span>文章归档</span></h3>
+        <ul>
+            <? archiveDates.forEach(function(archive){ archive = archive.get(); ?><li><a title="<?= archive.displayDate ?>" href="/archive/<?= archive.linkDate ?>"><?= archive.displayDate ?></a></li><? }) ?>
+        </ul>
+    </div>
+    <div class="m-widget">
+        <h3 class="m-widget-title"><span class="glyphicon glyphicons-random"></span><span>手气不错</span></h3>
+        <ul>
+            <? randPosts.forEach(function(post){ ?><li><a title="<?- post.postTitle ?>" href="<?= post.postGuid ?>"><?- post.postTitle ?></a></li><? }) ?>
+        </ul>
+    </div>
+    <div class="m-widget">
+        <h3 class="m-widget-title"><span class="glyphicon glyphicons-hot"></span><span>热门文章</span></h3>
+        <ul>
+            <? hotPosts.forEach(function(post){ ?><li><a title="<?- post.postTitle ?>" href="<?= post.postGuid ?>"><?- post.postTitle ?></a></li><? }) ?>
+        </ul>
+    </div>
+    <div class="m-widget">
+        <h3 class="m-widget-title"><span class="glyphicon glyphicons-link"></span><span>友情链接</span></h3>
+        <ul>
+            <? friendLinks.forEach(function(link){ ?><li><a title="<?- link.linkDescription ?>" href="<?= link.linkUrl ?>" target="<?= link.linkTarget ?>"><?- link.linkName ?></a></li><? }) ?>
+        </ul>
+    </div>
+    <div class="m-widget">
+        <h3 class="m-widget-title"><span class="glyphicon glyphicons-wechat"></span><span>微信公众号</span></h3>
+        <div class="m-qrcode-wx">&nbsp;</div>
+    </div>
+</aside>
