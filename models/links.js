@@ -78,15 +78,15 @@ module.exports = function (sequelize, DataTypes) {
         updatedAt: 'linkModified',
         deletedAt: false,
         classMethods: {
-            associate: function (models) {
-                Link.belongsToMany(models.TermTaxonomy, {
-                    through: models.TermRelationship,
-                    foreignKey: 'objectId',
-                    otherKey: 'termTaxonomyId'
-                });
-            }
         }
     });
+    Link.associate = function (models) {
+        Link.belongsToMany(models.TermTaxonomy, {
+            through: models.TermRelationship,
+            foreignKey: 'objectId',
+            otherKey: 'termTaxonomyId'
+        });
+    };
 
     return Link;
 };

@@ -72,18 +72,18 @@ module.exports = function (sequelize, DataTypes) {
         updatedAt: false,
         deletedAt: false,
         classMethods: {
-            associate: function (models) {
-                User.hasMany(models.Post, {
-                    foreignKey: 'postAuthor',
-                    sourceKey: 'userId'
-                });
-                User.hasMany(models.Usermeta, {
-                    foreignKey: 'userId',
-                    sourceKey: 'userId'
-                });
-            }
         }
     });
+    User.associate = function (models) {
+        User.hasMany(models.Post, {
+            foreignKey: 'postAuthor',
+            sourceKey: 'userId'
+        });
+        User.hasMany(models.Usermeta, {
+            foreignKey: 'userId',
+            sourceKey: 'userId'
+        });
+    };
 
     return User;
 };

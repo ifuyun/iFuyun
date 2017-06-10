@@ -10,7 +10,6 @@
  * @since 1.1.0
  */
 module.exports = function (app, router) {
-    // const base = require('../controllers/base');
     const post = require('../controller/post');
     // const user = require('../controllers/user');
     const admin = require('../controller/admin');
@@ -44,9 +43,8 @@ module.exports = function (app, router) {
 
     router.get('/taxonomy', taxonomy.listTaxonomy);
     router.get('/taxonomy/page-:page', taxonomy.listTaxonomy);
-    // router.get('/category/new', taxonomy.newCategory);
-    // router.post('/category/save', taxonomy.saveCategory);
-    // router.get('/category/:taxonomyId', taxonomy.editCategory);
+    router.get('/taxonomy/detail', taxonomy.editTaxonomy);
+    // router.post('/taxonomy/save', taxonomy.saveCategory);
     // router.post('/category/remove', taxonomy.removeCategory);
 
     // router.get('/link', link.listLink);

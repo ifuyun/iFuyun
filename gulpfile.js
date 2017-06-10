@@ -8,7 +8,7 @@ const runSequence = require('run-sequence');
 const clean = require('gulp-clean');
 const gulpif = require('gulp-if');
 const useref = require('gulp-useref');
-const minifyCss = require('gulp-minify-css');
+const cleanCss = require('gulp-clean-css');
 const imagemin = require('gulp-imagemin');
 const pngquant = require('imagemin-pngquant');
 const rev = require('gulp-rev');
@@ -41,7 +41,7 @@ gulp.task('useref-html', function () {
         .pipe(useref({
             searchPath: config.pathSrc
         }))
-        .pipe(gulpif('*.css', minifyCss()))
+        .pipe(gulpif('*.css', cleanCss()))
         .pipe(gulp.dest(config.pathTmp1));
 });
 gulp.task('useref', ['useref-html']);

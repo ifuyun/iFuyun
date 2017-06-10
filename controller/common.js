@@ -163,11 +163,11 @@ module.exports = {
         });
         return outArr;
     },
-    getCategoryTree: function (cb) {
+    getCategoryTree: function (cb, type) {
         models.TermTaxonomy.findAll({
             attributes: ['name', 'description', 'slug', 'count', 'taxonomyId', 'parent'],
             where: {
-                taxonomy: 'post'
+                taxonomy: type || 'post'
             },
             order: [
                 ['termOrder', 'asc']

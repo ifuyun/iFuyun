@@ -74,24 +74,24 @@ module.exports = function (sequelize, DataTypes) {
         updatedAt: false, // 'modified',
         deletedAt: false,
         classMethods: {
-            associate: function (models) {
-                TermTaxonomy.belongsToMany(models.Link, {
-                    through: models.TermRelationship,
-                    foreignKey: 'termTaxonomyId',
-                    otherKey: 'objectId'
-                });
-                TermTaxonomy.belongsToMany(models.Post, {
-                    through: models.TermRelationship,
-                    foreignKey: 'termTaxonomyId',
-                    otherKey: 'objectId'
-                });
-                TermTaxonomy.hasMany(models.TermRelationship, {
-                    foreignKey: 'termTaxonomyId',
-                    sourceKey: 'taxonomyId'
-                });
-            }
         }
     });
+    TermTaxonomy.associate = function (models) {
+        TermTaxonomy.belongsToMany(models.Link, {
+            through: models.TermRelationship,
+            foreignKey: 'termTaxonomyId',
+            otherKey: 'objectId'
+        });
+        TermTaxonomy.belongsToMany(models.Post, {
+            through: models.TermRelationship,
+            foreignKey: 'termTaxonomyId',
+            otherKey: 'objectId'
+        });
+        TermTaxonomy.hasMany(models.TermRelationship, {
+            foreignKey: 'termTaxonomyId',
+            sourceKey: 'taxonomyId'
+        });
+    };
 
     return TermTaxonomy;
 };

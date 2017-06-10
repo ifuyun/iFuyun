@@ -28,14 +28,14 @@ module.exports = function (sequelize, DataTypes) {
         tableName: 'usermeta',
         timestamps: false,
         classMethods: {
-            associate: function (models) {
-                Usermeta.belongsTo(models.User, {
-                    foreignKey: 'userId',
-                    targetKey: 'userId'
-                });
-            }
         }
     });
+    Usermeta.associate = function (models) {
+        Usermeta.belongsTo(models.User, {
+            foreignKey: 'userId',
+            targetKey: 'userId'
+        });
+    };
 
     return Usermeta;
 };

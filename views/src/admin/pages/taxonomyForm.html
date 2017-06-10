@@ -1,0 +1,56 @@
+<? include ../common/header.html ?>
+<div id="body-wrapper">
+    <? include ../elements/leftNav.html ?>
+    <div id="content">
+        <? include ../elements/topBar.html ?>
+        <div id="control-panel">
+            <div id="control-body">
+                <h2><?= title ?></h2>
+                <div class="split-line"><div class="split-corner">&nbsp;</div></div>
+                <form id="form-category" method="post" action="/admin/category/save?type=<?- type ?>">
+                    <div class="form-wrap">
+                        <form>
+                            <div class="form-field">
+                                <label class="form-label-left" for="cat-name">名称</label>
+                                <input type="text" class="input form-input" id="cat-name" name="name" value="<?= taxonomy.name ?>" />
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label-left" for="cat-slug">别名</label>
+                                <input type="text" class="input form-input" id="cat-slug" name="slug" value="<?= taxonomy.slug ?>" />
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label-left" for="cat-description">描述</label>
+                                <input type="text" class="input form-input" id="cat-description" name="description" value="<?= taxonomy.description ?>" />
+                            </div>
+                            <? if(type !== 'tag') { ?>
+                            <div class="form-field">
+                                <label class="form-label-left" for="cat-parent">父节点</label>
+                                <select class="input form-input" id="cat-parent" name="parent">
+                                    <option value="">无</option>
+                                    <? categories.catArray.forEach(function (cat){?>
+                                    <option value="<?= cat.taxonomyId ?>"<? if(cat.taxonomyId === taxonomy.parent){?> selected="selected"<? } ?><? if(cat.taxonomyId === taxonomy.taxonomy_id) { ?> disabled="disabled"<? } ?>><? for(var idx = 1; idx < cat.level; idx += 1){ ?>&nbsp;&nbsp;&nbsp;&nbsp;<? } ?><?= cat.name ?></option>
+                                    <? }) ?>
+                                </select>
+                            </div>
+                            <div class="form-field">
+                                <label class="form-label-left" for="cat-description">排序</label>
+                                <input type="text" class="input form-input" id="cat-order" name="termOrder" value="<?= taxonomy.termOrder ?>" />
+                            </div>
+                            <? } ?>
+                            <div class="form-field">
+                                <label class="form-label-left">&nbsp;</label>
+                                <input type="submit" class="submit" value="保存" />
+                            </div>
+                            <input type="hidden" name="_csrf" id="csrfToken" value="<?- token ?>" />
+                            <input type="hidden" name="taxonomyId" value="<?= taxonomy.taxonomyId ?>" />
+                        </form>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <? include ../elements/pageFooter.html ?>
+</div>
+<script type="text/javascript" src="<?- options.static_host.optionValue ?>/js/common.js"></script>
+<script type="text/javascript" src="<?- options.static_host.optionValue ?>/js/admin/taxonomy.js"></script>
+<? include ../common/footer.html ?>

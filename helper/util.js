@@ -393,6 +393,9 @@ module.exports = {
      */
     getTitle: function (titleArr, delimiter) {
         delimiter = delimiter || ' - ';
+        if (!titleArr) {
+            titleArr = [];
+        }
         if (typeof titleArr === 'string') {
             titleArr = [titleArr];
         }

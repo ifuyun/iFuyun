@@ -37,7 +37,7 @@
                         <span><select class="input" name="category">
                             <option value="">所有分类</option>
                             <? categories.catArray.forEach(function (cat){?>
-                                <option value="<?= cat.slug || cat.name ?>"<? if(cat.slug === curCategory || cat.name === curCategory){?> selected="selected"<? } ?> /><? for(var idx = 1; idx < cat.level; idx += 1){ ?>&nbsp;&nbsp;&nbsp;&nbsp;<? } ?><?= cat.name ?></option>
+                                <option value="<?= cat.slug || cat.name ?>"<? if(cat.slug === curCategory || cat.name === curCategory){?> selected="selected"<? } ?>><? for(var idx = 1; idx < cat.level; idx += 1){ ?>&nbsp;&nbsp;&nbsp;&nbsp;<? } ?><?= cat.name ?></option>
                             <? }) ?>
                         </select></span>
                         <span><input type="submit" class="button" value="筛选" /></span>

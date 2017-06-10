@@ -8,11 +8,12 @@ const models = require('../models/index');
 const common = require('./common');
 const appConfig = require('../config/core');
 const util = require('../helper/util');
+const idReg = /^[0-9a-fA-F]{16}$/i;
 
 module.exports = {
     listTaxonomy: function (req, res, next) {
         let page = parseInt(req.params.page, 10) || 1;
-        let type = (req.query.type || 'post').toLowerCase();
+        const type = (req.query.type || 'post').toLowerCase();
 
         if (!['post', 'tag', 'link'].includes(type)) {
             return util.catchError({
@@ -100,8 +101,81 @@ module.exports = {
             } else {
                 resData.meta.title = util.getTitle(titleArr.concat([menu.title + '列表', '管理后台', result.options.site_name.optionValue]));
             }
-            // res.send(JSON.stringify(result));
             res.render(`${appConfig.pathViews}/admin/pages/taxonomyList`, resData);
+        });
+    },
+    editTaxonomy: function (req, res, next) {
+        const action = (req.query.action || 'create').toLowerCase();
+        const type = (req.query.type || 'post').toLowerCase();
+
+        if (!['post', 'tag', 'link'].includes(type)) {
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: '不支持该操作'
+            }, next);
+        }
+        if (!['create', 'edit'].includes(action)) {
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: '不支持该操作'
+            }, next);
+        }
+        const taxonomyId = req.query.taxonomyId;
+        if (action === 'edit' && !idReg.test(taxonomyId)) {
+            return util.catchError({
+                status: 404,
+                code: 404,
+                message: 'Taxonomy Not Found'
+            }, next);
+        }
+        req.session.referer = req.headers.referer;
+        let tasks = {
+            options: common.getInitOptions
+        };
+        if (action === 'edit') {
+            tasks.taxonomy = (cb) => {
+                models.TermTaxonomy.findById(taxonomyId, {
+                    attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'created']
+                }).then((taxonomy) => cb(null, taxonomy));
+            };
+        }
+        if (type !== 'tag') {
+            tasks.categories = (cb) => {
+                common.getCategoryTree(cb, type);
+            };
+        }
+        async.auto(tasks, function (err, result) {
+            if (err) {
+                return next(err);
+            }
+            let title = '';
+            let titleArr = ['管理后台', result.options.site_name.optionValue];
+            if (action === 'create') {
+                title = type === 'tag' ? '新增标签' : '新增分类';
+                titleArr.unshift(title);
+            } else {
+                title = type === 'tag' ? '编辑标签' : '编辑分类';
+                titleArr = [result.taxonomy.name, title].concat(titleArr);
+            }
+            const menu = {
+                post: 'category',
+                tag: 'tag',
+                link: 'link'
+            }[type];
+            let resData = {
+                meta: {},
+                page: menu,
+                token: req.csrfToken(),
+                title,
+                type,
+                action,
+                taxonomy: {}
+            };
+            Object.assign(resData, result);
+            resData.meta.title = util.getTitle(titleArr);
+            res.render(`${appConfig.pathViews}/admin/pages/taxonomyForm`, resData);
         });
     }
 };

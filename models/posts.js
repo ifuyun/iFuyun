@@ -129,27 +129,27 @@ module.exports = function (sequelize, DataTypes) {
         updatedAt: 'post_modified',
         deletedAt: false,
         classMethods: {
-            associate: function (models) {
-                Post.belongsTo(models.User, {
-                    foreignKey: 'postAuthor',
-                    targetKey: 'userId'
-                });
-                Post.hasMany(models.Comment, {
-                    foreignKey: 'postId',
-                    sourceKey: 'postId'
-                });
-                Post.belongsToMany(models.TermTaxonomy, {
-                    through: models.TermRelationship,
-                    foreignKey: 'objectId',
-                    otherKey: 'termTaxonomyId'
-                });
-                Post.hasMany(models.TermRelationship, {
-                    foreignKey: 'objectId',
-                    sourceKey: 'postId'
-                });
-            }
         }
     });
+    Post.associate = function (models) {
+        Post.belongsTo(models.User, {
+            foreignKey: 'postAuthor',
+            targetKey: 'userId'
+        });
+        Post.hasMany(models.Comment, {
+            foreignKey: 'postId',
+            sourceKey: 'postId'
+        });
+        Post.belongsToMany(models.TermTaxonomy, {
+            through: models.TermRelationship,
+            foreignKey: 'objectId',
+            otherKey: 'termTaxonomyId'
+        });
+        Post.hasMany(models.TermRelationship, {
+            foreignKey: 'objectId',
+            sourceKey: 'postId'
+        });
+    };
 
     return Post;
 };

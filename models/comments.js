@@ -100,14 +100,14 @@ module.exports = function (sequelize, DataTypes) {
         updatedAt: 'comment_modified',
         deletedAt: false,
         classMethods: {
-            associate: function (models) {
-                Comment.belongsTo(models.Post, {
-                    foreignKey: 'postId',
-                    targetKey: 'postId'
-                });
-            }
         }
     });
+    Comment.associate = function (models) {
+        Comment.belongsTo(models.Post, {
+            foreignKey: 'postId',
+            targetKey: 'postId'
+        });
+    };
 
     return Comment;
 };
