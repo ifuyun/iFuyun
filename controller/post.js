@@ -642,7 +642,12 @@ module.exports = {
 
         year = year.toString();
         month = month ? month < 10 ? '0' + month : month.toString() : '';
-        const where = ['post_status = "publish" and post_type = "post" and date_format(post_date, ?) = ?', month ? '%Y%m' : '%Y', month ? year + month : year];
+        // const where = ['post_status = "publish" and post_type = "post" and date_format(post_date, ?) = ?', month ? '%Y%m' : '%Y', month ? year + month : year];
+        const where = {
+            postStatus: 'publish',
+            postType: 'post',
+            $and: [models.sequelize.where(models.sequelize.fn('date_format', models.sequelize.col('post_date'), month ? '%Y%m' : '%Y'), month ? year + month : year)]
+        };
 
         async.auto({
             commonData: (cb) => {
