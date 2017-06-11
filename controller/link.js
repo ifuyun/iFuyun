@@ -127,7 +127,6 @@ module.exports = {
         });
     },
     saveLink: function (req, res, next) {
-        const referer = req.session.referer;
         const param = req.body;
         let linkId = xss.sanitize(param.linkId) || '';
         const taxonomyId = (xss.sanitize(param.linkTaxonomy) || '').trim();
@@ -220,6 +219,7 @@ module.exports = {
                 });
             });
         }).then(() => {
+            const referer = req.session.referer;
             delete req.session.referer;
             res.set('Content-type', 'application/json');
             res.send({
@@ -237,6 +237,70 @@ module.exports = {
         });
     },
     removeLink: function (req, res, next) {
-        res.send();
+        let linkIds = req.body.linkIds;
+        if (typeof linkIds === 'string') {
+            linkIds = xss.sanitize(linkIds).split(',');
+        } else if (!util.isArray(linkIds)) {
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: '不支持的参数格式'
+            }, next);
+        }
+        for (let i = 0; i < linkIds.length; i += 1) {
+            if (!idReg.test(linkIds[i])) {
+                return util.catchError({
+                    status: 200,
+                    code: 400,
+                    message: '参数错误'
+                }, next);
+            }
+        }
+        models.sequelize.transaction(function (t) {
+            let tasks = {
+                links: function (cb) {
+                    models.Link.destroy({
+                        where: {
+                            linkId: linkIds
+                        },
+                        transaction: t
+                    }).then((link) => cb(null, link));
+                },
+                termRels: function (cb) {
+                    models.TermRelationship.destroy({
+                        where: {
+                            objectId: linkIds
+                        },
+                        transaction: t
+                    }).then((termRel) => cb(null, termRel));
+                }
+            };
+            // 需要返回promise实例
+            return new Promise((resolve, reject) => {
+                async.auto(tasks, function (err, result) {
+                    if (err) {
+                        reject(new Error(err));
+                    } else {
+                        resolve(result);
+                    }
+                });
+            });
+        }).then(() => {
+            const referer = req.session.referer;
+            delete req.session.referer;
+            res.set('Content-type', 'application/json');
+            res.send({
+                code: 0,
+                message: null,
+                data: {
+                    url: referer || '/admin/link'
+                }
+            });
+        }, (err) => {
+            next({
+                code: 500,
+                message: err.message || err
+            });
+        });
     }
 };

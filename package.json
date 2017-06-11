@@ -56,6 +56,7 @@
   },
   "scripts": {
     "start": "NODE_ENV=development supervisor index",
+    "server": "supervisor index",
     "dev": "gulp dev --env development",
     "build": "gulp build"
   },

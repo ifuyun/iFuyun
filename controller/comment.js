@@ -17,7 +17,6 @@ module.exports = {
         const param = req.body;
         let user = {};
         let data = {};
-        const referer = req.session.referer;
         const isAdmin = util.isAdminUser(req);
         let commentId = xss.sanitize(param.commentId || '').trim();
 
@@ -122,6 +121,7 @@ module.exports = {
             if (err) {
                 return next(err);
             }
+            const referer = req.session.referer;
             delete req.session.referrer;
             let postGuid;
             let commentFlag;
@@ -363,7 +363,6 @@ module.exports = {
     updateStatus: function (req, res, next) {
         let param = req.body;
         let data = {};
-        const referer = req.session.referer;
         const commentId = xss.sanitize(param.commentId.trim()) || '';
 
         param.action = (param.action || '').toLowerCase();
@@ -394,6 +393,7 @@ module.exports = {
                 commentId
             }
         }).then((comment) => {
+            const referer = req.session.referer;
             delete req.session.referer;
 
             res.set('Content-type', 'application/json');

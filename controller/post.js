@@ -642,7 +642,6 @@ module.exports = {
 
         year = year.toString();
         month = month ? month < 10 ? '0' + month : month.toString() : '';
-        // const where = ['post_status = "publish" and post_type = "post" and date_format(post_date, ?) = ?', month ? '%Y%m' : '%Y', month ? year + month : year];
         const where = {
             postStatus: 'publish',
             postType: 'post',
@@ -1010,7 +1009,6 @@ module.exports = {
     },
     savePost: function (req, res, next) {
         const param = req.body;
-        const referer = req.session.referer;
         const type = req.query.type !== 'page' ? 'post' : 'page';
         const nowTime = new Date();
         const newPostId = util.getUuid();
@@ -1197,6 +1195,7 @@ module.exports = {
                 });
             });
         }).then(() => {
+            const referer = req.session.referer;
             delete req.session.referer;
             res.set('Content-type', 'application/json');
             res.send({

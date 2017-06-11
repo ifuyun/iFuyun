@@ -23,5 +23,11 @@ module.exports = {
         } else {
             res.redirect('/user/login');
         }
+    },
+    settings: function (req, res, next) {
+        res.send();
+    },
+    saveSettings: function (req, res, next) {
+        res.send();
     }
 };

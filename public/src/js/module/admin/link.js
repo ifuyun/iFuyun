@@ -10,7 +10,7 @@ $(function () {
             type: 'post',
             url: '/admin/link/remove',
             data: {
-                linkId: $that.attr('data-id')
+                linkIds: $that.attr('data-id')
             },
             headers: {
                 'X-CSRF-Token': $('#csrfToken').val()

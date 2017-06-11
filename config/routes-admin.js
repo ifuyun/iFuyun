@@ -51,17 +51,10 @@ module.exports = function (app, router) {
     router.get('/link/page-:page', link.listLink);
     router.get('/link/detail', link.editLink);
     router.post('/link/save', link.saveLink);
-    // router.get('/link/:linkId', link.editLink);
     router.post('/link/remove', link.removeLink);
 
-    // router.get('/options/general', admin.setGeneral);
-    // router.post('/options/general', admin.saveGeneral);
-    // router.get('/options/writing', admin.setWriting);
-    // router.post('/options/writing', admin.setWriting);
-    // router.get('/options/reading', admin.setReading);
-    // router.post('/options/reading', admin.setReading);
-    // router.get('/options/discussion', admin.setDiscussion);
-    // router.post('/options/discussion', admin.setDiscussion);
+    router.get('/settings', admin.settings);// general writing reading discussion
+    router.post('/settings', admin.saveSettings);
 
     return router;
 };

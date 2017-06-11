@@ -189,7 +189,6 @@ module.exports = {
                 message: '不支持该操作'
             }, next);
         }
-        const referer = req.session.referer;
         const param = req.body;
         let taxonomyId = xss.sanitize(param.taxonomyId) || '';
         let data = {};
@@ -262,7 +261,8 @@ module.exports = {
             if (err) {
                 return next(err);
             }
-            delete (req.session.referer);
+            const referer = req.session.referer;
+            delete req.session.referer;
 
             res.set('Content-type', 'application/json');
             res.send({
@@ -276,9 +276,7 @@ module.exports = {
         });
     },
     removeTaxonomy: function (req, res, next) {
-        const referer = req.session.referer;
-        const param = req.body;
-        let taxonomyIds = param.taxonomyIds;
+        let taxonomyIds = req.body.taxonomyIds;
         const type = (req.query.type || 'post').toLowerCase();
 
         if (!['post', 'tag', 'link'].includes(type)) {
@@ -359,6 +357,7 @@ module.exports = {
                 });
             });
         }).then(() => {
+            const referer = req.session.referer;
             delete req.session.referer;
             res.set('Content-type', 'application/json');
             res.send({
