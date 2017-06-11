@@ -114,6 +114,7 @@ function queryPosts (param, cb) {
     });
 }
 function checkPostFields ({data, type, postCategory, postTag}) {
+    // TODO: postGuid:/page-,/post/page-,/category/,/archive/,/tag/,/comment/,/user/,/admin/,/post/comment/
     let rules = [{
         rule: !data.postTitle,
         message: '标题不能为空'
@@ -158,7 +159,7 @@ function checkPostFields ({data, type, postCategory, postTag}) {
 
 module.exports = {
     listPosts: function (req, res, next) {
-        const page = parseInt(req.params.page, 10) || 1;
+        let page = parseInt(req.params.page, 10) || 1;
         let where = {
             postStatus: 'publish',
             postType: 'post'
@@ -185,18 +186,19 @@ module.exports = {
                     from: 'list'
                 }, cb);
             },
-            posts: (cb) => {
-                queryPosts({
-                    page,
-                    where,
-                    from: 'index'
-                }, cb);
-            },
             postsCount: (cb) => {
                 models.Post.count({
                     where
                 }).then((result) => cb(null, result));
             },
+            posts: ['postsCount', (result, cb) => {
+                page = (page > result.postsCount / 10 ? Math.ceil(result.postsCount / 10) : page) || 1;
+                queryPosts({
+                    page,
+                    where,
+                    from: 'index'
+                }, cb);
+            }],
             comments: ['posts', (result, cb) => common.getCommentCountByPosts(result.posts, cb)]
         }, function (err, result) {
             if (err) {
@@ -242,11 +244,12 @@ module.exports = {
     showPost: function (req, res, next) {
         const postId = req.params.postId;
         if (!postId || !/^[0-9a-fA-F]{16}$/i.test(postId)) {
-            return util.catchError({
-                status: 404,
-                code: 404,
-                message: 'Page Not Found'
-            }, next);
+            // return util.catchError({
+            //     status: 404,
+            //     code: 404,
+            //     message: 'Page Not Found'
+            // }, next);
+            return next();
         }
         async.auto({
             commonData: (cb) => {
@@ -271,7 +274,7 @@ module.exports = {
                     if (!post || !post.postId) {
                         logger.error(util.getErrorLog({
                             req: req,
-                            funcName: 'showPost', // TODO:func.name
+                            funcName: 'showPost',
                             funcParam: {
                                 postId: post.postId
                             },
@@ -335,6 +338,9 @@ module.exports = {
             nextPost: (cb) => common.getNextPost(postId, cb)
         }, function (err, result) {
             if (err) {
+                if(err.code === 404) {
+                    return next();
+                }
                 return next(err);
             }
             let resData = {
@@ -396,7 +402,7 @@ module.exports = {
                         attributes: ['userDisplayName']
                     }],
                     where: {
-                        postGuid: reqPath
+                        postGuid: decodeURIComponent(reqPath)
                     }
                 }).then(function (result) {
                     if (!result || !result.postId) {
@@ -467,7 +473,7 @@ module.exports = {
         });
     },
     listByCategory: function (req, res, next) {
-        const page = parseInt(req.params.page, 10) || 1;
+        let page = parseInt(req.params.page, 10) || 1;
         const category = req.params.category;
         let where = {
             postStatus: 'publish',
@@ -497,14 +503,6 @@ module.exports = {
                 }];
                 cb(null);
             }],
-            posts: ['setRelationshipWhere', (result, cb) => {
-                queryPosts({
-                    page,
-                    where,
-                    includeOpt,
-                    from: 'category'
-                }, cb);
-            }],
             postsCount: ['setRelationshipWhere', (result, cb) => {
                 models.Post.count({
                     where,
@@ -512,6 +510,15 @@ module.exports = {
                     subQuery: false,
                     distinct: true
                 }).then((count) => cb(null, count));
+            }],
+            posts: ['postsCount', (result, cb) => {
+                page = (page > result.postsCount / 10 ? Math.ceil(result.postsCount / 10) : page) || 1;
+                queryPosts({
+                    page,
+                    where,
+                    includeOpt,
+                    from: 'category'
+                }, cb);
             }],
             comments: ['posts', (result, cb) => common.getCommentCountByPosts(result.posts, cb)]
         }, function (err, result) {
@@ -552,7 +559,7 @@ module.exports = {
         });
     },
     listByTag: function (req, res, next) {
-        const page = parseInt(req.params.page, 10) || 1;
+        let page = parseInt(req.params.page, 10) || 1;
         const tag = req.params.tag;
         let where = {
             postStatus: 'publish',
@@ -573,20 +580,21 @@ module.exports = {
                     from: 'tag'
                 }, cb);
             },
-            posts: (cb) => {
-                queryPosts({
-                    page,
-                    where,
-                    includeOpt,
-                    from: 'tag'
-                }, cb);
-            },
             postsCount: (cb) => {
                 models.Post.count({
                     where,
                     include: includeOpt
                 }).then((count) => cb(null, count));
             },
+            posts: ['postsCount', (result, cb) => {
+                page = (page > result.postsCount / 10 ? Math.ceil(result.postsCount / 10) : page) || 1;
+                queryPosts({
+                    page,
+                    where,
+                    includeOpt,
+                    from: 'tag'
+                }, cb);
+            }],
             comments: ['posts', (result, cb) => common.getCommentCountByPosts(result.posts, cb)]
         }, function (err, result) {
             if (err) {
@@ -636,7 +644,7 @@ module.exports = {
         });
     },
     listByDate: function (req, res, next) {
-        const page = parseInt(req.params.page, 10) || 1;
+        let page = parseInt(req.params.page, 10) || 1;
         let year = parseInt(req.params.year, 10) || new Date().getFullYear();
         let month = parseInt(req.params.month, 10);
 
@@ -655,18 +663,19 @@ module.exports = {
                     from: 'archive'
                 }, cb);
             },
-            posts: (cb) => {
-                queryPosts({
-                    page,
-                    where,
-                    from: 'archive'
-                }, cb);
-            },
             postsCount: (cb) => {
                 models.Post.count({
                     where
                 }).then((data) => cb(null, data));
             },
+            posts: ['postsCount', (result, cb) => {
+                page = (page > result.postsCount / 10 ? Math.ceil(result.postsCount / 10) : page) || 1;
+                queryPosts({
+                    page,
+                    where,
+                    from: 'archive'
+                }, cb);
+            }],
             comments: ['posts', (result, cb) => common.getCommentCountByPosts(result.posts, cb)]
         }, (err, result) => {
             if (err) {
@@ -724,7 +733,7 @@ module.exports = {
         });
     },
     listEdit: function (req, res, next) {
-        const page = parseInt(req.params.page, 10) || 1;
+        let page = parseInt(req.params.page, 10) || 1;
         let where = {};
         let titleArr = [];
         let paramArr = [];
@@ -737,7 +746,7 @@ module.exports = {
                 where.postStatus = req.query.status;
             }
             paramArr.push(`status=${req.query.status}`);
-            titleArr.push(req.query.status, '状态');
+            titleArr.push(formatter.postStatus(req.query.status) || req.query.status, '状态');
         } else {
             where.postStatus = ['publish', 'private', 'draft', 'auto-draft', 'trash'];
         }
@@ -817,19 +826,20 @@ module.exports = {
                     cb(null);
                 }
             }],
-            posts: ['subCategories', (result, cb) => {
+            postsCount: ['subCategories', (result, cb) => {
+                models.Post.count({
+                    where,
+                    include: includeOpt
+                }).then((data) => cb(null, data));
+            }],
+            posts: ['postsCount', (result, cb) => {
+                page = (page > result.postsCount / 10 ? Math.ceil(result.postsCount / 10) : page) || 1;
                 queryPosts({
                     page,
                     where,
                     from,
                     includeOpt
                 }, cb);
-            }],
-            postsCount: ['subCategories', (result, cb) => {
-                models.Post.count({
-                    where,
-                    include: includeOpt
-                }).then((data) => cb(null, data));
             }],
             comments: ['posts', (result, cb) => common.getCommentCountByPosts(result.posts, cb)],
             typeCount: (cb) => {
@@ -1016,19 +1026,19 @@ module.exports = {
         postId = idReg.test(postId) ? postId : '';
 
         let data = {
-            postTitle: xss.sanitize(param.postTitle).trim(),
-            postContent: param.postContent.trim(),
-            postExcerpt: xss.sanitize(param.postExcerpt).trim(),
-            postGuid: xss.sanitize(param.postGuid).trim() || '/post/' + (postId || newPostId),
+            postTitle: (xss.sanitize(param.postTitle) || '').trim(),
+            postContent: (param.postContent || '').trim(),
+            postExcerpt: (xss.sanitize(param.postExcerpt) || '').trim(),
+            postGuid: (xss.sanitize(param.postGuid) || '').trim() || '/post/' + (postId || newPostId),
             postAuthor: req.session.user.userId,
             postStatus: param.postStatus,
-            postPassword: param.postPassword.trim(),
+            postPassword: (param.postPassword || '').trim(),
             postOriginal: param.postOriginal,
-            commentFlag: param.commentFlag.trim(),
+            commentFlag: (param.commentFlag || '').trim(),
             postDate: param.postDate ? new Date(+moment(param.postDate)) : nowTime,
             postType: type
         };
-        let postCategory = xss.sanitize(param.postCategory).trim();
+        let postCategory = (xss.sanitize(param.postCategory) || '').trim();
         if (postCategory === '') {
             postCategory = [];
         } else if (typeof postCategory === 'string') {

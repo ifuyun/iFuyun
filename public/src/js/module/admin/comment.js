@@ -1,7 +1,4 @@
 /*global $*/
-'use strict';
-require('../../vendor/jquery-1.11.0.min');
-
 $(function () {
     //评论列表
     function sendAction(action, commentId) {

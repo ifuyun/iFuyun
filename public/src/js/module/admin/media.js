@@ -1,10 +1,5 @@
 /*global $*/
-'use strict';
-require('../../vendor/jquery-1.11.0.min');
-
-var service;
-
-service = {
+var service = {
     addFile: function () {
 
     },

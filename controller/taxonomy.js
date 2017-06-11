@@ -266,7 +266,6 @@ module.exports = {
 
             res.set('Content-type', 'application/json');
             res.send({
-                // status: 200,
                 code: 0,
                 message: null,
                 data: {
@@ -369,7 +368,6 @@ module.exports = {
             });
         }, (err) => {
             next({
-                // status: 200,
                 code: 500,
                 message: err.message || err
             });

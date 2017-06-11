@@ -1,7 +1,4 @@
 /*global $*/
-'use strict';
-require('../../vendor/jquery-1.11.0.min');
-
 $(function () {
     //分类目录列表
     $('.btn-delete').on('click', function () {
