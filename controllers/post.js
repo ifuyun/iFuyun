@@ -951,7 +951,9 @@ module.exports = {
             }
             tasks.post = (cb) => {
                 models.Post.findById(postId, {
-                    attributes: ['postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus', 'postType', 'postPassword', 'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'],
+                    attributes: [
+                        'postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus', 'postType', 'postPassword',
+                        'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'],
                     include: includeOpt
                 }).then(function (post) {
                     if (!post || !post.postId) {
@@ -1227,7 +1229,7 @@ module.exports = {
     listMedia: function (req, res, next) {
         res.send();
     },
-    newMedia: function (req, res, next) {
+    editMedia: function (req, res, next) {
         res.send();
     }
 };

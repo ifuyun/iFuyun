@@ -8,6 +8,7 @@ node_modules
 /public/dev/**
 /public/static/**
 /public/upload/**
+/public/src/style/css/**
 /logs/**
 /views/dist/**
 /**/.DS_Store

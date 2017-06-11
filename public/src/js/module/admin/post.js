@@ -1,9 +1,4 @@
 /*global $, tinymce*/
-// require('../vendor/jquery.poshytip.min');
-// require('../vendor/json2');
-// require('../../vendor/tinymce/tinymce.min');
-// require('../../vendor/tinymce/jquery.tinymce.min');
-require('../../vendor/tinymce.full.min');
 require('../../lib/jquery.textposition');
 require('../../lib/jquery.datepicker');
 
@@ -22,7 +17,6 @@ service = {
                 type: 'post',
                 url: $that.attr('action'),
                 data: $that.serialize(),
-                // contentType: 'application/json',
                 dataType: 'json',
                 success: function (d, s, xhr) {
                     if (d.code === 0) {
@@ -51,7 +45,6 @@ service = {
                 $('#post-password-wrap').hide();
             }
         });
-        // $('#post-content').tinymce({
         tinymce.suffix = '.min';
         tinymce.init({
             selector: '#post-content',

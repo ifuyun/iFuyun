@@ -31,7 +31,7 @@ module.exports = function (app, router) {
 
     router.get('/media', post.listMedia);
     router.get('/media/page-:page', post.listMedia);
-    router.get('/media/new', post.newMedia);
+    router.get('/media/detail', post.editMedia);
     // router.post('/media/upload', post.uploadFile);
 
     router.get('/comment', comment.listComments);
