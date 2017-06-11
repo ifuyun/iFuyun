@@ -16,8 +16,8 @@
             <div class="clear-right">
                 <div class="table-nav">
                     <span><a class="button button-spacing" href="javascript:;">删除</a></span>
-                    <span><a class="button button-spacing" href="/admin/link/new">新增链接</a></span>
-                    <span><a class="button" href="/admin/category?type=link">链接分类</a></span>
+                    <span><a class="button button-spacing" href="/admin/link/detail?action=create">新增链接</a></span>
+                    <span><a class="button" href="/admin/taxonomy?type=link">链接分类</a></span>
                 </div>
                 <div>
                     <table class="list-table">
@@ -48,23 +48,21 @@
                             </tr>
                         </tfoot>
                         <tbody>
-                            <? if(linkData && linkData.links.length > 0) { ?>
-                            <? var rowIdx = 0; ?>
-                            <? linkData.links.forEach(function(link){ ?>
+                            <? if(links && links.length > 0) { ?>
+                            <? links.forEach(function(link, rowIdx){ ?>
                             <tr<? if(rowIdx % 2 === 0) { ?> class="alternate"<? } ?>>
                                 <td class="column-check"><input type="checkbox" class="checkRow" /></td>
-                                <td title="<?- link.link_name ?>"><?= util.cutStr(link.link_name, 20) ?></td>
-                                <td title="<?- link.link_url ?>"><?= util.cutStr(link.link_url, 20) ?></td>
-                                <td title="<?- link.link_description ?>"><?= util.cutStr(link.link_description, 20) ?></td>
-                                <td><?= link.link_visible ?></td>
-                                <td><?= link.link_target ?></td>
-                                <td><?= link.link_rating ?></td>
-                                <td><?= moment(link.link_created).format('YYYY-MM-DD') ?></td>
+                                <td title="<?- link.link_name ?>"><?= util.cutStr(link.linkName, 20) ?></td>
+                                <td title="<?- link.link_url ?>"><?= util.cutStr(link.linkUrl, 20) ?></td>
+                                <td title="<?- link.link_description ?>"><?= util.cutStr(link.linkDescription, 20) ?></td>
+                                <td><?= formatter.linkVisible(link.linkVisible) ?></td>
+                                <td><?= link.linkTarget ?></td>
+                                <td><?= link.linkRating ?></td>
+                                <td><?= moment(link.linkCreated).format('YYYY-MM-DD') ?></td>
                                 <td>
-                                    <a class="button button-not-last btn-edit" href="/admin/link/<?= link.link_id ?>">编辑</a><a class="button button-not-last btn-delete" href="javascript:;" data-id="<?= link.link_id ?>">删除</a>
+                                    <a class="button button-not-last btn-edit" href="/admin/link/detail?action=edit&linkId=<?= link.linkId ?>">编辑</a><a class="button button-not-last btn-delete" href="javascript:;" data-id="<?= link.linkId ?>">删除</a>
                                 </td>
                             </tr>
-                            <? rowIdx += 1; ?>
                             <? }) ?>
                             <? } else { ?>
                                 <tr class="alternate">
@@ -83,6 +81,6 @@
     </div>
     <? include ../elements/pageFooter.html ?>
 </div>
-<script type="text/javascript" src="<?- options.static_host.option_value ?>/dist/js/common_99219e3a.js"></script>
-<script type="text/javascript" src="<?- options.static_host.option_value ?>/dist/js/admin/link_99219e3a.js"></script>
+<script type="text/javascript" src="/js/common.js"></script>
+<script type="text/javascript" src="/js/admin/link.js"></script>
 <? include ../common/footer.html ?>

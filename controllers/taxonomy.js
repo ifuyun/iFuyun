@@ -1,406 +1,376 @@
 /**
- * 控制器：分类管理，目录、标签
- * @module c_taxonomy
- * @class C_Taxonomy
- * @static
- * @requires async, sanitizer, c_base, m_base, util, m_term_taxonomy
- * @author Fuyun
- * @version 3.0.0
- * @since 1.1.0
+ *
+ * @author fuyun
+ * @since 2017/06/08
  */
 const async = require('async');
 const xss = require('sanitizer');
-const base = require('./base');
-const pool = require('../model/base').pool;
+const models = require('../models/index');
+const common = require('./common');
+const appConfig = require('../config/core');
 const util = require('../helper/util');
-const TaxonomyModel = require('../model/termTaxonomy');
-const taxonomy = new TaxonomyModel(pool);
-const pagesOut = 9;
 const idReg = /^[0-9a-fA-F]{16}$/i;
 
 module.exports = {
-    /**
-     * 分类目录、标签列表，管理分类目录、标签
-     * @method listCategory
-     * @static
-     * @param {Object} req 请求对象
-     * @param {Object} res 响应对象
-     * @param {Object} next 路由对象
-     * @return {void}
-     * @author Fuyun
-     * @version 1.1.0
-     * @since 1.1.0
-     */
-    listCategory: function (req, res, next) {
-        var page = parseInt(req.params.page, 10) || 1,
-            resData,
-            type = req.query.type || 'post',
-            curMenu = '';
+    listTaxonomy: function (req, res, next) {
+        let page = parseInt(req.params.page, 10) || 1;
+        const type = (req.query.type || 'post').toLowerCase();
 
-        type = type.toLowerCase();
-        if (type !== 'post' && type !== 'tag' && type !== 'link') {
+        if (!['post', 'tag', 'link'].includes(type)) {
             return util.catchError({
-                status: 404,
-                code: 404,
-                message: 'Page Not Found'
+                status: 200,
+                code: 400,
+                message: '不支持该操作'
             }, next);
         }
-        switch (type) {
-            case 'post':
-                curMenu = 'category';
-                break;
-            case 'tag':
-                curMenu = 'tag';
-                break;
-            case 'link':
-                curMenu = 'linkCat';
-                break;
-        }
-
-        resData = {
-            meta: {
-                title: ''
+        const menu = {
+            post: {
+                name: 'category',
+                title: '分类目录'
             },
-            page: curMenu,
-            token: req.csrfToken(),
-            catData: false
+            tag: {
+                name: 'tag',
+                title: '标签'
+            },
+            link: {
+                name: 'link',
+                title: '链接分类'
+            }
+        }[type];
+        let titleArr = [];
+        let paramArr = [`type=${type}`];
+        let where = {
+            taxonomy: type
         };
-        async.parallel({
-            categories: function (cb) {
-                taxonomy.getCategories({
-                    page: page,
-                    type: type
-                }, cb);
-            },
-            options: base.initOption
-        }, function (err, results) {
-            if (err) {
-                return next(err);
-            }
-            var options = results.options;
-            if (results.categories) {
-                resData.paginator = util.paginator(page, results.categories.pages, pagesOut);
-                resData.paginator.pageLimit = results.categories.pageLimit;
-                resData.paginator.total = results.categories.total;
-                resData.paginator.linkUrl = '/admin/category/page-';
-                resData.paginator.linkParam = '?type=' + type;
-            }
-            if (page > 1) {
-                resData.meta.title = util.getTitle(['第' + page + '页', type === 'post' || type === 'link' ? '分类目录列表' : '标签列表', '管理后台', options.site_name.option_value]);
-            } else {
-                resData.meta.title = util.getTitle([type === 'post' || type === 'link' ? '分类目录列表' : '标签列表', '管理后台', options.site_name.option_value]);
-            }
-
-            resData.catData = results.categories;
-            resData.options = options;
-            resData.util = util;
-            resData.type = type;
-
-            if (type === 'post' || type === 'link') {
-                res.render('admin/pages/p_category', resData);
-            } else {
-                res.render('admin/pages/p_tag', resData);
-            }
-        });
-    },
-    /**
-     * 新增分类
-     * @method newCategory
-     * @static
-     * @param {Object} req 请求对象
-     * @param {Object} res 响应对象
-     * @param {Object} next 路由对象
-     * @return {void}
-     * @author Fuyun
-     * @version 1.1.0
-     * @since 1.1.0
-     */
-    newCategory: function (req, res, next) {
-        var resData,
-            type = req.query.type || 'post';
-
-        type = type.toLowerCase();
-        if (type !== 'post' && type !== 'tag' && type !== 'link') {
-            return util.catchError({
-                status: 404,
-                code: 404,
-                message: 'Page Not Found'
-            }, next);
-        }
-
-        resData = {
-            meta: {
-                title: ''
-            },
-            page: type,
-            categories: false,
-            token: req.csrfToken(),
-            taxonomy: {//TODO:新增、修改合并
-                parent: req.query.parent || ''
-                // taxonomy_id: '',
-                // description: '',
-                // term_id: '',
-                // name: '',
-                // slug: ''
-            }
-        };
-
-        req.session.referer = req.headers.referer;
-
-        async.parallel({
-            categories: function (cb) {
-                if (type === 'post' || type === 'link') {
-                    taxonomy.getCategoryArray(type, cb);
-                } else {
-                    cb(null);
+        if (req.query.keyword) {
+            where.$or = [{
+                name: {
+                    $like: `%${req.query.keyword}%`
                 }
+            }, {
+                slug: {
+                    $like: `%${req.query.keyword}%`
+                }
+            }, {
+                description: {
+                    $like: `%${req.query.keyword}%`
+                }
+            }];
+            paramArr.push(`keyword=${req.query.keyword}`);
+            titleArr.push(req.query.keyword, '搜索');
+        }
+        async.auto({
+            options: common.getInitOptions,
+            count: (cb) => {
+                models.TermTaxonomy.count({
+                    where
+                }).then((data) => cb(null, data));
             },
-            options: base.initOption
-        }, function (err, results) {
+            categories: ['count', function (result, cb) {
+                page = (page > result.count / 10 ? Math.ceil(result.count / 10) : page) || 1;
+                models.TermTaxonomy.findAll({
+                    where,
+                    attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'termOrder', 'count', 'created', 'modified'],
+                    order: [['termOrder', 'asc'], ['created', 'desc']],
+                    limit: 10,
+                    offset: 10 * (page - 1)
+                }).then((categories) => cb(null, categories));
+            }]
+        }, function (err, result) {
             if (err) {
                 return next(err);
             }
-            var options = results.options;
+            let resData = {
+                meta: {},
+                page: menu.name,
+                title: menu.title,
+                token: req.csrfToken(),
+                options: result.options,
+                categories: result.categories,
+                util,
+                type
+            };
+            resData.paginator = util.paginator(page, Math.ceil(result.count / 10), 9);
+            resData.paginator.linkUrl = '/admin/taxonomy/page-';
+            resData.paginator.linkParam = paramArr.length > 0 ? '?' + paramArr.join('&') : '';
+            resData.paginator.pageLimit = 10;
+            resData.paginator.total = result.count;
 
-            resData.options = options;
-
-            if (type === 'post' || type === 'link') {
-                resData.meta.title = util.getTitle(['新增分类', '管理后台', options.site_name.option_value]);
-                resData.categories = results.categories;
-                resData.type = type;
-
-                res.render('admin/pages/p_category_form', resData);
+            if (page > 1) {
+                resData.meta.title = util.getTitle(titleArr.concat(['第' + page + '页', menu.title + '列表', '管理后台', result.options.site_name.optionValue]));
             } else {
-                resData.meta.title = util.getTitle(['新增标签', '管理后台', options.site_name.option_value]);
-
-                res.render('admin/pages/p_tag_form', resData);
+                resData.meta.title = util.getTitle(titleArr.concat([menu.title + '列表', '管理后台', result.options.site_name.optionValue]));
             }
+            res.render(`${appConfig.pathViews}/admin/pages/taxonomyList`, resData);
         });
     },
-    /**
-     * 修改分类
-     * @method editCategory
-     * @static
-     * @param {Object} req 请求对象
-     * @param {Object} res 响应对象
-     * @param {Object} next 路由对象
-     * @return {void}
-     * @author Fuyun
-     * @version 1.1.0
-     * @since 1.1.0
-     */
-    editCategory: function (req, res, next) {
-        var resData,
-            taxonomyId = req.params.taxonomyId || '';
+    editTaxonomy: function (req, res, next) {
+        const action = (req.query.action || 'create').toLowerCase();
+        const type = (req.query.type || 'post').toLowerCase();
 
-        if (!taxonomyId || !idReg.test(taxonomyId)) {
+        if (!['post', 'tag', 'link'].includes(type)) {
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: '不支持该操作'
+            }, next);
+        }
+        if (!['create', 'edit'].includes(action)) {
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: '不支持该操作'
+            }, next);
+        }
+        const taxonomyId = req.query.taxonomyId;
+        if (action === 'edit' && !idReg.test(taxonomyId)) {
             return util.catchError({
                 status: 404,
                 code: 404,
-                message: 'Page Not Found'
+                message: 'Taxonomy Not Found'
             }, next);
         }
-
         req.session.referer = req.headers.referer;
-
-        resData = {
-            meta: {
-                title: ''
-            },
-            page: '',
-            categories: false,
-            token: req.csrfToken()
+        let tasks = {
+            options: common.getInitOptions
         };
-
-        async.auto({
-            category: function (cb) {
-                taxonomy.getTermByTaxonomyId(taxonomyId, function (err, data) {
-                    if (err) {
-                        return cb(err, data);
-                    }
-                    cb(null, data);
-                });
-            },
-            categories: ['category',
-                function (cb, results) {
-                    var category = results.category;
-                    if (!category.taxonomy_id) {
-                        return cb('参数错误');
-                    }
-                    if (category.taxonomy === 'post' || category.taxonomy === 'link') {
-                        taxonomy.getCategoryArray(category.taxonomy, cb);
-                    } else {
-                        cb(null);
-                    }
-                }],
-            options: base.initOption
-        }, function (err, results) {
+        if (action === 'edit') {
+            tasks.taxonomy = (cb) => {
+                models.TermTaxonomy.findById(taxonomyId, {
+                    attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'created']
+                }).then((taxonomy) => cb(null, taxonomy));
+            };
+        }
+        if (type !== 'tag') {
+            tasks.categories = (cb) => {
+                common.getCategoryTree(cb, type);
+            };
+        }
+        async.auto(tasks, function (err, result) {
             if (err) {
                 return next(err);
             }
-            var options = results.options,
-                type = results.category.taxonomy;
-
-            resData.taxonomy = results.category;
-            resData.options = options;
-            resData.type = type;
-            resData.page = type;
-
-            if (type === 'post' || type === 'link') {
-                resData.meta.title = util.getTitle([results.category.name, '编辑分类', '管理后台', options.site_name.option_value]);
-                resData.categories = results.categories;
-
-                res.render('admin/pages/p_category_form', resData);
+            let title = '';
+            let titleArr = ['管理后台', result.options.site_name.optionValue];
+            if (action === 'create') {
+                title = type === 'tag' ? '新增标签' : '新增分类';
+                titleArr.unshift(title);
             } else {
-                resData.meta.title = util.getTitle([results.category.name, '编辑标签', '管理后台', options.site_name.option_value]);
-
-                res.render('admin/pages/p_tag_form', resData);
+                title = type === 'tag' ? '编辑标签' : '编辑分类';
+                titleArr.unshift(result.taxonomy.name, title);
             }
+            const menu = {
+                post: 'category',
+                tag: 'tag',
+                link: 'link'
+            }[type];
+            let resData = {
+                meta: {},
+                page: menu,
+                token: req.csrfToken(),
+                title,
+                type,
+                action,
+                taxonomy: {
+                    parent: req.query.parent || ''
+                }
+            };
+            Object.assign(resData, result);
+            resData.meta.title = util.getTitle(titleArr);
+            res.render(`${appConfig.pathViews}/admin/pages/taxonomyForm`, resData);
         });
     },
-    /**
-     * 保存分类
-     * @method saveCategory
-     * @static
-     * @param {Object} req 请求对象
-     * @param {Object} res 响应对象
-     * @param {Object} next 路由对象
-     * @return {void}
-     * @author Fuyun
-     * @version 1.1.0
-     * @since 1.1.0
-     */
-    saveCategory: function (req, res, next) {
-        var params = req.body,
-            type = req.query.type || 'post',
-            referer = req.session.referer;
-
-        type = type.toLowerCase();
-        if (type !== 'post' && type !== 'tag' && type !== 'link') {
-            return util.catchError({
-                status: 404,
-                code: 404,
-                message: 'Page Not Found'
-            }, next);
-        }
-
-        params.catName = xss.sanitize(params.catName);
-        params.catSlug = xss.sanitize(params.catSlug);
-        params.catDescription = xss.sanitize(params.catDescription);
-        params.catParent = (type === 'post' || type === 'link') ? xss.sanitize(params.catParent) : '';
-        params.catOrder = xss.sanitize(params.catOrder);//TODO:数字合法性校验
-        params.catTaxonomyId = xss.sanitize(params.catTaxonomyId);
-        params.user = req.session.user;
-        params.type = type;
-
-        if (!params.catTaxonomyId || !idReg.test(params.catTaxonomyId)) {//空或者不符合ID规则
-            params.catTaxonomyId = '';
-        }
-        // trim shouldn't be null or undefined
-        // params.catTaxonomyId = params.catTaxonomyId.trim();
-        if (!params.catName.trim()) {
+    saveTaxonomy: function (req, res, next) {
+        const type = (req.query.type || 'post').toLowerCase();
+        if (!['post', 'tag', 'link'].includes(type)) {
             return util.catchError({
                 status: 200,
                 code: 400,
-                message: '名称不能为空'
+                message: '不支持该操作'
             }, next);
         }
-        if (!params.catSlug.trim()) {
-            return util.catchError({
-                status: 200,
-                code: 400,
-                message: '别名不能为空'
-            }, next);
-        }
-        if (!params.catDescription.trim()) {
-            return util.catchError({
-                status: 200,
-                code: 400,
-                message: '描述不能为空'
-            }, next);
-        }
+        const param = req.body;
+        let taxonomyId = xss.sanitize(param.taxonomyId) || '';
+        let data = {};
+        data.name = (xss.sanitize(param.name) || '').trim();
+        data.slug = (xss.sanitize(param.slug) || '').trim();
+        data.description = (xss.sanitize(param.description) || '').trim();
+        data.parent = (type === 'post' || type === 'link') ? (xss.sanitize(param.parent) || '').trim() : '';
+        data.termOrder = xss.sanitize(param.termOrder);
+        data.taxonomy = type;
 
-        async.auto({
-            taxonomy: function (cb) {
-                taxonomy.saveCategory(params, cb);
-            }
-        }, function (err, results) {
-            if (err) {
-                next(err);
-            } else {
-                delete (req.session.referer);
-
-                res.set('Content-type', 'application/json');
-                res.send({
+        if (!idReg.test(taxonomyId)) {
+            taxonomyId = '';
+        }
+        let rules = [{
+            rule: !data.name,
+            message: '名称不能为空'
+        }, {
+            rule: !data.slug,
+            message: '别名不能为空'
+        }, {
+            rule: !data.description,
+            message: '描述不能为空'
+        }, {
+            rule: type !== 'tag' && !/^\d+$/i.test(data.termOrder),
+            message: '排序只能为数字'
+        }];
+        for (let i = 0; i < rules.length; i += 1) {
+            if (rules[i].rule) {
+                return util.catchError({
                     status: 200,
-                    code: 0,
-                    message: null,
-                    data: {
-                        url: referer || ('/admin/category?type=' + type)
-                    }
-                });
+                    code: 400,
+                    message: rules[i].message
+                }, next);
             }
-        });
-    },
-    /**
-     * 删除分类
-     * @method removeCategory
-     * @static
-     * @param {Object} req 请求对象
-     * @param {Object} res 响应对象
-     * @param {Object} next 路由对象
-     * @return {void}
-     * @author Fuyun
-     * @version 1.1.0
-     * @since 1.1.0
-     */
-    removeCategory: function (req, res, next) {
-        var params = req.body,
-            referer = req.session.referer;
-
-        params.taxonomyId = xss.sanitize(params.taxonomyId.trim());
-
-        if (!idReg.test(params.taxonomyId)) {//不符合ID规则
-            params.taxonomyId = '';
-        }
-        if (!params.taxonomyId) {
-            return util.catchError({
-                status: 200,
-                code: 400,
-                message: '参数错误'
-            }, next);
         }
         async.auto({
-            taxonomyInfo: function (cb) {
-                taxonomy.getTermByTaxonomyId(params.taxonomyId, function (err, data) {
-                    if (err) {
-                        return cb(err, data);
-                    }
-                    cb(null, data);
-                });
+            checkSlug: function (cb) {
+                let where = {
+                    slug: data.slug
+                };
+                if (taxonomyId) {
+                    where.taxonomyId = {
+                        $ne: taxonomyId
+                    };
+                }
+                models.TermTaxonomy.count({
+                    where
+                }).then((count) => cb(null, count));
             },
-            taxonomy: ['taxonomyInfo',
-                function (cb, results) {
-                    params.type = results.taxonomyInfo.taxonomy;
-                    taxonomy.removeCategory(params, cb);
-                }]
-
-        }, function (err, results) {
+            taxonomy: ['checkSlug', function (result, cb) {
+                if (result.checkSlug > 0) {
+                    return cb('slug已存在');
+                }
+                const nowTime = new Date();
+                if (taxonomyId) {
+                    data.modified = nowTime;
+                    models.TermTaxonomy.update(data, {
+                        where: {
+                            taxonomyId
+                        }
+                    }).then((taxonomy) => cb(null, taxonomy));
+                } else {
+                    data.taxonomyId = util.getUuid();
+                    data.created = nowTime;
+                    data.modified = nowTime;
+                    models.TermTaxonomy.create(data).then((taxonomy) => cb(null, taxonomy));
+                }
+            }]
+        }, function (err, result) {
             if (err) {
-                next(err);
-            } else {
-                delete (req.session.referer);
+                return next(err);
+            }
+            const referer = req.session.referer;
+            delete req.session.referer;
 
-                res.set('Content-type', 'application/json');
-                res.send({
+            res.set('Content-type', 'application/json');
+            res.send({
+                code: 0,
+                message: null,
+                data: {
+                    url: referer || ('/admin/taxonomy?type=' + type)
+                }
+            });
+        });
+    },
+    removeTaxonomy: function (req, res, next) {
+        let taxonomyIds = req.body.taxonomyIds;
+        const type = (req.query.type || 'post').toLowerCase();
+
+        if (!['post', 'tag', 'link'].includes(type)) {
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: '不支持该操作'
+            }, next);
+        }
+        if (typeof taxonomyIds === 'string') {
+            taxonomyIds = xss.sanitize(taxonomyIds).split(',');
+        } else if (!util.isArray(taxonomyIds)) {
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: '不支持的参数格式'
+            }, next);
+        }
+        for (let i = 0; i < taxonomyIds.length; i += 1) {
+            if (!idReg.test(taxonomyIds[i])) {
+                return util.catchError({
                     status: 200,
-                    code: 0,
-                    message: null,
-                    data: {
-                        url: referer || ('/admin/category?type=' + params.type)
+                    code: 400,
+                    message: '参数错误'
+                }, next);
+            }
+        }
+        models.sequelize.transaction(function (t) {
+            let tasks = {
+                taxonomy: function (cb) {
+                    models.TermTaxonomy.destroy({
+                        where: {
+                            taxonomyId: taxonomyIds
+                        },
+                        transaction: t
+                    }).then((taxonomy) => cb(null, taxonomy));
+                },
+                posts: function (cb) {
+                    if (type === 'tag') {
+                        models.TermRelationship.destroy({
+                            where: {
+                                termTaxonomyId: taxonomyIds
+                            },
+                            transaction: t
+                        }).then((termRel) => cb(null, termRel));
+                    } else {
+                        models.TermRelationship.update({
+                            termTaxonomyId: type === 'post' ? '0000000000000000' : '0000000000000001'
+                        }, {
+                            where: {
+                                termTaxonomyId: taxonomyIds
+                            },
+                            transaction: t
+                        }).then((termRel) => cb(null, termRel)).catch((e) => cb(e));
+                    }
+                }
+            };
+            if (type !== 'tag') {// 标签没有父子关系
+                tasks.children = function (cb) {
+                    models.TermTaxonomy.update({
+                        parent: type === 'post' ? '0000000000000000' : '0000000000000001'
+                    }, {
+                        where: {
+                            parent: taxonomyIds
+                        },
+                        transaction: t
+                    }).then((taxonomy) => cb(null, taxonomy));
+                };
+            }
+            // 需要返回promise实例
+            return new Promise((resolve, reject) => {
+                async.auto(tasks, function (err, result) {
+                    if (err) {
+                        reject(new Error(err));
+                    } else {
+                        resolve(result);
                     }
                 });
-            }
+            });
+        }).then(() => {
+            const referer = req.session.referer;
+            delete req.session.referer;
+            res.set('Content-type', 'application/json');
+            res.send({
+                code: 0,
+                message: null,
+                data: {
+                    url: referer || '/admin/taxonomy?type=' + type
+                }
+            });
+        }, (err) => {
+            next({
+                code: 500,
+                message: err.message || err
+            });
         });
     }
 };

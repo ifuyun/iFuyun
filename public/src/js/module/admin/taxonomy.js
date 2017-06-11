@@ -1,17 +1,13 @@
 /*global $*/
-'use strict';
-require('../../vendor/jquery-1.11.0.min');
-
 $(function () {
     //分类目录列表
     $('.btn-delete').on('click', function () {
         var $that = $(this);
         $.ajax({
             type: 'post',
-            url: '/admin/category/remove',
+            url: '/admin/taxonomy/remove?type=' + $that.data('type'),
             data: {
-                termId: $that.attr('data-term'),
-                taxonomyId: $that.attr('data-taxonomy')
+                taxonomyIds: $that.data('taxonomy')
             },
             headers: {
                 'X-CSRF-Token': $('#csrfToken').val()

@@ -2,7 +2,7 @@
 /* jslint nomen:true */
 require('../../vendor/jquery.poshytip.min');
 // require('../../vendor/highlight.pack');
-const hljs = require('highlight.js');
+// const hljs = require('highlight.js');
 require('../../vendor/jquery.qrcode.min');
 
 var service,

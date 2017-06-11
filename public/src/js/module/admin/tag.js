@@ -1,7 +1,4 @@
 /*global $*/
-'use strict';
-require('../../vendor/jquery-1.11.0.min');
-
 $(function () {
     //标签列表
     $('.btn-delete').on('click', function(e){

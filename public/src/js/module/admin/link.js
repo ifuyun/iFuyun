@@ -1,7 +1,4 @@
 /*global $*/
-'use strict';
-require('../../vendor/jquery-1.11.0.min');
-
 $(function () {
     //链接列表
     $('.btn-delete').on('click', function () {
@@ -10,7 +7,7 @@ $(function () {
             type: 'post',
             url: '/admin/link/remove',
             data: {
-                linkId: $that.attr('data-id')
+                linkIds: $that.attr('data-id')
             },
             headers: {
                 'X-CSRF-Token': $('#csrfToken').val()

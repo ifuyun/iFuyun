@@ -5,51 +5,50 @@
         <? include ../elements/topBar.html ?>
         <div id="control-panel">
             <div id="control-body">
-                <h2><? if(link.link_id) { ?>编辑链接<? } else { ?>新增链接<? } ?></h2>
+                <h2><?= title ?></h2>
                 <div class="split-line"><div class="split-corner">&nbsp;</div></div>
                 <form id="form-link" method="post" action="/admin/link/save">
                     <div class="form-wrap">
                         <form>
                             <div class="form-field">
                                 <label class="form-label-left" for="link-name">名称</label>
-                                <input type="text" class="input form-input" id="link-name" name="linkName" value="<?= link.link_name ?>" />
+                                <input type="text" class="input form-input" id="link-name" name="linkName" value="<?= link.linkName ?>" />
                             </div>
                             <div class="form-field">
                                 <label class="form-label-left" for="link-url">URL</label>
-                                <input type="text" class="input form-input" id="link-url" name="linkUrl" value="<?= link.link_url ?>" />
+                                <input type="text" class="input form-input" id="link-url" name="linkUrl" value="<?= link.linkUrl ?>" />
                             </div>
                             <div class="form-field">
                                 <label class="form-label-left" for="link-desc">描述</label>
-                                <input type="text" class="input form-input" id="link-desc" name="linkDesc" value="<?= link.link_description ?>" />
+                                <input type="text" class="input form-input" id="link-desc" name="linkDescription" value="<?= link.linkDescription ?>" />
                             </div>
                             <div class="form-field">
                                 <label class="form-label-left" for="link-visible">可见性</label>
                                 <select class="input form-input" id="link-visible" name="linkVisible">
-                                    <option value="site"<? if(link.link_visible === 'site') { ?> selected="selected"<? } ?>>全站</option>
-                                    <option value="homepage"<? if(link.link_visible === 'homepage') { ?> selected="selected"<? } ?>>首页</option>
-                                    <option value="invisible"<? if(link.link_visible === 'invisible') { ?> selected="selected"<? } ?>>不可见</option>
+                                    <option value="site"<? if(link.linkVisible === 'site') { ?> selected="selected"<? } ?>>全站</option>
+                                    <option value="homepage"<? if(link.linkVisible === 'homepage') { ?> selected="selected"<? } ?>>首页</option>
+                                    <option value="invisible"<? if(link.linkVisible === 'invisible') { ?> selected="selected"<? } ?>>不可见</option>
                                 </select>
                             </div>
                             <div class="form-field">
                                 <label class="form-label-left" for="link-target">打开方式</label>
                                 <select class="input form-input" id="link-target" name="linkTarget">
-                                    <option value="_blank"<? if(link.link_target === '_blank') { ?> selected="selected"<? } ?>>新页面</option>
-                                    <option value="_self"<? if(link.link_target === '_self') { ?> selected="selected"<? } ?>>当前页</option>
-                                    <option value="_top"<? if(link.link_target === '_top') { ?> selected="selected"<? } ?>>父页面</option>
+                                    <option value="_blank"<? if(link.linkTarget === '_blank') { ?> selected="selected"<? } ?>>新页面</option>
+                                    <option value="_self"<? if(link.linkTarget === '_self') { ?> selected="selected"<? } ?>>当前页</option>
+                                    <option value="_top"<? if(link.linkTarget === '_top') { ?> selected="selected"<? } ?>>父页面</option>
                                 </select>
                             </div>
                             <div class="form-field">
                                 <label class="form-label-left" for="link-rating">排序</label>
-                                <input type="text" class="input form-input" id="link-rating" name="linkRating" value="<?= link.link_rating ?>" />
+                                <input type="text" class="input form-input" id="link-rating" name="linkRating" value="<?= link.linkRating ?>" />
                             </div>
                             <div class="form-field">
                                 <label class="form-label-left" for="link-type">分类</label>
-                                <select class="input form-input" id="link-type" name="linkType">
+                                <select class="input form-input" id="link-type" name="linkTaxonomy">
                                     <option value="">无</option>
-                                    <? var cat; for(var catIdx = 0; catIdx < categories.length; catIdx += 1){ ?>
-                                        <? cat = categories[catIdx]; ?>
-                                        <option value="<?= cat.taxonomyId ?>"<? if(cat.taxonomyId === linkType.taxonomy_id) { ?> selected="selected"<? } ?>><? for(var idx = 1; idx < cat.level; idx += 1){ ?>&nbsp;&nbsp;&nbsp;&nbsp;<? } ?><?= cat.name ?></option>
-                                    <? } ?>
+                                    <? categories.catArray.forEach(function (cat){?>
+                                    <option value="<?= cat.taxonomyId ?>"<? if(cat.taxonomyId === link.TermTaxonomies[0].taxonomyId){?> selected="selected"<? } ?>><? for(var idx = 1; idx < cat.level; idx += 1){ ?>&nbsp;&nbsp;&nbsp;&nbsp;<? } ?><?= cat.name ?></option>
+                                    <? }) ?>
                                 </select>
                             </div>
                             <div class="form-field">
@@ -57,7 +56,7 @@
                                 <input type="submit" class="submit" value="保存" />
                             </div>
                             <input type="hidden" name="_csrf" id="csrfToken" value="<?- token ?>" />
-                            <input type="hidden" name="linkId" value="<?= link.link_id ?>" />
+                            <input type="hidden" name="linkId" value="<?= link.linkId ?>" />
                         </form>
                     </div>
                 </form>
@@ -66,6 +65,6 @@
     </div>
     <? include ../elements/pageFooter.html ?>
 </div>
-<script type="text/javascript" src="<?- options.static_host.option_value ?>/dist/js/common_99219e3a.js"></script>
-<script type="text/javascript" src="<?- options.static_host.option_value ?>/dist/js/admin/link_99219e3a.js"></script>
+<script type="text/javascript" src="/js/common.js"></script>
+<script type="text/javascript" src="/js/admin/link.js"></script>
 <? include ../common/footer.html ?>

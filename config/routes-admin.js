@@ -10,12 +10,12 @@
  * @since 1.1.0
  */
 module.exports = function (app, router) {
-    const post = require('../controller/post');
+    const post = require('../controllers/post');
     // const user = require('../controllers/user');
-    const admin = require('../controller/admin');
-    const comment = require('../controller/comment');
-    const taxonomy = require('../controller/taxonomy');
-    // const link = require('../controllers/link');
+    const admin = require('../controllers/admin');
+    const comment = require('../controllers/comment');
+    const taxonomy = require('../controllers/taxonomy');
+    const link = require('../controllers/link');
 
     router.use(admin.checkAuth);
     router.get('/', admin.welcome);
@@ -31,7 +31,7 @@ module.exports = function (app, router) {
 
     router.get('/media', post.listMedia);
     router.get('/media/page-:page', post.listMedia);
-    router.get('/media/new', post.newMedia);
+    router.get('/media/detail', post.editMedia);
     // router.post('/media/upload', post.uploadFile);
 
     router.get('/comment', comment.listComments);
@@ -44,24 +44,17 @@ module.exports = function (app, router) {
     router.get('/taxonomy', taxonomy.listTaxonomy);
     router.get('/taxonomy/page-:page', taxonomy.listTaxonomy);
     router.get('/taxonomy/detail', taxonomy.editTaxonomy);
-    // router.post('/taxonomy/save', taxonomy.saveCategory);
-    // router.post('/category/remove', taxonomy.removeCategory);
+    router.post('/taxonomy/save', taxonomy.saveTaxonomy);
+    router.post('/taxonomy/remove', taxonomy.removeTaxonomy);
 
-    // router.get('/link', link.listLink);
-    // router.get('/link/page-:page', link.listLink);
-    // router.get('/link/new', link.newLink);
-    // router.post('/link/save', link.saveLink);
-    // router.get('/link/:linkId', link.editLink);
-    // router.post('/link/remove', link.removeLink);
+    router.get('/link', link.listLink);
+    router.get('/link/page-:page', link.listLink);
+    router.get('/link/detail', link.editLink);
+    router.post('/link/save', link.saveLink);
+    router.post('/link/remove', link.removeLink);
 
-    // router.get('/options/general', admin.setGeneral);
-    // router.post('/options/general', admin.saveGeneral);
-    // router.get('/options/writing', admin.setWriting);
-    // router.post('/options/writing', admin.setWriting);
-    // router.get('/options/reading', admin.setReading);
-    // router.post('/options/reading', admin.setReading);
-    // router.get('/options/discussion', admin.setDiscussion);
-    // router.post('/options/discussion', admin.setDiscussion);
+    router.get('/settings', admin.settings);// general writing reading discussion
+    router.post('/settings', admin.saveSettings);
 
     return router;
 };

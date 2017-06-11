@@ -135,6 +135,9 @@ module.exports = function (sequelize, DataTypes) {
             field: 'vbscript_flag'
         }
     }, {
-        tableName: 'access_logs'
+        tableName: 'access_logs',
+        createdAt: 'access_time',
+        updatedAt: false,
+        deletedAt: false
     });
 };
