@@ -15,9 +15,9 @@ module.exports = function (app, express) {
     const path = require('path');
     const router = express.Router();
     const base = require('./routes-base');
-    const post = require('../controller/post');
-    const user = require('../controller/user');
-    const comment = require('../controller/comment');
+    const post = require('../controllers/post');
+    const user = require('../controllers/user');
+    const comment = require('../controllers/comment');
     const admin = require('./routes-admin')(app, router);
 
     // 静态文件(若先路由后静态文件，将导致session丢失)

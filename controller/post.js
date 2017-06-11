@@ -1,1233 +1,1526 @@
+/*global console*/
 /**
- * Created by fuyun on 2017/04/12.
+ * 主控制器：文章列表和详情
+ * @module c_post
+ * @class C_Post
+ * @static
+ * @requires fs, path, url, async, sanitizer, formidable, moment, c_base, m_base, util, logger, m_post, m_link, m_term_taxonomy
+ * @author Fuyun
+ * @version 2.0.0
+ * @since 1.0.0
  */
-const async = require('async');
-const moment = require('moment');
+const fs = require('fs');
+const path = require('path');
 const url = require('url');
+// const iconv = require('iconv-lite');
+const async = require('async');
 const xss = require('sanitizer');
-const models = require('../models/index');
-const common = require('./common');
-const appConfig = require('../config/core');
+const formidable = require('formidable');
+const moment = require('moment');
+const base = require('./base');
+const pool = require('../model/base').pool;
 const util = require('../helper/util');
-const formatter = require('../helper/formatter');
 const logger = require('../helper/logger').sysLog;
+const PostModel = require('../model/post');
+const LinkModel = require('../model/link');
+const TaxonomyModel = require('../model/termTaxonomy');
+const post = new PostModel(pool);
+const link = new LinkModel(pool);
+const taxonomy = new TaxonomyModel(pool);
+const pagesOut = 9;
 const idReg = /^[0-9a-fA-F]{16}$/i;
 
-function getCommonData (param, cb) {
-    // 执行时间在30-60ms，间歇60-80ms
-    async.parallel({
-        archiveDates: common.archiveDates,
-        recentPosts: common.recentPosts,
-        randPosts: common.randPosts,
-        hotPosts: common.hotPosts,
-        friendLinks: (cb) => common.getLinks('friendlink', param.from !== 'list' || param.page > 1 ? 'site' : ['homepage', 'site'], cb),
-        quickLinks: (cb) => common.getLinks('quicklink', ['homepage', 'site'], cb),
-        categories: common.getCategoryTree.bind(common),
-        mainNavs: common.mainNavs,
-        options: common.getInitOptions
-    }, function (err, result) {
-        if (err) {
-            cb(err);
-        } else {
-            cb(null, result);
-        }
-    });
-}
-function queryPostsByIds (posts, postIds, cb) {
-    // 执行时间在10-20ms
+//共用方法
+let common = {
     /**
-     * 根据group方式去重（distinct需要使用子查询，sequelize不支持include时的distinct）
-     * 需要注意的是posts和postsCount的一致性
-     * 评论数的查询通过posts进行循环查询，采用关联查询会导致结果不全（hasMany关系对应的是INNER JOIN，并不是LEFT OUTER JOIN），且并不需要所有评论数据，只需要总数
-     *
-     * sequelize有一个Bug：
-     * 关联查询去重时，通过group by方式无法获取关联表的多行数据（如：此例的文章分类，只能返回第一条，并没有返回所有的分类）*/
-    models.TermTaxonomy.findAll({
-        attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'count'],
-        include: [{
-            model: models.TermRelationship,
-            attributes: ['objectId', 'termTaxonomyId'],
-            where: {
-                objectId: postIds
+     * 公共方法：根据前序遍历查询目录(包含子目录)
+     * @method getCategoryArray
+     * @static
+     * @param {Function} cb 回调
+     * @return {void}
+     * @author Fuyun
+     * @version 1.0.0
+     * @since 1.0.0
+     */
+    getCategoryArray: function (cb) {
+        taxonomy.getCategoryArray('post', cb);
+    },
+    /**
+     * 公共方法：查询公共的基础数据：归档日期、最近post、随机post、热门post、友情链接、顶部链接、分类目录、主导航、站点配置
+     * @method getCommonData
+     * @static
+     * @param {Function} cb 回调
+     * @return {void}
+     * @author Fuyun
+     * @version 1.0.0
+     * @since 1.0.0
+     */
+    getCommonData: function (param, cb) {
+        async.parallel({
+            archiveDates: function (cb) {//查询post归档日期, TODO:不能直接用post.getArchiveDates，否则this将引用异常(apply)
+                post.getArchiveDates('post', cb);
+            },
+            recentPosts: post.getRecentPosts.bind(post),
+            randPosts: post.getRandPosts.bind(post),
+            hotPosts: post.getHotPosts.bind(post),
+            friendLinks: param.from !== 'list' || param.page > 1 ? link.getSiteLinks.bind(link) : link.getHomeLinks.bind(link),
+            quickLinks: link.getQuickLinks.bind(link),//查询顶部链接
+            // categories: taxonomy.getCategoryDom.bind(taxonomy),//查询目录(包含子目录)HTML
+            categories: taxonomy.getCategoryTree.bind(taxonomy),//查询目录(包含子目录)
+            mainNavs: taxonomy.getMainNavs.bind(taxonomy),//查询主导航
+            options: base.getInitOptions.bind(base)
+        }, function (err, results) {
+            if (err) {
+                cb(err);
+            } else {
+                cb(null, results);
             }
-        }],
-        where: {
-            taxonomy: ['post', 'tag']
-        },
-        order: [['termOrder', 'asc']]
-    }).then((data) => {
-        let result = [];
-        posts.forEach((post) => {
-            let tags = [];
-            let categories = [];
-            data.forEach((u) => {
-                if (u.taxonomy === 'tag') {
-                    u.TermRelationships.forEach((v) => {
-                        if (v.objectId === post.postId) {
-                            tags.push(u);
-                        }
-                    });
-                } else {
-                    u.TermRelationships.forEach((v) => {
-                        if (v.objectId === post.postId) {
-                            categories.push(u);
-                        }
-                    });
-                }
-            });
-            result.push({
-                post,
-                tags,
-                categories
-            });
-        });
-        cb(null, result);
-    });
-}
-function queryPosts (param, cb) {
-    let queryOpt = {
-        where: param.where,
-        attributes: ['postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus', 'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'],
-        include: [{
-            model: models.User,
-            attributes: ['userDisplayName']
-        }],
-        order: [['postCreated', 'desc'], ['postDate', 'desc']],
-        limit: 10,
-        offset: 10 * (param.page - 1),
-        subQuery: false
-    };
-    switch (param.from) {
-        case 'category':
-            queryOpt.include = queryOpt.include.concat(param.includeOpt);
-            queryOpt.group = ['postId'];
-            break;
-        case 'tag':
-            queryOpt.include = queryOpt.include.concat(param.includeOpt);
-            break;
-        default:
-    }
-    models.Post.findAll(queryOpt).then((posts) => {
-        let postIds = [];
-        posts.forEach((v) => postIds.push(v.postId));
-        queryPostsByIds(posts, postIds, cb);
-    });
-}
-function checkPostFields ({data, type, postCategory, postTag}) {
-    // TODO: postGuid:/page-,/post/page-,/category/,/archive/,/tag/,/comment/,/user/,/admin/,/post/comment/
-    let rules = [{
-        rule: !data.postTitle,
-        message: '标题不能为空'
-    }, {
-        rule: !data.postContent,
-        message: '内容不能为空'
-    }, {
-        rule: !data.postStatus,
-        message: '状态不能为空'
-    }, {
-        rule: data.postStatus === 'password' && !data.postPassword,
-        message: '密码不能为空'
-    }];
-    if (type === 'post') {
-        rules = rules.concat([{
-            rule: !postCategory || postCategory.length < 1,
-            message: '目录不能为空'
-        }, {
-            rule: postCategory.length > 5,
-            message: '目录数应不大于5个'
-        }, {
-            rule: postTag.length > 10,
-            message: '标签数应不大于10个'
-        }]);
-    } else {
-        rules.push({
-            rule: !data.postGuid,
-            message: 'URL不能为空'
         });
     }
-    for (let i = 0; i < rules.length; i += 1) {
-        if (rules[i].rule) {
-            return util.catchError({
-                status: 200,
-                code: 400,
-                message: rules[i].message
-            });
-        }
-    }
-    return true;
-}
+};
 
 module.exports = {
+    /**
+     * 显示所有文章列表
+     * @method listPosts
+     * @static
+     * @param {Object} req 请求对象
+     * @param {Object} res 响应对象
+     * @param {Object} next 路由对象
+     * @return {void}
+     * @author Fuyun
+     * @version 1.0.0
+     * @since 1.0.0
+     */
     listPosts: function (req, res, next) {
-        let page = parseInt(req.params.page, 10) || 1;
-        let where = {
-            postStatus: 'publish',
-            postType: 'post'
+        var page = parseInt(req.params.page, 10) || 1, resData;
+
+        resData = {
+            curNav: 'index',
+            showCrumb: false,
+            postsData: false,
+            archiveDates: false,
+            mainNavs: false,
+            categories: false,
+            friendLinks: false,
+            recentPosts: false,
+            randPosts: false,
+            options: false,
+            quickLinks: false,
+            meta: {
+                title: '',
+                description: '',
+                keywords: '',
+                author: ''
+            }
         };
-        if (req.query.keyword) {
-            where.$or = [{
-                postTitle: {
-                    $like: `%${req.query.keyword}%`
-                }
-            }, {
-                postContent: {
-                    $like: `%${req.query.keyword}%`
-                }
-            }, {
-                postExcerpt: {
-                    $like: `%${req.query.keyword}%`
-                }
-            }];
-        }
-        async.auto({
-            commonData: (cb) => {
-                getCommonData({
-                    page,
+
+        async.parallel({
+            allPosts: function (cb) {
+                post.getAllPosts({
+                    page: page,
+                    postStatus: 'publish',
+                    category: '',
+                    tag: '',
+                    author: '',
+                    keyword: req.query.keyword || ''
+                }, cb);
+            },
+            commonData: function (cb) {
+                common.getCommonData({
+                    page: page,
                     from: 'list'
                 }, cb);
-            },
-            postsCount: (cb) => {
-                models.Post.count({
-                    where
-                }).then((result) => cb(null, result));
-            },
-            posts: ['postsCount', (result, cb) => {
-                page = (page > result.postsCount / 10 ? Math.ceil(result.postsCount / 10) : page) || 1;
-                queryPosts({
-                    page,
-                    where,
-                    from: 'index'
-                }, cb);
-            }],
-            comments: ['posts', (result, cb) => common.getCommentCountByPosts(result.posts, cb)]
-        }, function (err, result) {
+            }
+        }, function (err, results) {
             if (err) {
-                return next(err);
-            }
-            let resData = {
-                curNav: 'index',
-                showCrumb: false,
-                meta: {}
-            };
-            const options = result.commonData.options;
-            Object.assign(resData, result.commonData);
-
-            resData.posts = result.posts;
-            resData.posts.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), 9);
-            resData.posts.linkUrl = '/post/page-';
-            resData.posts.linkParam = req.query.keyword ? '?keyword=' + req.query.keyword : '';
-            resData.comments = result.comments;
-
-            if (req.query.keyword) {
-                if (page > 1) {
-                    resData.meta.title = util.getTitle([req.query.keyword, '第' + page + '页', '搜索结果', options.site_name.optionValue]);
-                } else {
-                    resData.meta.title = util.getTitle([req.query.keyword, '搜索结果', options.site_name.optionValue]);
-                }
+                next(err);
             } else {
-                if (page > 1) {
-                    resData.meta.title = util.getTitle(['第' + page + '页', '文章列表', options.site_name.optionValue]);
+                var options = results.commonData.options;
+
+                resData.postsData = results.allPosts;
+                resData.postsData.paginator = util.paginator(page, results.allPosts.pages, pagesOut);
+                resData.postsData.linkUrl = '/post/page-';
+                resData.postsData.linkParam = req.query.keyword ? '?keyword=' + req.query.keyword : '';
+
+                if (req.query.keyword) {
+                    if (page > 1) {
+                        resData.meta.title = util.getTitle([req.query.keyword, '第' + page + '页', '搜索结果', options.site_name.option_value]);
+                    } else {
+                        resData.meta.title = util.getTitle([req.query.keyword, '搜索结果', options.site_name.option_value]);
+                    }
                 } else {
-                    resData.meta.title = util.getTitle(['爱生活，爱抚云', options.site_name.optionValue]);
+                    if (page > 1) {
+                        resData.meta.title = util.getTitle(['第' + page + '页', '文章列表', options.site_name.option_value]);
+                    } else {
+                        resData.meta.title = util.getTitle(['爱生活，爱抚云', options.site_name.option_value]);
+                    }
                 }
+
+                resData.meta.description = (page > 1 ? '[文章列表](第' + page + '页)' : '') + options.site_description.option_value;
+                resData.meta.keywords = options.site_keywords.option_value;
+                resData.meta.author = options.site_author.option_value;
+
+                Object.assign(resData, results.commonData);
+
+                resData.util = util;
+                res.render('v2/pages/postList', resData);
             }
-
-            resData.meta.description = (page > 1 ? '[文章列表](第' + page + '页)' : '') + options.site_description.optionValue;
-            resData.meta.keywords = options.site_keywords.optionValue;
-            resData.meta.author = options.site_author.optionValue;
-
-            resData.util = util;
-            resData.moment = moment;
-            res.render(`${appConfig.pathViews}/front/pages/postList`, resData);
         });
     },
+    /**
+     * 显示文章内容(即单篇博文)
+     * @method showPost
+     * @static
+     * @param {Object} req 请求对象
+     * @param {Object} res 响应对象
+     * @param {Object} next 路由对象
+     * @return {void}
+     * @author Fuyun
+     * @version 1.0.0
+     * @since 1.0.0
+     */
     showPost: function (req, res, next) {
-        const postId = req.params.postId;
-        if (!postId || !/^[0-9a-fA-F]{16}$/i.test(postId)) {
-            // return util.catchError({
-            //     status: 404,
-            //     code: 404,
-            //     message: 'Page Not Found'
-            // }, next);
-            return next();
+        var postId = req.params.postId, page = req.params.page || 1, resData;
+
+        if (!postId || !idReg.test(postId)) {
+            return util.catchError({
+                status: 404,
+                code: 404,
+                message: 'Page Not Found'
+            }, next);
         }
-        async.auto({
-            commonData: (cb) => {
-                getCommonData({
-                    from: 'post'
-                }, cb);
+
+        resData = {
+            curNav: '',
+            curPos: '',
+            showCrumb: true,
+            post: false,
+            archiveDates: false,
+            mainNavs: false,
+            categories: false,
+            friendLinks: false,
+            recentPosts: false,
+            randPosts: false,
+            options: false,
+            quickLinks: false,
+            user: {
+                userName: '',
+                userEmail: ''
             },
+            meta: {
+                title: '',
+                description: '',
+                keywords: '',
+                author: ''
+            },
+            token: req.csrfToken()
+        };
+
+        if (req.session.user) {
+            resData.user.userName = req.session.user.user.user_display_name;
+            resData.user.userEmail = req.session.user.user.user_email;
+        }
+
+        async.auto({
             post: function (cb) {
-                models.Post.findById(postId, {
-                    attributes: ['postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus', 'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'],
-                    include: [{
-                        model: models.User,
-                        attributes: ['userDisplayName']
-                    }, {
-                        model: models.TermTaxonomy,
-                        attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'count'],
-                        where: {
-                            taxonomy: ['post', 'tag']
-                        }
-                    }]
-                }).then(function (post) {
-                    if (!post || !post.postId) {
+                post.getPostById(postId, 'id', util.isAdminUser(req), function (err, data) {
+                    if (err || !data.post || !data.post.post_id) {
                         logger.error(util.getErrorLog({
                             req: req,
-                            funcName: 'showPost',
+                            funcName: 'showPost',//TODO:func.name
                             funcParam: {
-                                postId: post.postId
+                                postId: postId
                             },
-                            msg: 'Post Not Exist.'
+                            msg: err
                         }));
                         return cb(util.catchError({
                             status: 404,
                             code: 404,
-                            message: 'Page Not Found.'
+                            message: 'Page Not Found'
                         }));
                     }
-                    // 无管理员权限不允许访问非公开文章(包括草稿)
-                    if (!util.isAdminUser(req) && post.postStatus !== 'publish') {
+                    if (!util.isAdminUser(req) && data.post.post_status !== 'publish') {//无管理员权限不允许访问非公开文章(包括草稿)
+                        // logger.warn(util.getAccessUser(req), '- "postId: ' + data.post.post_id + ' is ' + data.post.post_status + '"');
                         logger.warn(util.getErrorLog({
                             req: req,
                             funcName: 'showPost',
                             funcParam: {
-                                postId: post.postId,
-                                postTitle: post.postTitle,
-                                postStatus: post.postStatus
+                                postId: data.post.post_id,
+                                postTitle: data.post.post_title
                             },
-                            msg: post.postTitle + ' is ' + post.postStatus
+                            msg: data.post.post_title + ' is ' + data.post.post_status
                         }));
                         return cb(util.catchError({
                             status: 404,
                             code: 404,
-                            message: 'Page Not Found.'
+                            message: 'Page Not Found'
                         }));
                     }
-                    cb(null, post);
+                    cb(null, data);
                 });
             },
-            comments: ['post', (result, cb) => common.getCommentsByPostId(result.post.postId, cb)],
-            crumb: ['commonData', 'post',
-                function (result, cb) {
-                    let post = result.post;
-                    let categories = [];
-                    post.TermTaxonomies.forEach((v) => {
-                        if (v.taxonomy === 'post') {
-                            categories.push(v);
-                        }
-                    });
-                    if (categories.length < 1) {
-                        logger.error(util.getErrorLog({
-                            req: req,
-                            funcName: 'showPost',
-                            funcParam: {
-                                postId: post.postId,
-                                postTitle: post.postTitle
-                            },
-                            msg: 'Category Not Exist.'
-                        }));
-                        return cb('Category Not Exist.');
+            //@formatter:off
+            crumb: ['post',
+                function (cb, results) {//因为无需再次查询前置条件，故单独同post并行，而无需合并到post处理中，区别于目录列表
+                    if (!results.post.category[0] || !results.post.category[0].parent) {
+                        cb();
+                    } else {
+                        taxonomy.getParentCategories(results.post.category[0].parent, cb);
                     }
-                    cb(null, common.getCategoryPath({
-                        catData: result.commonData.categories.catData,
-                        taxonomyId: categories[0].taxonomyId
-                    }));
                 }],
-            prevPost: (cb) => common.getPrevPost(postId, cb),
-            nextPost: (cb) => common.getNextPost(postId, cb)
-        }, function (err, result) {
+            getPrev: ['post', function (cb, results) {
+                post.getPrevPost(postId, cb);
+            }],
+            getNext: ['post', function (cb, results) {
+                post.getNextPost(postId, cb);
+            }],
+            //@formatter:on
+            commonData: function (cb) {
+                common.getCommonData({}, cb);
+            }
+        }, function (err, results) {
+            var crumb = [], curPost = results.post, crumbData = results.crumb, crumbIdx, options, tagIdx, tagArr = [];
+
             if (err) {
-                if(err.code === 404) {
-                    return next();
-                }
                 return next(err);
             }
-            let resData = {
-                showCrumb: true,
-                user: {},
-                meta: {},
-                token: req.csrfToken()
-            };
-            if (req.session.user) {
-                resData.user.userName = req.session.user.userDisplayName;
-                resData.user.userEmail = req.session.user.userEmail;
+            if (!curPost.category[0]) {
+                return next('分类不存在');
             }
-            const options = result.commonData.options;
-            Object.assign(resData, result.commonData);
+            options = results.commonData.options;
 
-            resData.curNav = result.crumb[0].slug;
-            resData.curPos = util.createCrumb(result.crumb);
-            resData.postCats = [];
-            resData.postTags = [];
-
-            let keywords = [];
-            result.post.TermTaxonomies.forEach((v) => {
-                if (v.taxonomy === 'tag') {
-                    keywords.push(v.name);
-                    resData.postTags.push(v);
-                } else if (v.taxonomy === 'post') {
-                    resData.postCats.push(v);
-                }
+            crumb.push({
+                'title': '首页',
+                'tooltip': 'iFuyun',
+                'url': '/',
+                'headerFlag': false
             });
-            keywords.push(options.site_keywords.optionValue);
 
-            resData.meta.title = util.getTitle([result.post.postTitle, options.site_name.optionValue]);
-            resData.meta.description = result.post.postExcerpt || util.cutStr(util.filterHtmlTag(result.post.postContent), 140);
-            resData.meta.keywords = keywords.join(',') + ',' + options.site_keywords.optionValue;
-            resData.meta.author = options.site_author.optionValue;
-            resData.post = result.post;
-            resData.prevPost = result.prevPost;
-            resData.nextPost = result.nextPost;
-            resData.comments = result.comments;
+            if (crumbData) {
+                resData.curNav = crumbData[0].slug;
+                for (crumbIdx = 0; crumbIdx < crumbData.length; crumbIdx += 1) {
+                    crumb.push({
+                        'title': crumbData[crumbIdx].name,
+                        'tooltip': crumbData[crumbIdx].description,
+                        'url': '/category/' + crumbData[crumbIdx].slug,
+                        'headerFlag': false
+                    });
+                }
+            } else {
+                resData.curNav = curPost.category[0].slug;
+            }
+            crumb.push({
+                'title': curPost.category[0].name,
+                'tooltip': curPost.category[0].description,
+                'url': '/category/' + curPost.category[0].slug,
+                'headerFlag': true
+            });
+            resData.curPos = base.createCrumb(crumb);
+
+            if (page > 1) {
+                resData.meta.title = util.getTitle(['第' + page + '页', curPost.post.post_title, options.site_name.option_value]);
+            } else {
+                resData.meta.title = util.getTitle([curPost.post.post_title, options.site_name.option_value]);
+            }
+            for (tagIdx = 0; tagIdx < curPost.tag.length; tagIdx += 1) {
+                tagArr.push(curPost.tag[tagIdx].name);
+            }
+            tagArr.push(options.site_keywords.option_value);
+
+            resData.meta.description = (page > 1 ? '(第' + page + '页)' : '') + (curPost.post.post_excerpt || util.cutStr(util.filterHtmlTag(curPost.post.post_content), 140));
+            resData.meta.keywords = tagArr.join(',');
+            resData.meta.author = options.site_author.option_value;
+
+            resData.post = curPost;
+            resData.comments = curPost.comments;
+
+            Object.assign(resData, results.commonData);
+
             resData.util = util;
-            resData.moment = moment;
-            res.render(`${appConfig.pathViews}/front/pages/post`, resData);
+            resData.prevPost = results.getPrev;
+            resData.nextPost = results.getNext;
+
+            res.render('v2/pages/post', resData);
         });
     },
-    showPage: function (req, res, next) {
-        const reqUrl = url.parse(req.url);
-        const reqPath = reqUrl.pathname;
-        async.auto({
-            commonData: (cb) => {
-                getCommonData({
-                    from: 'page'
-                }, cb);
+    /**
+     * 显示页面内容(即单篇页面)
+     * @method showPage
+     * @static
+     * @param {Object} req 请求对象
+     * @param {Object} res 响应对象
+     * @param {Object} next 路由对象
+     * @return {void}
+     * @author Fuyun
+     * @version 1.0.0
+     * @since 1.0.0
+     */
+    showPage: function (req, res, next) {//req.connection.remoteAddress,req.url,req.originalUrl
+        var reqUrl = url.parse(req.url), reqPath = reqUrl.pathname, resData;
+
+        resData = {
+            curNav: '',
+            curPos: '',
+            showCrumb: false,
+            post: false,
+            archiveDates: false,
+            mainNavs: false,
+            categories: false,
+            friendLinks: false,
+            recentPosts: false,
+            randPosts: false,
+            options: false,
+            quickLinks: false,
+            user: {
+                userName: '',
+                userEmail: ''
             },
+            meta: {
+                title: '',
+                description: '',
+                keywords: '',
+                author: ''
+            },
+            token: req.csrfToken()
+        };
+
+        if (req.session.user) {
+            resData.user.userName = req.session.user.user.user_display_name;
+            resData.user.userEmail = req.session.user.user.user_email;
+        }
+
+        async.auto({
             post: function (cb) {
-                models.Post.findOne({
-                    attributes: ['postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus', 'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'],
-                    include: [{
-                        model: models.User,
-                        attributes: ['userDisplayName']
-                    }],
-                    where: {
-                        postGuid: decodeURIComponent(reqPath)
-                    }
-                }).then(function (result) {
-                    if (!result || !result.postId) {
+                post.getPostById(reqPath, 'guid', util.isAdminUser(req), function (err, data) {
+                    if (err || !data.post || !data.post.post_id) {
                         logger.error(util.getErrorLog({
                             req: req,
                             funcName: 'showPage',
                             funcParam: {
-                                pageUrl: reqPath
+                                reqPath: reqPath
                             },
-                            msg: 'Post Not Exist.'
+                            msg: err
                         }));
                         return cb(util.catchError({
                             status: 404,
                             code: 404,
-                            message: 'Page Not Found.'
+                            message: 'Page Not Found'
                         }));
                     }
-                    // 无管理员权限不允许访问非公开文章(包括草稿)
-                    if (!util.isAdminUser(req) && result.postStatus !== 'publish') {
+                    if (!util.isAdminUser(req) && data.post.post_status !== 'publish') {//无管理员权限不允许访问非公开文章(包括草稿)
+                        // logger.warn(util.getAccessUser(req), '- "postId: ' + data.post.post_id + ' is ' + data.post.post_status + '"');
                         logger.warn(util.getErrorLog({
                             req: req,
                             funcName: 'showPage',
                             funcParam: {
-                                postId: result.postId,
-                                postTitle: result.postTitle,
-                                postStatus: result.postStatus
+                                postId: data.post.post_id,
+                                postTitle: data.post.post_title
                             },
-                            msg: result.postTitle + ' is ' + result.postStatus
+                            msg: data.post.post_title + ' is ' + data.post.post_status
                         }));
                         return cb(util.catchError({
                             status: 404,
                             code: 404,
-                            message: 'Page Not Found.'
+                            message: 'Page Not Found'
                         }));
                     }
-                    cb(null, result);
+                    cb(null, data);
                 });
             },
-            comments: ['post', (result, cb) => common.getCommentsByPostId(result.post.postId, cb)]
-        }, function (err, result) {
+            commonData: function (cb) {
+                common.getCommonData({}, cb);
+            }
+        }, function (err, results) {
+            var curPost = results.post, options, tagArr = [];
+
             if (err) {
                 return next(err);
             }
-            let resData = {
-                curNav: '',
-                showCrumb: false,
-                user: {},
-                meta: {},
-                token: req.csrfToken()
-            };
-            if (req.session.user) {
-                resData.user.userName = req.session.user.userDisplayName;
-                resData.user.userEmail = req.session.user.userEmail;
-            }
-            const options = result.commonData.options;
-            Object.assign(resData, result.commonData);
+            options = results.commonData.options
 
-            resData.meta.title = util.getTitle([result.post.postTitle, options.site_name.optionValue]);
-            resData.meta.description = result.post.postExcerpt || util.cutStr(util.filterHtmlTag(result.post.postContent), 140);
-            resData.meta.keywords = result.post.postTitle + ',' + options.site_keywords.optionValue;
-            resData.meta.author = options.site_author.optionValue;
+            tagArr.push(options.site_keywords.option_value);
 
-            resData.post = result.post;
-            resData.comments = result.comments;
+            resData.meta.title = util.getTitle([curPost.post.post_title, options.site_name.option_value]);
+            resData.meta.description = (curPost.post.post_excerpt || util.cutStr(util.filterHtmlTag(curPost.post.post_content), 140));//TODO
+            resData.meta.keywords = tagArr.join(',');
+            resData.meta.author = options.site_author.option_value;
+
+            resData.post = curPost;
+            resData.comments = curPost.comments;
+
+            Object.assign(resData, results.commonData);
+
             resData.util = util;
-            resData.moment = moment;
-            res.render(`${appConfig.pathViews}/front/pages/page`, resData);
+
+            res.render('v2/pages/page', resData);
         });
     },
-    listByCategory: function (req, res, next) {
-        let page = parseInt(req.params.page, 10) || 1;
-        const category = req.params.category;
-        let where = {
-            postStatus: 'publish',
-            postType: 'post'
+    /**
+     * 根据日期(年月)显示归档文章列表
+     * @method listByDate
+     * @static
+     * @param {Object} req 请求对象
+     * @param {Object} res 响应对象
+     * @param {Object} next 路由对象
+     * @return {void}
+     * @author Fuyun
+     * @version 1.0.0
+     * @since 1.0.0
+     */
+    listByDate: function (req, res, next) {
+        var page = parseInt(req.params.page, 10) || 1,
+            year = parseInt(req.params.year, 10) || new Date().getFullYear(),
+            month = parseInt(req.params.month, 10) || (new Date().getMonth() + 1),
+            resData;
+
+        resData = {
+            curNav: 'index',
+            curPos: '',
+            showCrumb: true,
+            postsData: false,
+            archiveDates: false,
+            mainNavs: false,
+            categories: false,
+            friendLinks: false,
+            recentPosts: false,
+            randPosts: false,
+            options: false,
+            quickLinks: false,
+            meta: {
+                title: '',
+                description: '',
+                keywords: '',
+                author: ''
+            }
         };
-        let includeOpt;
-        async.auto({
-            commonData: (cb) => {
-                getCommonData({
+
+        async.parallel({
+            allPosts: function (cb) {
+                post.getPostsByDate({
+                    year: year,
+                    month: req.params.month ? (month < 10 ? '0' + month : month) : '',
                     page: page,
-                    from: 'category'
+                    postStatus: 'publish',
+                    category: '',
+                    tag: '',
+                    author: '',
+                    keyword: req.query.keyword || ''
                 }, cb);
             },
-            subCategories: ['commonData', (result, cb) => {
-                common.getSubCategoriesBySlug({
-                    catData: result.commonData.categories.catData,
-                    slug: category
-                }, cb);
-            }],
-            setRelationshipWhere: ['subCategories', (result, cb) => {
-                includeOpt = [{
-                    model: models.TermRelationship,
-                    attributes: ['objectId'],
-                    where: {
-                        termTaxonomyId: result.subCategories.subCatIds
-                    }
-                }];
-                cb(null);
-            }],
-            postsCount: ['setRelationshipWhere', (result, cb) => {
-                models.Post.count({
-                    where,
-                    include: includeOpt,
-                    subQuery: false,
-                    distinct: true
-                }).then((count) => cb(null, count));
-            }],
-            posts: ['postsCount', (result, cb) => {
-                page = (page > result.postsCount / 10 ? Math.ceil(result.postsCount / 10) : page) || 1;
-                queryPosts({
-                    page,
-                    where,
-                    includeOpt,
-                    from: 'category'
-                }, cb);
-            }],
-            comments: ['posts', (result, cb) => common.getCommentCountByPosts(result.posts, cb)]
-        }, function (err, result) {
-            if (err) {
-                return next(err);
+            commonData: function (cb) {
+                common.getCommonData({}, cb);
             }
-            let resData = {
-                curNav: result.subCategories.catPath[0].slug,
-                showCrumb: true,
-                user: {},
-                meta: {}
-            };
-            const options = result.commonData.options;
-            Object.assign(resData, result.commonData);
-
-            resData.curPos = util.createCrumb(result.subCategories.catPath);
-
-            resData.posts = result.posts;
-            resData.posts.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), 9);
-            resData.posts.linkUrl = '/category/' + category + '/page-';
-            resData.posts.linkParam = '';
-            resData.comments = result.comments;
-
-            const curCat = result.subCategories.catPath[result.subCategories.catPath.length - 1].title;
-            if (page > 1) {
-                resData.meta.title = util.getTitle(['第' + page + '页', curCat, '分类目录', options.site_name.optionValue]);
+        }, function (err, results) {
+            var crumb = [], options, title = '';
+            if (err) {
+                next(err);
             } else {
-                resData.meta.title = util.getTitle([curCat, '分类目录', options.site_name.optionValue]);
+                options = results.commonData.options;
+                crumb = [{
+                    'title': '首页',
+                    'tooltip': 'iFuyun',
+                    'url': '/',
+                    'headerFlag': false
+                }, {
+                    'title': '文章归档',
+                    'tooltip': '文章归档',
+                    'url': '',
+                    'headerFlag': false
+                }, {
+                    'title': year + '年',
+                    'tooltip': year + '年',
+                    'url': '/archive/' + year,
+                    'headerFlag': !req.params.month
+                }];
+                if (req.params.month) {
+                    crumb.push({
+                        'title': month + '月',
+                        'tooltip': year + '年' + month + '月',
+                        'url': '/archive/' + year + '/' + month,
+                        'headerFlag': true
+                    });
+                }
+
+                resData.postsData = results.allPosts;
+                resData.postsData.paginator = util.paginator(page, results.allPosts.pages, pagesOut);
+                resData.postsData.linkUrl = '/archive/' + year + (req.params.month ? ('/' + (month < 10 ? '0' + month : month)) : '') + '/page-';
+                resData.postsData.linkParam = '';
+
+                resData.curPos = base.createCrumb(crumb);
+
+                title = req.params.month ? year + '年' + month + '月' : year + '年';
+                if (page > 1) {
+                    resData.meta.title = util.getTitle(['第' + page + '页', title, '文章归档', options.site_name.option_value]);
+                } else {
+                    resData.meta.title = util.getTitle([title, '文章归档', options.site_name.option_value]);
+                }
+
+                resData.meta.description = '[' + title + ']' + (page > 1 ? '(第' + page + '页)' : '') + options.site_description.option_value;
+                resData.meta.keywords = options.site_keywords.option_value;
+                resData.meta.author = options.site_author.option_value;
+
+                Object.assign(resData, results.commonData);
+
+                resData.util = util;
+
+                res.render('v2/pages/postList', resData);
             }
-
-            resData.meta.description = '[' + curCat + ']' + (page > 1 ? '(第' + page + '页)' : '') + options.site_description.option_value;
-            resData.meta.keywords = curCat + ',' + options.site_keywords.optionValue;
-            resData.meta.author = options.site_author.optionValue;
-
-            resData.util = util;
-            resData.moment = moment;
-            res.render(`${appConfig.pathViews}/front/pages/postList`, resData);
         });
     },
-    listByTag: function (req, res, next) {
-        let page = parseInt(req.params.page, 10) || 1;
-        const tag = req.params.tag;
-        let where = {
-            postStatus: 'publish',
-            postType: 'post'
-        };
-        let includeOpt = [{
-            model: models.TermTaxonomy,
-            attributes: ['taxonomyId'],
-            where: {
-                taxonomy: ['tag'],
-                slug: tag
+    /**
+     * 根据分类目录显示文章列表
+     * @method listByCategory
+     * @static
+     * @param {Object} req 请求对象
+     * @param {Object} res 响应对象
+     * @param {Object} next 路由对象
+     * @return {void}
+     * @author Fuyun
+     * @version 1.0.0
+     * @since 1.0.0
+     */
+    listByCategory: function (req, res, next) {
+        var page = parseInt(req.params.page, 10) || 1,
+            category = req.params.category,
+            resData;
+
+        resData = {
+            curNav: '',
+            curPos: '',
+            showCrumb: true,
+            postsData: false,
+            archiveDates: false,
+            mainNavs: false,
+            categories: false,
+            friendLinks: false,
+            recentPosts: false,
+            randPosts: false,
+            options: false,
+            quickLinks: false,
+            meta: {
+                title: '',
+                description: '',
+                keywords: '',
+                author: ''
             }
-        }];
-        async.auto({
-            commonData: (cb) => {
-                getCommonData({
+        };
+
+        async.parallel({
+            allPosts: function (cb) {
+                post.getPostsByCategories({
                     page: page,
-                    from: 'tag'
+                    postStatus: 'publish',
+                    postDate: req.query.date || '',
+                    category: category,
+                    tag: '',
+                    author: '',
+                    keyword: req.query.keyword || ''
                 }, cb);
             },
-            postsCount: (cb) => {
-                models.Post.count({
-                    where,
-                    include: includeOpt
-                }).then((count) => cb(null, count));
-            },
-            posts: ['postsCount', (result, cb) => {
-                page = (page > result.postsCount / 10 ? Math.ceil(result.postsCount / 10) : page) || 1;
-                queryPosts({
-                    page,
-                    where,
-                    includeOpt,
-                    from: 'tag'
-                }, cb);
-            }],
-            comments: ['posts', (result, cb) => common.getCommentCountByPosts(result.posts, cb)]
-        }, function (err, result) {
+            commonData: function (cb) {
+                common.getCommonData({}, cb);
+            }
+        }, function (err, results) {
+            var crumb = [], crumbIdx, crumbData, options, title = '';
             if (err) {
                 return next(err);
             }
-            let resData = {
-                curNav: 'index',
-                showCrumb: true,
-                user: {},
-                meta: {}
-            };
-            const options = result.commonData.options;
-            Object.assign(resData, result.commonData);
+            if (!results.allPosts) {
+                return util.catchError({
+                    status: 404,
+                    code: 404,
+                    message: 'Page Not Found'
+                }, next);
+            }
+            options = results.commonData.options;
+            crumbData = results.allPosts.crumb;
+            crumb = [{
+                'title': '首页',
+                'tooltip': 'iFuyun',
+                'url': '/',
+                'headerFlag': false
+            }];
+            for (crumbIdx = 0; crumbIdx < crumbData.length; crumbIdx += 1) {
+                crumb.push({
+                    'title': crumbData[crumbIdx].name,
+                    'tooltip': crumbData[crumbIdx].description,
+                    'url': '/category/' + crumbData[crumbIdx].slug,
+                    'headerFlag': crumbIdx === crumbData.length - 1 ? true : false
+                });
+            }
 
-            const crumbData = [{
+            resData.postsData = results.allPosts;
+            resData.postsData.paginator = util.paginator(page, results.allPosts.pages, pagesOut);
+
+            resData.postsData.linkUrl = '/category/' + category + '/page-';
+            resData.postsData.linkParam = '';
+
+            resData.curNav = crumbData[0].slug;
+            resData.curPos = base.createCrumb(crumb);
+
+            title = crumb[crumbData.length].title;
+            if (page > 1) {
+                resData.meta.title = util.getTitle(['第' + page + '页', title, '分类目录', options.site_name.option_value]);
+            } else {
+                resData.meta.title = util.getTitle([title, '分类目录', options.site_name.option_value]);
+            }
+
+            resData.meta.description = '[' + title + ']' + (page > 1 ? '(第' + page + '页)' : '') + options.site_description.option_value;
+            resData.meta.keywords = options.site_keywords.option_value;
+            resData.meta.author = options.site_author.option_value;
+
+            Object.assign(resData, results.commonData);
+
+            resData.util = util;
+
+            res.render('v2/pages/postList', resData);
+        });
+    },
+    /**
+     * 根据标签显示文章列表
+     * @method listByTag
+     * @static
+     * @param {Object} req 请求对象
+     * @param {Object} res 响应对象
+     * @param {Object} next 路由对象
+     * @return {void}
+     * @author Fuyun
+     * @version 1.0.0
+     * @since 1.0.0
+     */
+    listByTag: function (req, res, next) {
+        var page = parseInt(req.params.page, 10) || 1,
+            tag = req.params.tag,
+            resData;
+
+        resData = {
+            curNav: '',
+            curPos: '',
+            showCrumb: true,
+            postsData: false,
+            archiveDates: false,
+            mainNavs: false,
+            categories: false,
+            friendLinks: false,
+            recentPosts: false,
+            randPosts: false,
+            options: false,
+            quickLinks: false,
+            meta: {
+                title: '',
+                description: '',
+                keywords: '',
+                author: ''
+            }
+        };
+
+        async.parallel({
+            allPosts: function (cb) {
+                post.getPostsByTag({
+                    page: page,
+                    postStatus: 'publish',
+                    postDate: req.query.date || '',
+                    category: '',
+                    tag: tag,
+                    author: '',
+                    keyword: req.query.keyword || ''
+                }, cb);
+            },
+            commonData: function (cb) {
+                common.getCommonData({}, cb);
+            }
+        }, function (err, results) {
+            var crumb = [], crumbData, options, tagName;
+            if (err) {
+                return next(err);
+            }
+            if (!results.allPosts) {
+                return util.catchError({
+                    status: 404,
+                    code: 404,
+                    message: 'Page Not Found'
+                }, next);
+            }
+            options = results.commonData.options;
+            crumbData = results.allPosts.crumb;
+            tagName = crumbData.tagName;
+            crumb = [{
+                'title': '首页',
+                'tooltip': 'iFuyun',
+                'url': '/',
+                'headerFlag': false
+            }, {
                 'title': '标签',
                 'tooltip': '标签',
                 'url': '',
                 'headerFlag': false
             }, {
-                'title': tag,
-                'tooltip': tag,
+                'title': tagName,
+                'tooltip': tagName,
                 'url': '/tag/' + tag,
                 'headerFlag': true
             }];
-            resData.curPos = util.createCrumb(crumbData);
 
-            resData.posts = result.posts;
-            resData.posts.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), 9);
-            resData.posts.linkUrl = '/tag/' + tag + '/page-';
-            resData.posts.linkParam = '';
-            resData.comments = result.comments;
+            resData.postsData = results.allPosts;
+            resData.postsData.paginator = util.paginator(page, results.allPosts.pages, pagesOut);
+            resData.postsData.linkUrl = '/tag/' + tag + '/page-';
+            resData.postsData.linkParam = '';
+
+            resData.curNav = 'index';
+            resData.curPos = base.createCrumb(crumb);
 
             if (page > 1) {
-                resData.meta.title = util.getTitle(['第' + page + '页', tag, '标签', options.site_name.optionValue]);
+                resData.meta.title = util.getTitle(['第' + page + '页', tagName, '标签', options.site_name.option_value]);
             } else {
-                resData.meta.title = util.getTitle([tag, '标签', options.site_name.optionValue]);
+                resData.meta.title = util.getTitle([tagName, '标签', options.site_name.option_value]);
             }
 
-            resData.meta.description = '[' + tag + ']' + (page > 1 ? '(第' + page + '页)' : '') + options.site_description.option_value;
-            resData.meta.keywords = tag + ',' + options.site_keywords.optionValue;
-            resData.meta.author = options.site_author.optionValue;
+            resData.meta.description = '[' + tagName + ']' + (page > 1 ? '(第' + page + '页)' : '') + options.site_description.option_value;
+            resData.meta.keywords = tagName + ',' + options.site_keywords.option_value;
+            resData.meta.author = options.site_author.option_value;
+
+            Object.assign(resData, results.commonData);
 
             resData.util = util;
-            resData.moment = moment;
-            res.render(`${appConfig.pathViews}/front/pages/postList`, resData);
+
+            res.render('v2/pages/postList', resData);
         });
     },
-    listByDate: function (req, res, next) {
-        let page = parseInt(req.params.page, 10) || 1;
-        let year = parseInt(req.params.year, 10) || new Date().getFullYear();
-        let month = parseInt(req.params.month, 10);
-
-        year = year.toString();
-        month = month ? month < 10 ? '0' + month : month.toString() : '';
-        const where = {
-            postStatus: 'publish',
-            postType: 'post',
-            $and: [models.sequelize.where(models.sequelize.fn('date_format', models.sequelize.col('post_date'), month ? '%Y%m' : '%Y'), month ? year + month : year)]
-        };
-
-        async.auto({
-            commonData: (cb) => {
-                getCommonData({
-                    page,
-                    from: 'archive'
-                }, cb);
-            },
-            postsCount: (cb) => {
-                models.Post.count({
-                    where
-                }).then((data) => cb(null, data));
-            },
-            posts: ['postsCount', (result, cb) => {
-                page = (page > result.postsCount / 10 ? Math.ceil(result.postsCount / 10) : page) || 1;
-                queryPosts({
-                    page,
-                    where,
-                    from: 'archive'
-                }, cb);
-            }],
-            comments: ['posts', (result, cb) => common.getCommentCountByPosts(result.posts, cb)]
-        }, (err, result) => {
-            if (err) {
-                return next(err);
-            }
-            let resData = {
-                curNav: 'index',
-                showCrumb: true,
-                meta: {}
-            };
-            const options = result.commonData.options;
-            Object.assign(resData, result.commonData);
-
-            let crumbData = [{
-                'title': '文章归档',
-                'tooltip': '文章归档',
-                'url': '',
-                'headerFlag': false
-            }, {
-                'title': `${year}年`,
-                'tooltip': `${year}年`,
-                'url': '/archive/' + year,
-                'headerFlag': !month
-            }];
-            if (month) {
-                crumbData.push({
-                    'title': `${parseInt(month, 10)}月`,
-                    'tooltip': `${year}年${month}月`,
-                    'url': `/archive/${year}/${month}`,
-                    'headerFlag': true
-                });
-            }
-            resData.curPos = util.createCrumb(crumbData);
-
-            resData.posts = result.posts;
-            resData.posts.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), 9);
-            resData.posts.linkUrl = `/archive/${year}${month ? '/' + month : ''}/page-`;
-            resData.posts.linkParam = '';
-            resData.comments = result.comments;
-
-            const title = `${year}年${month ? month + '月' : ''}`;
-            if (page > 1) {
-                resData.meta.title = util.getTitle(['第' + page + '页', title, '文章归档', options.site_name.optionValue]);
-            } else {
-                resData.meta.title = util.getTitle([title, '文章归档', options.site_name.optionValue]);
-            }
-
-            resData.meta.description = `[${title}]` + (page > 1 ? '(第' + page + '页)' : '') + options.site_description.optionValue;
-            resData.meta.keywords = options.site_keywords.optionValue;
-            resData.meta.author = options.site_author.optionValue;
-
-            resData.util = util;
-            resData.moment = moment;
-            res.render(`${appConfig.pathViews}/front/pages/postList`, resData);
-        });
-    },
+    /**
+     * 显示文章编辑列表
+     * @method listEdit
+     * @static
+     * @param {Object} req 请求对象
+     * @param {Object} res 响应对象
+     * @param {Object} next 路由对象
+     * @return {void}
+     * @author Fuyun
+     * @version 1.0.0
+     * @since 1.0.0
+     */
     listEdit: function (req, res, next) {
-        let page = parseInt(req.params.page, 10) || 1;
-        let where = {};
-        let titleArr = [];
-        let paramArr = [];
-        let from = 'admin';
+        var page = parseInt(req.params.page, 10) || 1, resData = {
+            meta: {
+                title: ''
+            },
+            curStatus: ''
+        }, param;
 
-        if (req.query.status) {
-            if (req.query.status === 'draft') {
-                where.postStatus = ['draft', 'auto-draft'];
-            } else {
-                where.postStatus = req.query.status;
-            }
-            paramArr.push(`status=${req.query.status}`);
-            titleArr.push(formatter.postStatus(req.query.status) || req.query.status, '状态');
-        } else {
-            where.postStatus = ['publish', 'private', 'draft', 'auto-draft', 'trash'];
-        }
-        if (req.query.author) {
-            where.postAuthor = req.query.author;
-            paramArr.push(`author=${req.query.author}`);
-            titleArr.push('作者');
-        }
-        if (req.query.date) {
-            where.$and = [models.sequelize.where(models.sequelize.fn('date_format', models.sequelize.col('post_date'), '%Y/%m'), '=', req.query.date)];
-            paramArr.push(`date=${req.query.date}`);
-            titleArr.push(req.query.date, '日期');
-        }
-        if (req.query.keyword) {
-            where.$or = [{
-                postTitle: {
-                    $like: `%${req.query.keyword}%`
-                }
-            }, {
-                postContent: {
-                    $like: `%${req.query.keyword}%`
-                }
-            }, {
-                postExcerpt: {
-                    $like: `%${req.query.keyword}%`
-                }
-            }];
-            paramArr.push(`keyword=${req.query.keyword}`);
-            titleArr.push(req.query.keyword, '搜索');
-        }
-        let includeOpt = [];
-        let tagWhere;
-        if (req.query.tag) {
-            from = 'tag';
-            tagWhere = {
-                taxonomy: ['tag'],
-                slug: req.query.tag
-            };
-            includeOpt.push({
-                model: models.TermTaxonomy,
-                attributes: ['taxonomyId'],
-                where: tagWhere
-            });
-            paramArr.push(`tag=${req.query.tag}`);
-            titleArr.push(req.query.tag, '标签');
-        }
-        where.postType = req.query.type === 'page' ? 'page' : 'post';
-        paramArr.push(`type=${where.postType}`);
+        param = {
+            page: page,
+            postStatus: req.query.status || 'all',
+            postDate: req.query.date || '',
+            category: req.query.category || '',
+            tag: req.query.tag || '',
+            author: req.query.author || '',
+            keyword: req.query.keyword || '',
+            fromAdmin: true
+        };
+        if (req.query.type === 'page') {
+            resData.page = 'page';
+            param.type = 'page';
 
-        async.auto({
-            options: common.getInitOptions,
-            archiveDates: common.archiveDates,
-            categories: common.getCategoryTree.bind(common),
-            subCategories: ['categories', (result, cb) => {
-                if (req.query.category) {
-                    from = 'category';
-                    paramArr.push(`category=${req.query.category}`);
+            async.parallel({
+                allPosts: function (cb) {
+                    post.getAllPosts(param, cb);
+                },
+                archiveDates: function (cb) {
+                    post.getArchiveDates(param.type, cb);
+                },
+                options: base.getInitOptions.bind(base),
+                countAll: function (cb) {
+                    post.getPostCount(['publish', 'private', 'draft', 'auto-draft', 'trash'], 'page', cb);
+                },
+                countPublish: function (cb) {
+                    post.getPostCount('publish', 'page', cb);
+                },
+                countArchive: function (cb) {
+                    post.getPostCount('private', 'page', cb);
+                },
+                countDraft: function (cb) {
+                    post.getPostCount(['draft', 'auto-draft'], 'page', cb);
+                },
+                countDeleted: function (cb) {
+                    post.getPostCount('trash', 'page', cb);
+                }
+            }, function (err, results) {
+                var paramArr = [], titleArr = [], options = results.options;
+                if (err) {
+                    return next(err);
+                }
+                paramArr.push('type=' + req.query.type);
+                if (param.keyword) {
+                    paramArr.push('keyword=' + param.keyword);
+                    titleArr.push(param.keyword, '搜索');
+                }
+                if (req.query.status) {//TODO:英文转中文
+                    paramArr.push('status=' + param.postStatus);
+                    titleArr.push(param.postStatus, '状态');
+                }
+                if (param.postDate) {
+                    paramArr.push('date=' + param.postDate);
+                    titleArr.push(param.postDate, '日期');
+                }
+                if (results.allPosts) {
+                    resData.postsData = results.allPosts;
+                    resData.paginator = util.paginator(page, results.allPosts.pages, pagesOut);
+                    resData.paginator.pageLimit = resData.postsData.pageLimit;
+                    resData.paginator.total = resData.postsData.total;
+                    resData.paginator.linkUrl = '/admin/post/page-';
+                    resData.paginator.linkParam = paramArr.length > 0 ? '?' + paramArr.join('&') : '';
+                } else {//必须设置该字段
+                    resData.postsData = '';
+                }
 
-                    common.getSubCategoriesBySlug({
-                        catData: result.categories.catData,
-                        slug: req.query.category
-                    }, (err, data) => {
-                        if (err) {
-                            return cb(err);
-                        }
-                        includeOpt.push({
-                            model: models.TermRelationship,
-                            attributes: ['objectId'],
-                            where: {
-                                termTaxonomyId: data.subCatIds
-                            }
-                        });
-                        titleArr.push(data.catRoot.name, '分类');
-                        cb(null);
-                    });
+                if (page > 1) {
+                    resData.meta.title = util.getTitle(titleArr.concat(['第' + page + '页', '页面列表', '管理后台', options.site_name.option_value]));
                 } else {
-                    cb(null);
+                    resData.meta.title = util.getTitle(titleArr.concat(['页面列表', '管理后台', options.site_name.option_value]));
                 }
-            }],
-            postsCount: ['subCategories', (result, cb) => {
-                models.Post.count({
-                    where,
-                    include: includeOpt
-                }).then((data) => cb(null, data));
-            }],
-            posts: ['postsCount', (result, cb) => {
-                page = (page > result.postsCount / 10 ? Math.ceil(result.postsCount / 10) : page) || 1;
-                queryPosts({
-                    page,
-                    where,
-                    from,
-                    includeOpt
-                }, cb);
-            }],
-            comments: ['posts', (result, cb) => common.getCommentCountByPosts(result.posts, cb)],
-            typeCount: (cb) => {
-                models.Post.findAll({
-                    attributes: [
-                        'postStatus',
-                        'postType',
-                        ['count(1)', 'count']
-                    ],
-                    where: {
-                        postType: where.postType,
-                        postStatus: ['publish', 'private', 'draft', 'auto-draft', 'trash']
-                    },
-                    group: ['postStatus']
-                }).then((data) => cb(null, data));
-            }
-        }, function (err, result) {
+
+                resData.curStatus = param.postDate ? '' : param.postStatus;
+                resData.curDate = param.postDate;
+                resData.curKeyword = param.keyword;
+                resData.options = options;
+                resData.util = util;
+
+                resData.archiveDates = results.archiveDates;
+
+                resData.count = {
+                    all: results.countAll.total,
+                    publish: results.countPublish.total,
+                    archive: results.countArchive.total,
+                    draft: results.countDraft.total,
+                    trash: results.countDeleted.total
+                };
+                res.render('admin/pages/p_page_list', resData);
+            });
+        } else {
+            resData.page = 'post';
+            param.type = 'post';
+
+            async.parallel({
+                allPosts: function (cb) {
+                    if (req.query.category) {//TODO:分类和标签同时查询的情况
+                        post.getPostsByCategories(param, cb);
+                    } else if (req.query.tag) {//"&nbsp;"等含特殊字符的处理及IE 11乱码问题: 需要显式encodeURIComponent
+                        post.getPostsByTag(param, cb);
+                    } else {
+                        post.getAllPosts(param, cb);
+                    }
+                },
+                categories: common.getCategoryArray,
+                archiveDates: function (cb) {
+                    post.getArchiveDates(param.type, cb);
+                },
+                options: base.getInitOptions.bind(base),
+                countAll: function (cb) {
+                    post.getPostCount(['publish', 'private', 'draft', 'auto-draft', 'trash'], 'post', cb);
+                },
+                countPublish: function (cb) {
+                    post.getPostCount('publish', 'post', cb);
+                },
+                countArchive: function (cb) {
+                    post.getPostCount('private', 'post', cb);
+                },
+                countDraft: function (cb) {
+                    post.getPostCount(['draft', 'auto-draft'], 'post', cb);
+                },
+                countDeleted: function (cb) {
+                    post.getPostCount('trash', 'post', cb);
+                }
+            }, function (err, results) {
+                var paramArr = [], titleArr = [], options = results.options;
+                if (err) {
+                    return next(err);
+                }
+                if (param.keyword) {
+                    paramArr.push('keyword=' + param.keyword);
+                    titleArr.push(param.keyword, '搜索');
+                }
+                if (req.query.status) {//TODO:英文转中文
+                    paramArr.push('status=' + param.postStatus);
+                    titleArr.push(param.postStatus, '状态');
+                }
+                if (param.postDate) {
+                    paramArr.push('date=' + param.postDate);
+                    titleArr.push(param.postDate, '日期');
+                }
+                if (param.category) {//TODO:英文转中文
+                    paramArr.push('category=' + param.category);
+                    titleArr.push(param.category, '分类');
+                }
+                if (param.tag) {
+                    paramArr.push('tag=' + param.tag);
+                    titleArr.push(param.tag, '标签');
+                }
+                if (param.author) {//TODO:作者
+                    paramArr.push('author=' + param.author);
+                    // titleArr.push(param.author);
+                }
+                if (results.allPosts) {
+                    resData.postsData = results.allPosts;
+                    resData.paginator = util.paginator(page, results.allPosts.pages, pagesOut);
+                    resData.paginator.pageLimit = resData.postsData.pageLimit;
+                    resData.paginator.total = resData.postsData.total;
+                    resData.paginator.linkUrl = '/admin/post/page-';
+                    resData.paginator.linkParam = paramArr.length > 0 ? '?' + paramArr.join('&') : '';
+                } else {//必须设置该字段
+                    resData.postsData = '';
+                }
+
+                if (page > 1) {
+                    resData.meta.title = util.getTitle(titleArr.concat(['第' + page + '页', '文章列表', '管理后台', options.site_name.option_value]));
+                } else {
+                    resData.meta.title = util.getTitle(titleArr.concat(['文章列表', '管理后台', options.site_name.option_value]));
+                }
+
+                resData.curStatus = param.postDate || param.category || param.tag || param.author ? '' : param.postStatus;
+                resData.curCategory = param.category;
+                resData.curDate = param.postDate;
+                resData.curKeyword = param.keyword;
+                resData.options = options;
+                resData.util = util;
+
+                resData.categories = results.categories;
+                resData.archiveDates = results.archiveDates;
+
+                resData.count = {
+                    all: results.countAll.total,
+                    publish: results.countPublish.total,
+                    archive: results.countArchive.total,
+                    draft: results.countDraft.total,
+                    trash: results.countDeleted.total
+                };
+                res.render('admin/pages/p_post_list', resData);
+            });
+        }
+    },
+    /**
+     * 新建文章
+     * @method newPost
+     * @static
+     * @param {Object} req 请求对象
+     * @param {Object} res 响应对象
+     * @param {Object} next 路由对象
+     * @return {void}
+     * @author Fuyun
+     * @version 1.0.0
+     * @since 1.0.0
+     */
+    newPost: function (req, res, next) {
+        var resData = {
+            meta: {
+                title: ''
+            },
+            categories: false,
+            token: req.csrfToken()
+        };
+
+        async.parallel({
+            categories: common.getCategoryArray,
+            options: base.getInitOptions.bind(base)
+        }, function (err, results) {
+            var options = results.options;
             if (err) {
                 return next(err);
             }
-            let resData = {
-                meta: {},
-                type: where.postType,
-                page: where.postType,
-                archiveDates: result.archiveDates,
-                categories: result.categories,
-                options: result.options,
-                count: {
-                    all: 0,
-                    publish: 0,
-                    private: 0,
-                    draft: 0,
-                    trash: 0
-                },
-                posts: result.posts,
-                comments: result.comments,
-                util,
-                formatter,
-                moment
-            };
-            resData.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), 9);
-            resData.paginator.linkUrl = '/admin/post/page-';
-            resData.paginator.linkParam = paramArr.length > 0 ? '?' + paramArr.join('&') : '';
-            resData.paginator.pageLimit = 10;
-            resData.paginator.total = result.postsCount;
+            resData.meta.title = util.getTitle(['撰写新文章', '管理后台', options.site_name.option_value]);
 
-            if (page > 1) {
-                resData.meta.title = util.getTitle(titleArr.concat(['第' + page + '页', where.postType === 'page' ? '页面列表' : '文章列表', '管理后台', result.options.site_name.optionValue]));
+            resData.categories = results.categories;
+            resData.options = options;
+
+            if (req.query.type === 'page') {
+                resData.page = 'page';
+                res.render('admin/pages/p_page_form', resData);
             } else {
-                resData.meta.title = util.getTitle(titleArr.concat([where.postType === 'page' ? '页面列表' : '文章列表', '管理后台', result.options.site_name.optionValue]));
+                resData.page = 'post';
+                res.render('admin/pages/p_post_form', resData);
             }
-
-            result.typeCount.forEach((item) => {
-                resData.count.all += item.get('count');
-
-                switch (item.postStatus) {
-                    case 'publish':
-                        resData.count.publish += item.get('count');
-                        break;
-                    case 'private':
-                        resData.count.private += item.get('count');
-                        break;
-                    case 'draft':
-                        resData.count.draft += item.get('count');
-                        break;
-                    case 'auto-draft':
-                        resData.count.draft += item.get('count');
-                        break;
-                    case 'trash':
-                        resData.count.trash += item.get('count');
-                        break;
-                    default:
-                }
-            });
-
-            resData.curCategory = req.query.category;
-            resData.curStatus = req.query.status || 'all';
-            resData.curDate = req.query.date;
-            resData.curKeyword = req.query.keyword;
-            res.render(`${appConfig.pathViews}/admin/pages/postList`, resData);
         });
     },
-    editPost: function (req, res, next) {
-        const postId = req.params.postId;
-        let tasks = {
-            categories: common.getCategoryTree.bind(common),
-            options: common.getInitOptions
-        };
-        if (postId) {
-            if (!idReg.test(postId)) {
-                return util.catchError({
-                    status: 404,
-                    code: 404,
-                    message: '文章不存在'
-                }, next);
+    /**
+     * 保存文章
+     * @method savePost
+     * @static
+     * @param {Object} req 请求对象
+     * @param {Object} res 响应对象
+     * @param {Object} next 路由对象
+     * @return {void}
+     * @author Fuyun
+     * @version 1.0.0
+     * @since 1.0.0
+     */
+    savePost: function (req, res, next) {
+        var params = req.body,
+            referer = req.session.referer,
+            type = req.query.type;
+
+        if (!type || type !== 'page') {
+            type = 'post';
+        }
+
+        //postTitle, postContent, postExcerpt, postTag;
+        //params.postContent不能过滤，否则将过滤掉属性
+        params.postTitle = xss.sanitize(params.postTitle);
+        params.postExcerpt = xss.sanitize(params.postExcerpt);
+        params.postTag = xss.sanitize(params.postTag);
+        params.postCategory = typeof params.postCategory === 'string' ? params.postCategory.split(',') : params.postCategory;
+        params.user = req.session.user;
+        params.postId = xss.sanitize(params.postId);
+        params.postUrl = xss.sanitize(params.postUrl);
+        params.type = type;
+
+        if (typeof params.postTag === 'string') {
+            params.postTag = params.postTag.trim();
+            if (params.postTag === '') {
+                params.postTag = [];
+            } else {
+                params.postTag = params.postTag.split(/[,\s]/i);
             }
-            let includeOpt = [{
-                model: models.User,
-                attributes: ['userDisplayName']
-            }];
-            if (req.query.type !== 'page') {
-                includeOpt.push({
-                    model: models.TermTaxonomy,
-                    attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'count'],
-                    where: {
-                        taxonomy: ['post', 'tag']
+        } else if (!util.isArray(params.postTag)) {
+            params.postTag = [];
+        }
+
+        if (!params.postId || !idReg.test(params.postId)) {//空或者不符合ID规则
+            params.postId = '';
+        }
+        params.postId = params.postId.trim();
+        //trim shouldn't be null or undefined
+        if (!params.postStatus) {
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: '状态不能为空'
+            }, next);
+        }
+        if (!params.postTitle.trim()) {
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: '标题不能为空'
+            }, next);
+        }
+        if (!params.postContent.trim()) {
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: '内容不能为空'
+            }, next);
+        }
+        if (type === 'post' && (!params.postCategory || params.postCategory.length < 1)) {
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: '目录不能为空'
+            }, next);
+        }
+        if (type === 'post' && params.postCategory.length > 5) {
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: '目录数应不大于5个'
+            }, next);
+        }
+        if (type === 'post' && params.postTag.length > 10) {
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: '标签数应不大于10个'
+            }, next);
+        }
+        if (params.postStatus === 'password' && !params.postPassword.trim()) {
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: '密码不能为空'
+            }, next);
+        }
+        if (type === 'page' && !params.postUrl.trim()) {
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: 'URL不能为空'
+            }, next);
+        }
+
+        async.auto({
+            // options: base.getInitOptions.bind(base),
+            // post: ['options', function (cb, result) {
+            //     post.savePost(params, result.options, cb);
+            // }]
+            post: function (cb) {
+                post.savePost(params, cb);
+            }
+        }, function (err, results) {
+            if (err) {
+                next(err);
+            } else {
+                delete(req.session.referer);
+
+                res.set('Content-type', 'application/json');
+                res.send({
+                    status: 200,
+                    code: 0,
+                    message: null,
+                    data: {
+                        url: referer || '/admin/post?type=' + type
                     }
                 });
             }
-            tasks.post = (cb) => {
-                models.Post.findById(postId, {
-                    attributes: ['postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus', 'postType', 'postPassword', 'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'],
-                    include: includeOpt
-                }).then(function (post) {
-                    if (!post || !post.postId) {
+        });
+    },
+    /**
+     * 修改文章
+     * @method editPost
+     * @static
+     * @param {Object} req 请求对象
+     * @param {Object} res 响应对象
+     * @param {Object} next 路由对象
+     * @return {void}
+     * @author Fuyun
+     * @version 1.0.0
+     * @since 1.0.0
+     */
+    editPost: function (req, res, next) {
+        var postId = req.params.postId, resData;
+
+        if (!postId || !idReg.test(postId)) {
+            return util.catchError({
+                status: 404,
+                code: 404,
+                message: '文章不存在'
+            }, next);
+        }
+
+        req.session.referer = req.headers.referer;
+
+        resData = {
+            meta: {
+                title: ''
+            },
+            categories: false,
+            token: req.csrfToken()
+        };
+
+        async.parallel({
+            post: function (cb) {
+                post.getPostById(postId, 'id', util.isAdminUser(req), function (err, data) {
+                    if (err || !data.post || !data.post.post_id) {
                         logger.error(util.getErrorLog({
                             req: req,
                             funcName: 'editPost',
                             funcParam: {
                                 postId: postId
                             },
-                            msg: 'Post Not Exist.'
+                            msg: err
                         }));
                         return cb(util.catchError({
                             status: 404,
                             code: 404,
-                            message: 'Page Not Found.'
+                            message: 'Page Not Found'
                         }));
                     }
-                    cb(null, post);
+                    cb(null, data);
                 });
-            };
-        }
-        async.parallel(tasks, function (err, result) {
+            },
+            categories: common.getCategoryArray,
+            options: base.getInitOptions.bind(base)
+        }, function (err, results) {
+            var curPost = results.post, options = results.options, tagIdx, tagArr = [], catIdx, catArr = [], postType;
             if (err) {
                 return next(err);
             }
-            let resData = {
-                categories: result.categories,
-                options: result.options,
-                meta: {},
-                token: req.csrfToken(),
-                util,
-                moment
-            };
-            let title;
-            if (postId) {
-                title = result.post.postType === 'page' ? '编辑页面' : '编辑文章';
-                resData.page = result.post.postType;
-            } else {
-                title = req.query.type === 'page' ? '撰写新页面' : '撰写新文章';
-                resData.page = req.query.type === 'page' ? 'page' : 'post';
-            }
-            resData.title = title;
-            resData.meta.title = util.getTitle([title, '管理后台', result.options.site_name.optionValue]);
+            postType = results.post.post.post_type;
+            resData.meta.title = util.getTitle([postType === 'post' ? '编辑文章' : '编辑页面', '管理后台', options.site_name.option_value]);
 
-            resData.post = result.post || {
-                postStatus: 'publish',
-                postOriginal: 1,
-                commentFlag: 'verify'
-            };
-            resData.postCategories = [];
-            resData.postTags = '';
-            let tagArr = [];
-            if (result.post && result.post.TermTaxonomies) {
-                result.post.TermTaxonomies.forEach((v) => {
-                    if (v.taxonomy === 'tag') {
-                        tagArr.push(v.name);
-                    } else if (v.taxonomy === 'post') {
-                        resData.postCategories.push(v.taxonomyId);
-                    }
-                });
-                resData.postTags = tagArr.join(',');
+            for (tagIdx = 0; tagIdx < curPost.tag.length; tagIdx += 1) {
+                tagArr.push(curPost.tag[tagIdx].name);
             }
-            res.render(`${appConfig.pathViews}/admin/pages/postForm`, resData);
+            for (catIdx = 0; catIdx < curPost.category.length; catIdx += 1) {
+                catArr.push(curPost.category[catIdx].taxonomy_id);
+            }
+            resData.util = util;
+            resData.postCategories = catArr;
+
+            resData.post = results.post;
+            resData.categories = results.categories;
+            resData.postTags = tagArr.join(',');
+            resData.options = options;
+
+            if (postType === 'page') {
+                resData.page = 'page';
+                res.render('admin/pages/p_page_form_edit', resData);
+            } else {
+                resData.page = 'post';
+                res.render('admin/pages/p_post_form_edit', resData);
+            }
         });
     },
-    savePost: function (req, res, next) {
-        const param = req.body;
-        const type = req.query.type !== 'page' ? 'post' : 'page';
-        const nowTime = new Date();
-        const newPostId = util.getUuid();
-        let postId = xss.sanitize(param.postId) || '';
-        postId = idReg.test(postId) ? postId : '';
+    /**
+     * 批量保存
+     * @method batchSave
+     * @static
+     * @param {Object} req 请求对象
+     * @param {Object} res 响应对象
+     * @param {Object} next 路由对象
+     * @return {void}
+     * @author Fuyun
+     * @unimplemented
+     */
+    batchSave: function (req, res, next) {//TODO
+    },
+    /**
+     * 删除文章
+     * @method removePost
+     * @static
+     * @param {Object} req 请求对象
+     * @param {Object} res 响应对象
+     * @param {Object} next 路由对象
+     * @return {void}
+     * @author Fuyun
+     * @unimplemented
+     */
+    removePost: function (req, res, next) {//TODO
+    },
+    /**
+     * 多媒体列表
+     * @method listMedia
+     * @static
+     * @param {Object} req 请求对象
+     * @param {Object} res 响应对象
+     * @param {Object} next 路由对象
+     * @return {void}
+     * @author Fuyun
+     * @version 1.2.0
+     * @since 1.2.0
+     */
+    listMedia: function (req, res, next) {
+        var page = parseInt(req.params.page, 10) || 1, resData = {
+            meta: {
+                title: ''
+            },
+            page: 'media',
+            curStatus: ''
+        }, param;
 
-        let data = {
-            postTitle: (xss.sanitize(param.postTitle) || '').trim(),
-            postContent: (param.postContent || '').trim(),
-            postExcerpt: (xss.sanitize(param.postExcerpt) || '').trim(),
-            postGuid: (xss.sanitize(param.postGuid) || '').trim() || '/post/' + (postId || newPostId),
-            postAuthor: req.session.user.userId,
-            postStatus: param.postStatus,
-            postPassword: (param.postPassword || '').trim(),
-            postOriginal: param.postOriginal,
-            commentFlag: (param.commentFlag || '').trim(),
-            postDate: param.postDate ? new Date(+moment(param.postDate)) : nowTime,
-            postType: type
+        param = {
+            page: page,
+            postStatus: req.query.status || 'all',
+            postDate: req.query.date || '',
+            type: 'attachment',
+            author: req.query.author || '',
+            keyword: req.query.keyword || '',
+            fromAdmin: true
         };
-        let postCategory = (xss.sanitize(param.postCategory) || '').trim();
-        if (postCategory === '') {
-            postCategory = [];
-        } else if (typeof postCategory === 'string') {
-            postCategory = postCategory.split(/[,\s]/i);
-        } else {
-            postCategory = util.isArray(postCategory) ? postCategory : [];
-        }
-        let postTag = xss.sanitize(param.postTag).trim();
-        if (postTag === '') {
-            postTag = [];
-        } else if (typeof postTag === 'string') {
-            postTag = postTag.split(/[,\s]/i);
-        } else {
-            postTag = util.isArray(postTag) ? postTag : [];
-        }
-
-        const checkResult = checkPostFields({
-            data,
-            type,
-            postCategory,
-            postTag
-        });
-        if (checkResult !== true) {
-            return next(checkResult);
-        }
-        if (data.postStatus === 'password') {
-            data.postStatus = 'publish';
-        } else {
-            data.postPassword = '';
-        }
-
-        models.sequelize.transaction(function (t) {
-            let tasks = {
-                deleteCatRel: function (cb) {
-                    if (type !== 'post' || !postId) {
-                        return cb(null);
-                    }
-                    models.TermRelationship.destroy({
-                        where: {
-                            objectId: postId
-                        },
-                        transaction: t
-                    }).then((data) => cb(null, data));
-                },
-                checkGuid: function (cb) {
-                    let where = {
-                        postGuid: data.postGuid
-                    };
-                    if (postId) {
-                        where.postId = {
-                            $ne: postId
-                        };
-                    }
-                    models.Post.count({
-                        where
-                    }).then((count) => cb(null, count));
-                },
-                post: ['checkGuid', function (result, cb) {
-                    if (result.checkGuid > 0) {
-                        return cb('URL已存在');
-                    }
-                    data.postDateGmt = data.postDate;
-                    if (!postId) {
-                        data.postId = newPostId;
-                        data.postModifiedGmt = nowTime;
-                        models.Post.create(data, {
-                            transaction: t
-                        }).then((post) => cb(null, post));
-                    } else {
-                        models.Post.update(data, {
-                            where: {
-                                postId
-                            },
-                            transaction: t
-                        }).then((post) => cb(null, post));
-                    }
-                }]
-            };
-            // 对于异步的循环，若中途其他操作出现报错，将触发rollback，但循环并未中断，从而导致事务执行报错，因此需要强制加入依赖关系，改为顺序执行
-            if (type !== 'page' && type !== 'attachment') {
-                tasks.category = ['deleteCatRel', 'post', (result, cb) => {
-                    async.times(postCategory.length, (i, nextFn) => {
-                        if (postCategory[i]) {
-                            models.TermRelationship.create({
-                                objectId: postId || newPostId,
-                                termTaxonomyId: postCategory[i]
-                            }, {
-                                transaction: t
-                            }).then((rel) => nextFn(null, rel));
-                        } else {
-                            nextFn(null);
-                        }
-                    }, (err, categories) => {
-                        if (err) {
-                            return cb(err);
-                        }
-                        cb(null, categories);
-                    });
-                }];
-                tasks.tag = ['deleteCatRel', 'post', (result, cb) => {
-                    async.times(postTag.length, (i, nextFn) => {
-                        const tag = postTag[i].trim();
-                        if (tag) {
-                            async.auto({
-                                taxonomy: function (innerCb) {
-                                    models.TermTaxonomy.findAll({
-                                        attributes: ['taxonomyId'],
-                                        where: {
-                                            slug: tag
-                                        }
-                                    }).then((tags) => {
-                                        if (tags.length > 0) {// 已存在标签
-                                            return innerCb(null, tags[0].taxonomyId);
-                                        }
-                                        const taxonomyId = util.getUuid();
-                                        // sequelize对事务中的created、modified处理有bug，会保存为invalid date，因此取消默认的行为，改为显式赋值
-                                        models.TermTaxonomy.create({
-                                            taxonomyId: taxonomyId,
-                                            taxonomy: 'tag',
-                                            name: tag,
-                                            slug: tag,
-                                            description: tag,
-                                            count: 1,
-                                            created: nowTime,
-                                            modified: nowTime
-                                        }, {
-                                            transaction: t
-                                        }).then((taxonomy) => innerCb(null, taxonomyId));
-                                    });
-                                },
-                                relationship: ['taxonomy', function (innerResult, innerCb) {
-                                    models.TermRelationship.create({
-                                        objectId: postId || newPostId,
-                                        termTaxonomyId: innerResult.taxonomy
-                                    }, {
-                                        transaction: t
-                                    }).then((rel) => innerCb(null, rel));
-                                }]
-                            }, function (err, tags) {
-                                if (err) {
-                                    return nextFn(err);
-                                }
-                                nextFn(null, tags);
-                            });
-                        } else {
-                            nextFn(null);
-                        }
-                    }, (err, tags) => {
-                        if (err) {
-                            return cb(err);
-                        }
-                        cb(null, tags);
-                    });
-                }];
+        async.parallel({
+            allMedia: function (cb) {
+                post.getAllPosts(param, cb);
+            },
+            options: base.getInitOptions.bind(base),
+            archiveDates: function (cb) {
+                post.getArchiveDates(param.type, cb);
+            },
+            countAll: function (cb) {
+                post.getPostCount(['publish', 'private', 'draft', 'auto-draft', 'trash'], param.type, cb);
+            },
+            countDeleted: function (cb) {
+                post.getPostCount('trash', param.type, cb);
             }
-            // 需要返回promise实例
-            return new Promise((resolve, reject) => {
-                async.auto(tasks, function (err, result) {
-                    if (err) {
-                        reject(new Error(err));
-                    } else {
-                        resolve(result);
-                    }
-                });
-            });
-        }).then(() => {
-            const referer = req.session.referer;
-            delete req.session.referer;
-            res.set('Content-type', 'application/json');
-            res.send({
-                status: 200,
-                code: 0,
-                message: null,
-                data: {
-                    url: referer || '/admin/post?type=' + type
+        }, function (err, results) {
+            var paramArr = [], titleArr = [], options = results.options;
+
+            if (param.keyword) {
+                paramArr.push('keyword=' + param.keyword);
+                titleArr.push(param.keyword, '搜索');
+            }
+            if (req.query.status) {//TODO:英文转中文
+                paramArr.push('status=' + param.postStatus);
+                titleArr.push(param.postStatus, '状态');
+            }
+            if (param.postDate) {
+                paramArr.push('date=' + param.postDate);
+                titleArr.push(param.postDate, '日期');
+            }
+            if (param.author) {//TODO:作者
+                paramArr.push('author=' + param.author);
+                // titleArr.push(param.author);
+            }
+
+            if (results.allMedia) {
+                resData.postsData = results.allMedia;
+                resData.paginator = util.paginator(page, results.allMedia.pages, pagesOut);
+                resData.paginator.pageLimit = resData.postsData.pageLimit;
+                resData.paginator.total = resData.postsData.total;
+                resData.paginator.linkUrl = '/admin/media/page-';
+                resData.paginator.linkParam = '';
+            } else {//必须设置该字段
+                resData.postsData = '';
+            }
+
+            if (page > 1) {
+                resData.meta.title = util.getTitle(titleArr.concat(['第' + page + '页', '多媒体列表', '管理后台', options.site_name.option_value]));
+            } else {
+                resData.meta.title = util.getTitle(titleArr.concat(['多媒体列表', '管理后台', options.site_name.option_value]));
+            }
+
+            resData.curStatus = param.postStatus;
+            resData.curDate = param.postDate;
+            resData.curKeyword = param.keyword;
+            resData.options = options;
+            resData.util = util;
+            resData.archiveDates = results.archiveDates;
+
+            resData.count = {
+                all: results.countAll.total,
+                trash: results.countDeleted.total
+            };
+            res.render('admin/pages/p_media_list', resData);
+
+        });
+    },
+    /**
+     * 新增多媒体
+     * @method newMedia
+     * @static
+     * @param {Object} req 请求对象
+     * @param {Object} res 响应对象
+     * @param {Object} next 路由对象
+     * @return {void}
+     * @author Fuyun
+     * @version 1.2.0
+     * @since 1.2.0
+     */
+    newMedia: function (req, res, next) {
+        var resData = {
+            meta: {
+                title: ''
+            },
+            page: 'media',
+            token: req.csrfToken()
+        };
+
+        async.parallel({
+            options: base.getInitOptions.bind(base)
+        }, function (err, results) {
+            var options = results.options;
+            if (err) {
+                return next(err);
+            }
+            resData.meta.title = util.getTitle(['上传新媒体文件', '管理后台', options.site_name.option_value]);
+
+            resData.options = options;
+
+            res.render('admin/pages/p_media_form', resData);
+        });
+    },
+    /**
+     * 上传多媒体文件
+     * @method uploadFile
+     * @static
+     * @param {Object} req 请求对象
+     * @param {Object} res 响应对象
+     * @param {Object} next 路由对象
+     * @return {void}
+     * @author Fuyun
+     * @version 1.2.0
+     * @since 1.2.0
+     */
+    uploadFile: function (req, res, next) {
+        var form = new formidable.IncomingForm(), yearPath, uploadPath, now = moment(), curYear = now.format('YYYY'), curMonth = now.format('MM');
+
+        yearPath = path.join(__dirname, '..', 'public', 'upload', curYear);
+        uploadPath = path.join(yearPath, curMonth);
+        if (!fs.existsSync(yearPath)) {
+            fs.mkdirSync(yearPath);
+        }
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath);
+        }
+        form.uploadDir = uploadPath;
+        form.keepExtensions = true;
+        form.maxFieldsSize = 200 * 1024 * 1024;
+
+        form.on('progress', function (bytesReceived, bytesExpected) {
+            // console.log(bytesReceived, bytesExpected);
+        });
+        form.on('field', function (name, value) {
+            // console.log('field', name, value);
+        });
+        form.on('file', function (name, file) {
+            // console.log('file', name, file);
+        });
+        form.on('end', function () {
+            // res.set('Content-type', 'application/json');
+            // res.send({
+            //     code: 200,
+            //     msg: 'test'
+            // });
+        });
+        form.on('error', function (err) {
+            logger.error(util.getErrorLog({
+                req: req,
+                funcName: 'uploadFile',//TODO:func.name
+                funcParam: {
+                    uploadPath: uploadPath
+                },
+                msg: err
+            }));
+        });
+        form.parse(req, function (err, fields, files) {
+            var fileExt = files.mediafile.name.split('.');
+            if (fileExt.length > 1) {
+                fileExt = '.' + fileExt.pop();
+            } else {
+                fileExt = '';
+            }
+            var filename = util.getUuid() + fileExt;
+            var filepath = path.join(uploadPath, filename);
+            var fileData = {};
+            fs.renameSync(files.mediafile.path, filepath);
+
+            fileData.postTitle = fileData.postExcerpt = fileData.postContent = xss.sanitize(files.mediafile.name);
+            fileData.postCategory = '';
+            fileData.user = req.session.user;
+            fileData.postUrl = '';
+            fileData.postStatus = 'publish';
+            fileData.type = 'attachment';
+            fileData.postTag = [];
+            fileData.postId = '';
+            fileData.postUrl = '/static/' + curYear + '/' + curMonth + '/' + filename;
+
+            async.auto({
+                post: function (cb) {
+                    post.savePost(fileData, cb);
+                }
+            }, function (err, results) {
+                if (err) {
+                    next(err);
+                } else {
+                    delete(req.session.referer);
+
+                    res.set('Content-type', 'application/json');
+                    res.send({
+                        status: 200,
+                        code: 0,
+                        message: null,
+                        data: {
+                            url: '/admin/media'
+                        }
+                    });
                 }
             });
-        }, (err) => {
-            next({
-                status: 200,
-                code: 500,
-                message: err.message || err
-            });
+
+            logger.info(util.getInfoLog({
+                req: req,
+                funcName: 'uploadFile',//TODO:func.name
+                funcParam: {
+                    uploadPath: uploadPath,
+                    filename: files.mediafile.name
+                },
+                msg: 'Upload file: ' + filename
+            }));
         });
-    },
-    listMedia: function (req, res, next) {
-        res.send();
-    },
-    newMedia: function (req, res, next) {
-        res.send();
     }
 };
