@@ -1,265 +1,152 @@
-/*global console*/
 /**
- * 控制器：后台管理
- * @module c_admin
- * @class C_Admin
- * @static
- * @requires async, sanitizer, m_user, m_base, util
- * @author Fuyun
- * @version 3.0.0
- * @since 1.1.0
+ *
+ * @author fuyun
+ * @since 2017/05/25
  */
 const async = require('async');
 const xss = require('sanitizer');
-const base = require('./base');
-const pool = require('../model/base').pool;
 const util = require('../helper/util');
-const UserModel = require('../model/user');
-const OptionModel = require('../model/option');
-const user = new UserModel(pool);
-const option = new OptionModel(pool);
+const models = require('../models/index');
+const common = require('./common');
+const appConfig = require('../config/core');
 
 module.exports = {
-    /**
-     * 后台管理首页
-     * @method welcome
-     * @static
-     * @param {Object} req 请求对象
-     * @param {Object} res 响应对象
-     * @param {Object} next 路由对象
-     * @return {void}
-     * @author Fuyun
-     * @version 1.1.0
-     * @since 1.1.0
-     */
-    welcome: function(req, res, next) {
+    welcome: function (req, res, next) {
         res.redirect('/admin/post');
     },
-    /**
-     * 权限校验
-     * @method checkAuth
-     * @static
-     * @param {Object} req 请求对象
-     * @param {Object} res 响应对象
-     * @param {Object} next 路由对象
-     * @return {void}
-     * @author Fuyun
-     * @version 1.1.0
-     * @since 1.1.0
-     */
-    checkAuth: function(req, res, next) {
-        // const curUser = req.session.user;
-
+    checkAuth: function (req, res, next) {
         res.locals.isLogin = util.isLogin(req);
-
         if (util.isAdminUser(req)) {
-            next();
+            return next();
+        }
+        if (res.locals.isLogin) {
+            util.catchError({
+                status: 403,
+                code: 403,
+                message: 'Page Forbidden'
+            }, next);
         } else {
-            if (res.locals.isLogin) {//已登录但无权限
-                util.catchError({
-                    status: 403,
-                    code: 403,
-                    message: 'Page Forbidden'
-                }, next);
-            } else {//未登录则跳至登录页
-                res.redirect('/user/login');
-            }
+            res.redirect('/user/login');
         }
     },
-    /**
-     * 后台管理：设置-常规
-     * @method setGeneral
-     * @static
-     * @param {Object} req 请求对象
-     * @param {Object} res 响应对象
-     * @param {Object} next 路由对象
-     * @return {void}
-     * @author Fuyun
-     * @version 1.1.0
-     * @since 1.1.0
-     */
-    setGeneral: function(req, res, next) {
-        let resData = {
-            meta: {
-                title: ''
-            },
-            page: 'settings',
-            token: req.csrfToken()
-        };
+    settings: function (req, res, next) {
+        const type = (req.query.type || 'general').toLowerCase();
 
-        async.parallel({
-            options: base.initOption
-        }, function(err, results) {
+        if (!['general', 'writing', 'reading', 'discussion'].includes(type)) {
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: '不支持该操作'
+            }, next);
+        }
+        common.getInitOptions((err, options) => {
             if (err) {
                 return next(err);
             }
-            const options = results.options;
-
-            resData.meta.title = util.getTitle(['常规选项', '站点设置', '管理后台', options.site_name.option_value]);
-
-            resData.options = options;
-
-            res.render('admin/pages/p_options_general', resData);
+            const title = {
+                general: '常规选项',
+                writing: '写作设置',
+                reading: '阅读设置',
+                discussion: '讨论设置'
+            }[type];
+            let resData = {
+                meta: {
+                    title: util.getTitle([title, '站点设置', '管理后台', options.site_name.optionValue])
+                },
+                page: 'settings',
+                token: req.csrfToken(),
+                options,
+                title
+            };
+            res.render(`${appConfig.pathViews}/admin/pages/settings`, resData);
         });
     },
-    /**
-     * 后台管理：设置-常规
-     * @method saveGeneral
-     * @static
-     * @param {Object} req 请求对象
-     * @param {Object} res 响应对象
-     * @param {Object} next 路由对象
-     * @return {void}
-     * @author Fuyun
-     * @version 1.1.0
-     * @since 1.1.0
-     */
-    saveGeneral: function(req, res, next) {
-        let params = req.body;
-
-        // req.session.referer = req.headers.referer;
-        // req.session.save();
-
-        params.options = [];
-
-        params.siteTitle = xss.sanitize(params.siteTitle).trim();
-        params.siteDesc = xss.sanitize(params.siteDesc).trim();
-        params.siteSlogan = xss.sanitize(params.siteSlogan).trim();
-        params.siteUrl = xss.sanitize(params.siteUrl).trim();
-        params.siteKeywords = xss.sanitize(params.siteKeywords).trim();
-        params.adminEmail = xss.sanitize(params.adminEmail).trim();
-        params.icpNum = xss.sanitize(params.icpNum).trim();
-        params.copyNotice = xss.sanitize(params.copyNotice).trim();
-        params.user = req.session.user;
-
-        params.options = [{
+    saveSettings: function (req, res, next) {
+        const param = req.body;
+        const settings = [{
             name: 'site_name',
-            value: params.siteTitle,
+            value: (xss.sanitize(param.siteName) || '').trim(),
             required: true,
-            desc: '站点标题'
+            message: '站点标题'
         }, {
             name: 'site_description',
-            value: params.siteDesc,
+            value: (xss.sanitize(param.siteDescription) || '').trim(),
             required: true,
-            desc: '站点描述'
+            message: '站点描述'
         }, {
             name: 'site_slogan',
-            value: params.siteSlogan,
+            value: (xss.sanitize(param.siteSlogan) || '').trim(),
             required: true,
-            desc: '口号'
+            message: '口号'
         }, {
             name: 'site_url',
-            value: params.siteUrl,
+            value: (xss.sanitize(param.siteUrl) || '').trim(),
             required: true,
-            desc: '站点地址'
+            message: '站点地址'
         }, {
             name: 'site_keywords',
-            value: params.siteKeywords,
+            value: (xss.sanitize(param.siteKeywords) || '').trim(),
             required: true,
-            desc: '关键词'
+            message: '关键词'
         }, {
             name: 'admin_email',
-            value: params.adminEmail,
+            value: (xss.sanitize(param.adminEmail) || '').trim(),
             required: true,
-            desc: '电子邮件地址'
+            message: '电子邮件地址'
         }, {
             name: 'icp_num',
-            value: params.icpNum,
+            value: (xss.sanitize(param.icpNum) || '').trim(),
             required: false,
-            desc: 'ICP备案号'
+            message: 'ICP备案号'
         }, {
             name: 'copyright_notice',
-            value: params.copyNotice,
+            value: (xss.sanitize(param.copyNotice) || '').trim(),
             required: true,
-            desc: '版权信息'
+            message: '版权信息'
         }];
-
-        for ( let paramIdx = 0; paramIdx < params.options.length; paramIdx += 1) {
-            if (params.options[paramIdx].required && !params.options[paramIdx].value) {
+        for (let i = 0; i < settings.length; i += 1) {
+            if (settings[i].required && !settings[i].value) {
                 return util.catchError({
                     status: 200,
                     code: 400,
-                    message: params.options[paramIdx].desc + '不能为空'
+                    message: settings[i].message + '不能为空'
                 }, next);
             }
         }
-
-        async.auto({
-            taxonomy: function(cb) {
-                option.saveGeneral(params, cb);
-            }
-        }, function(err, results) {
-            if (err) {
-                next(err);
-            } else {
-                // res.set('Content-type', 'application/json');
-                // res.send({
-                // status: 200,
-                // code: 0,
-                // message: null,
-                // data: {
-                // url: req.session.referer || '/admin/options/general'
-                // }
-                // });
-                res.redirect('/admin/options/general');
-            }
+        models.sequelize.transaction(function (t) {
+            // 需要返回promise实例
+            return new Promise((resolve, reject) => {
+                async.times(settings.length, (i, nextFn) => {
+                    models.Option.update({
+                        optionValue: settings[i].value
+                    }, {
+                        where: {
+                            optionName: settings[i].name
+                        },
+                        transaction: t
+                    }).then((option) => nextFn(null, option));
+                }, (err, result) => {
+                    if (err) {
+                        reject(new Error(err));
+                    } else {
+                        resolve(result);
+                    }
+                });
+            });
+        }).then(() => {
+            res.set('Content-type', 'application/json');
+            res.send({
+                code: 0,
+                message: null,
+                data: {
+                    url: '/admin/settings'
+                }
+            });
+        }, (err) => {
+            next({
+                code: 500,
+                message: err.message || err
+            });
         });
-    },
-    /**
-     * 后台管理：设置-撰写
-     * @method setWriting
-     * @static
-     * @param {Object} req 请求对象
-     * @param {Object} res 响应对象
-     * @param {Object} next 路由对象
-     * @return {void}
-     * @author Fuyun
-     * @unimplemented
-     */
-    setWriting: function(req, res, next) {//TODO
-        let resData = {
-            meta: {
-                title: 'I, Fuyun管理后台'
-            }
-        };
-        res.render('admin/pages/p_options_writing', resData);
-    },
-    /**
-     * 后台管理：设置-阅读
-     * @method setReading
-     * @static
-     * @param {Object} req 请求对象
-     * @param {Object} res 响应对象
-     * @param {Object} next 路由对象
-     * @return {void}
-     * @author Fuyun
-     * @unimplemented
-     */
-    setReading: function(req, res, next) {//TODO
-        let resData = {
-            meta: {
-                title: 'I, Fuyun管理后台'
-            }
-        };
-        res.render('admin/pages/p_options_reading', resData);
-    },
-    /**
-     * 后台管理：设置-讨论
-     * @method setDiscussion
-     * @static
-     * @param {Object} req 请求对象
-     * @param {Object} res 响应对象
-     * @param {Object} next 路由对象
-     * @return {void}
-     * @author Fuyun
-     * @unimplemented
-     */
-    setDiscussion: function(req, res, next) {//TODO
-        let resData = {
-            meta: {
-                title: 'I, Fuyun管理后台'
-            }
-        };
-        res.render('admin/pages/p_options_discussion', resData);
     }
 };

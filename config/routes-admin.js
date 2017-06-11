@@ -10,12 +10,12 @@
  * @since 1.1.0
  */
 module.exports = function (app, router) {
-    const post = require('../controller/post');
+    const post = require('../controllers/post');
     // const user = require('../controllers/user');
-    const admin = require('../controller/admin');
-    const comment = require('../controller/comment');
-    const taxonomy = require('../controller/taxonomy');
-    const link = require('../controller/link');
+    const admin = require('../controllers/admin');
+    const comment = require('../controllers/comment');
+    const taxonomy = require('../controllers/taxonomy');
+    const link = require('../controllers/link');
 
     router.use(admin.checkAuth);
     router.get('/', admin.welcome);
