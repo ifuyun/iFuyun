@@ -49,7 +49,6 @@ module.exports = function (app, express) {
 
     // 后台路由
     app.use('/admin', admin);
-
     // 独立页面
     app.use(post.showPage);
     // 可以省略

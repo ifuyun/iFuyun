@@ -53,7 +53,7 @@ module.exports = function (app, router) {
     router.post('/link/save', link.saveLink);
     router.post('/link/remove', link.removeLink);
 
-    router.get('/settings', admin.settings);// general writing reading discussion
+    router.get('/settings', admin.settings);
     router.post('/settings', admin.saveSettings);
 
     return router;

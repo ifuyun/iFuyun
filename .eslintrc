@@ -75,7 +75,7 @@
     // 强制把变量的使用限制在其定义的作用域范围内
     "block-scoped-var": 0,
     // 限制圈复杂度，也就是类似if else能连续接多少个
-    "complexity": [2, 9],
+    "complexity": [2, 10],
     // 要求 return 语句要么总是指定返回的值，要么不指定
     "consistent-return": 0,
     // 强制所有控制语句使用一致的括号风格
@@ -144,7 +144,7 @@
     "no-loop-func": 1,
     // 禁用魔术数字(3.14什么的用常量代替)
     "no-magic-numbers": [1, {
-        "ignore": [0, -1, 1]
+        "ignore": [0, -1, 1, 1024, 10, 100, 1000]
       }
     ],
     // 禁止使用多个空格
@@ -352,7 +352,7 @@
     // 要求 return 语句之前有一空行
     "newline-before-return": 0,
     // 要求方法链中每个调用都有一个换行符
-    "newline-per-chained-call": 1,
+    "newline-per-chained-call": 0,
     // 禁用 continue 语句
     "no-continue": 0,
     // 禁止在代码行后使用内联注释
@@ -429,8 +429,8 @@
     "sort-vars": 0,
     // 强制在块之前使用一致的空格
     "space-before-blocks": [2, "always"],
-    // 强制在 function的左括号之前使用一致的空格
-    "space-before-function-paren": [2, "always"],
+    // 强制在 function 的左括号之前使用一致的空格
+    "space-before-function-paren": [2, "never"],
     // 强制在圆括号内使用一致的空格
     "space-in-parens": [2, "never"],
     // 要求操作符周围有空格
