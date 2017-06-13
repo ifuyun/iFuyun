@@ -218,7 +218,7 @@ gulp.task('dev', function () {
     gulp.watch(['./public/src/js/plugins/**', './public/src/js/admin'], function (event) {
         runSequence('copy-dev-js-plugin', 'copy-dev-js-admin');
     });
-    gulp.watch(['./public/src/**/*.less', '!./public/src/js/plugin/**'], function (event) {
+    gulp.watch(['./public/src/style/**/*.less'], function (event) {
         runSequence('less', 'copy-dev-style');
     });
 });
