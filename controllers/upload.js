@@ -386,7 +386,7 @@ function * uploads() {
  *     {String}[appSecret] App Secret,
  *     {Number}[trunkSize=4*1024*1024] 分片大小（单位：Byte），最大值：4MB,
  *     {String}[logLevel='INFO'] 'INFO'
- * @return {mixed} null
+ * @return {*} null
  */
 function init(conf) {
     const logLevels = ['ALL', 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL', 'OFF'];
@@ -409,7 +409,7 @@ function init(conf) {
 /**
  * 上传API
  * @param {String} filePath 上传文件路径（相对路径或绝对路径）
- * @return {mixed} null
+ * @return {*} null
  */
 function upload(filePath) {
     if (!config.appKey || !config.appSecret) {

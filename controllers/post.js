@@ -111,7 +111,10 @@ function queryPostsByIds(posts, postIds, cb) {
 function queryPosts(param, cb) {
     let queryOpt = {
         where: param.where,
-        attributes: ['postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus', 'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'],
+        attributes: [
+            'postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus',
+            'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'
+        ],
         include: [{
             model: models.User,
             attributes: ['userDisplayName']
@@ -287,7 +290,11 @@ module.exports = {
             },
             post: function (cb) {
                 models.Post.findById(postId, {
-                    attributes: ['postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus', 'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'],
+                    attributes: [
+                        'postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus',
+                        'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated',
+                        'postGuid', 'commentCount', 'postViewCount'
+                    ],
                     include: [{
                         model: models.User,
                         attributes: ['userDisplayName']
@@ -424,7 +431,10 @@ module.exports = {
             },
             post: function (cb) {
                 models.Post.findOne({
-                    attributes: ['postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus', 'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'],
+                    attributes: [
+                        'postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus',
+                        'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'
+                    ],
                     include: [{
                         model: models.User,
                         attributes: ['userDisplayName']
@@ -1051,24 +1061,24 @@ module.exports = {
         const param = req.body;
         const type = req.query.type !== 'page' ? 'post' : 'page';
         const nowTime = new Date();
-        const newPostId = util.getUuid();
-        let postId = xss.sanitize(param.postId) || '';
+        let postId = util.trim(xss.sanitize(param.postId));
         postId = idReg.test(postId) ? postId : '';
+        const newPostId = postId || util.getUuid();
 
         let data = {
-            postTitle: (xss.sanitize(param.postTitle) || '').trim(),
-            postContent: (param.postContent || '').trim(),
-            postExcerpt: (xss.sanitize(param.postExcerpt) || '').trim(),
-            postGuid: (xss.sanitize(param.postGuid) || '').trim() || '/post/' + (postId || newPostId),
+            postTitle: util.trim(xss.sanitize(param.postTitle)),
+            postContent: util.trim(param.postContent),
+            postExcerpt: util.trim(xss.sanitize(param.postExcerpt)),
+            postGuid: util.trim(xss.sanitize(param.postGuid)) || '/post/' + newPostId,
             postAuthor: req.session.user.userId,
             postStatus: param.postStatus,
-            postPassword: (param.postPassword || '').trim(),
+            postPassword: util.trim(param.postPassword),
             postOriginal: param.postOriginal,
-            commentFlag: (param.commentFlag || '').trim(),
+            commentFlag: util.trim(param.commentFlag),
             postDate: param.postDate ? new Date(+moment(param.postDate)) : nowTime,
             postType: type
         };
-        let postCategory = (xss.sanitize(param.postCategory) || '').trim();
+        let postCategory = util.trim(xss.sanitize(param.postCategory));
         if (postCategory === '') {
             postCategory = [];
         } else if (typeof postCategory === 'string') {
@@ -1076,7 +1086,7 @@ module.exports = {
         } else {
             postCategory = util.isArray(postCategory) ? postCategory : [];
         }
-        let postTag = xss.sanitize(param.postTag).trim();
+        let postTag = util.trim(xss.sanitize(param.postTag));
         if (postTag === '') {
             postTag = [];
         } else if (typeof postTag === 'string') {
@@ -1153,7 +1163,7 @@ module.exports = {
                     async.times(postCategory.length, (i, nextFn) => {
                         if (postCategory[i]) {
                             models.TermRelationship.create({
-                                objectId: postId || newPostId,
+                                objectId: newPostId,
                                 termTaxonomyId: postCategory[i]
                             }, {
                                 transaction: t
@@ -1162,10 +1172,10 @@ module.exports = {
                             nextFn(null);
                         }
                     }, (err, categories) => {
-                        if (err) {
-                            return cb(err);
-                        }
-                        cb(null, categories);
+                        // if (err) {
+                        //     return cb(err);
+                        // }
+                        cb(err, categories);
                     });
                 }];
                 tasks.tag = ['deleteCatRel', 'post', (result, cb) => {
@@ -1201,7 +1211,7 @@ module.exports = {
                                 },
                                 relationship: ['taxonomy', function (innerResult, innerCb) {
                                     models.TermRelationship.create({
-                                        objectId: postId || newPostId,
+                                        objectId: newPostId,
                                         termTaxonomyId: innerResult.taxonomy
                                     }, {
                                         transaction: t
@@ -1217,10 +1227,10 @@ module.exports = {
                             nextFn(null);
                         }
                     }, (err, tags) => {
-                        if (err) {
-                            return cb(err);
-                        }
-                        cb(null, tags);
+                        // if (err) {
+                        //     return cb(err);
+                        // }
+                        cb(err, tags);
                     });
                 }];
             }
