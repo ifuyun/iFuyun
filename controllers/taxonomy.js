@@ -3,6 +3,9 @@
  * @author fuyun
  * @since 2017/06/08
  */
+/** @namespace models.TermTaxonomy */
+/** @namespace models.TermRelationship */
+/** @namespace req.session */
 const async = require('async');
 const xss = require('sanitizer');
 const models = require('../models/index');
@@ -10,9 +13,10 @@ const common = require('./common');
 const appConfig = require('../config/core');
 const util = require('../helper/util');
 const idReg = /^[0-9a-fA-F]{16}$/i;
+const pagesOut = 9;
 
 module.exports = {
-    listTaxonomy: function (req, res, next) {
+    listTaxonomy: function(req, res, next) {
         let page = parseInt(req.params.page, 10) || 1;
         const type = (req.query.type || 'post').toLowerCase();
 
@@ -66,7 +70,7 @@ module.exports = {
                     where
                 }).then((data) => cb(null, data));
             },
-            categories: ['count', function (result, cb) {
+            categories: ['count', function(result, cb) {
                 page = (page > result.count / 10 ? Math.ceil(result.count / 10) : page) || 1;
                 models.TermTaxonomy.findAll({
                     where,
@@ -76,10 +80,12 @@ module.exports = {
                     offset: 10 * (page - 1)
                 }).then((categories) => cb(null, categories));
             }]
-        }, function (err, result) {
+        }, function(err, result) {
             if (err) {
                 return next(err);
             }
+
+            /** @namespace result.options.site_name **/
             let resData = {
                 meta: {},
                 page: menu.name,
@@ -90,7 +96,7 @@ module.exports = {
                 util,
                 type
             };
-            resData.paginator = util.paginator(page, Math.ceil(result.count / 10), 9);
+            resData.paginator = util.paginator(page, Math.ceil(result.count / 10), pagesOut);
             resData.paginator.linkUrl = '/admin/taxonomy/page-';
             resData.paginator.linkParam = paramArr.length > 0 ? '?' + paramArr.join('&') : '';
             resData.paginator.pageLimit = 10;
@@ -104,7 +110,7 @@ module.exports = {
             res.render(`${appConfig.pathViews}/admin/pages/taxonomyList`, resData);
         });
     },
-    editTaxonomy: function (req, res, next) {
+    editTaxonomy: function(req, res, next) {
         const action = (req.query.action || 'create').toLowerCase();
         const type = (req.query.type || 'post').toLowerCase();
 
@@ -146,7 +152,7 @@ module.exports = {
                 common.getCategoryTree(cb, type);
             };
         }
-        async.auto(tasks, function (err, result) {
+        async.auto(tasks, function(err, result) {
             if (err) {
                 return next(err);
             }
@@ -180,7 +186,7 @@ module.exports = {
             res.render(`${appConfig.pathViews}/admin/pages/taxonomyForm`, resData);
         });
     },
-    saveTaxonomy: function (req, res, next) {
+    saveTaxonomy: function(req, res, next) {
         const type = (req.query.type || 'post').toLowerCase();
         if (!['post', 'tag', 'link'].includes(type)) {
             return util.catchError({
@@ -225,7 +231,7 @@ module.exports = {
             }
         }
         async.auto({
-            checkSlug: function (cb) {
+            checkSlug: function(cb) {
                 let where = {
                     slug: data.slug
                 };
@@ -238,7 +244,7 @@ module.exports = {
                     where
                 }).then((count) => cb(null, count));
             },
-            taxonomy: ['checkSlug', function (result, cb) {
+            taxonomy: ['checkSlug', function(result, cb) {
                 if (result.checkSlug > 0) {
                     return cb('slug已存在');
                 }
@@ -257,7 +263,7 @@ module.exports = {
                     models.TermTaxonomy.create(data).then((taxonomy) => cb(null, taxonomy));
                 }
             }]
-        }, function (err, result) {
+        }, function(err) {
             if (err) {
                 return next(err);
             }
@@ -274,7 +280,7 @@ module.exports = {
             });
         });
     },
-    removeTaxonomy: function (req, res, next) {
+    removeTaxonomy: function(req, res, next) {
         let taxonomyIds = req.body.taxonomyIds;
         const type = (req.query.type || 'post').toLowerCase();
 
@@ -303,9 +309,9 @@ module.exports = {
                 }, next);
             }
         }
-        models.sequelize.transaction(function (t) {
+        models.sequelize.transaction(function(t) {
             let tasks = {
-                taxonomy: function (cb) {
+                taxonomy: function(cb) {
                     models.TermTaxonomy.destroy({
                         where: {
                             taxonomyId: taxonomyIds
@@ -313,7 +319,7 @@ module.exports = {
                         transaction: t
                     }).then((taxonomy) => cb(null, taxonomy));
                 },
-                posts: function (cb) {
+                posts: function(cb) {
                     if (type === 'tag') {
                         models.TermRelationship.destroy({
                             where: {
@@ -334,7 +340,7 @@ module.exports = {
                 }
             };
             if (type !== 'tag') {// 标签没有父子关系
-                tasks.children = function (cb) {
+                tasks.children = function(cb) {
                     models.TermTaxonomy.update({
                         parent: type === 'post' ? '0000000000000000' : '0000000000000001'
                     }, {
@@ -347,7 +353,7 @@ module.exports = {
             }
             // 需要返回promise实例
             return new Promise((resolve, reject) => {
-                async.auto(tasks, function (err, result) {
+                async.auto(tasks, function(err, result) {
                     if (err) {
                         reject(new Error(err));
                     } else {

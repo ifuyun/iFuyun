@@ -1,6 +1,8 @@
 /**
  * Created by fuyun on 2017/04/12.
  */
+/** @namespace models.Post */
+/** @namespace models.User */
 const async = require('async');
 const moment = require('moment');
 const url = require('url');
@@ -12,8 +14,15 @@ const util = require('../helper/util');
 const formatter = require('../helper/formatter');
 const logger = require('../helper/logger').sysLog;
 const idReg = /^[0-9a-fA-F]{16}$/i;
+const pagesOut = 9;
 
-function getCommonData (param, cb) {
+/**
+ * 查询公共数据
+ * @param {Object} param 参数对象
+ * @param {Function} cb 回调函数
+ * @return {*} null
+ */
+function getCommonData(param, cb) {
     // 执行时间在30-60ms，间歇60-80ms
     async.parallel({
         archiveDates: common.archiveDates,
@@ -33,7 +42,15 @@ function getCommonData (param, cb) {
         }
     });
 }
-function queryPostsByIds (posts, postIds, cb) {
+
+/**
+ * 根据IDs查询post
+ * @param {Object} posts post对象数组
+ * @param {Array} postIds post id数组
+ * @param {Function} cb 回调函数
+ * @return {*} null
+ */
+function queryPostsByIds(posts, postIds, cb) {
     // 执行时间在10-20ms
     /**
      * 根据group方式去重（distinct需要使用子查询，sequelize不支持include时的distinct）
@@ -84,7 +101,14 @@ function queryPostsByIds (posts, postIds, cb) {
         cb(null, result);
     });
 }
-function queryPosts (param, cb) {
+
+/**
+ * 查询posts
+ * @param {Object} param 参数对象
+ * @param {Function} cb 回调函数
+ * @return {*} null
+ */
+function queryPosts(param, cb) {
     let queryOpt = {
         where: param.where,
         attributes: ['postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus', 'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'],
@@ -113,7 +137,16 @@ function queryPosts (param, cb) {
         queryPostsByIds(posts, postIds, cb);
     });
 }
-function checkPostFields ({data, type, postCategory, postTag}) {
+
+/**
+ * post保存校验
+ * @param {Object} data 数据
+ * @param {String} type post类型
+ * @param {Array} postCategory 分类数组
+ * @param {Array} postTag 标签数组
+ * @return {*} null
+ */
+function checkPostFields({data, type, postCategory, postTag}) {
     // TODO: postGuid:/page-,/post/page-,/category/,/archive/,/tag/,/comment/,/user/,/admin/,/post/comment/
     let rules = [{
         rule: !data.postTitle,
@@ -213,7 +246,7 @@ module.exports = {
             Object.assign(resData, result.commonData);
 
             resData.posts = result.posts;
-            resData.posts.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), 9);
+            resData.posts.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), pagesOut);
             resData.posts.linkUrl = '/post/page-';
             resData.posts.linkParam = req.query.keyword ? '?keyword=' + req.query.keyword : '';
             resData.comments = result.comments;
@@ -243,12 +276,7 @@ module.exports = {
     },
     showPost: function (req, res, next) {
         const postId = req.params.postId;
-        if (!postId || !/^[0-9a-fA-F]{16}$/i.test(postId)) {
-            // return util.catchError({
-            //     status: 404,
-            //     code: 404,
-            //     message: 'Page Not Found'
-            // }, next);
+        if (!postId || !/^[0-9a-fA-F]{16}$/i.test(postId)) {// 不能抛出错误，有可能是/page
             return next();
         }
         async.auto({
@@ -338,7 +366,7 @@ module.exports = {
             nextPost: (cb) => common.getNextPost(postId, cb)
         }, function (err, result) {
             if (err) {
-                if(err.code === 404) {
+                if (err.code === 404) {
                     return next();
                 }
                 return next(err);
@@ -537,7 +565,7 @@ module.exports = {
             resData.curPos = util.createCrumb(result.subCategories.catPath);
 
             resData.posts = result.posts;
-            resData.posts.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), 9);
+            resData.posts.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), pagesOut);
             resData.posts.linkUrl = '/category/' + category + '/page-';
             resData.posts.linkParam = '';
             resData.comments = result.comments;
@@ -623,7 +651,7 @@ module.exports = {
             resData.curPos = util.createCrumb(crumbData);
 
             resData.posts = result.posts;
-            resData.posts.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), 9);
+            resData.posts.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), pagesOut);
             resData.posts.linkUrl = '/tag/' + tag + '/page-';
             resData.posts.linkParam = '';
             resData.comments = result.comments;
@@ -711,7 +739,7 @@ module.exports = {
             resData.curPos = util.createCrumb(crumbData);
 
             resData.posts = result.posts;
-            resData.posts.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), 9);
+            resData.posts.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), pagesOut);
             resData.posts.linkUrl = `/archive/${year}${month ? '/' + month : ''}/page-`;
             resData.posts.linkParam = '';
             resData.comments = result.comments;
@@ -880,7 +908,7 @@ module.exports = {
                 formatter,
                 moment
             };
-            resData.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), 9);
+            resData.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), pagesOut);
             resData.paginator.linkUrl = '/admin/post/page-';
             resData.paginator.linkParam = paramArr.length > 0 ? '?' + paramArr.join('&') : '';
             resData.paginator.pageLimit = 10;

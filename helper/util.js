@@ -356,7 +356,7 @@ module.exports = {
      * @version 1.0.0
      * @since 1.0.0
      */
-    catchError: function (msgObj, next) {
+    catchError: function (msgObj, next = null) {
         msgObj.message = msgObj.message || 'Page Not Found';
         msgObj.status = msgObj.status || 404;
         msgObj.code = msgObj.code || 404;
