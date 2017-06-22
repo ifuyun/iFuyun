@@ -1,6 +1,8 @@
 /**
  * Created by fuyun on 2017/05/19.
  */
+/** @namespace models.Comment */
+/** @namespace models.Vote */
 const async = require('async');
 const moment = require('moment');
 const xss = require('sanitizer');
@@ -11,6 +13,7 @@ const util = require('../helper/util');
 const formatter = require('../helper/formatter');
 const logger = require('../helper/logger').sysLog;
 const idReg = /^[0-9a-fA-F]{16}$/i;
+const pagesOut = 9;
 
 module.exports = {
     saveComment: function (req, res, next) {
@@ -18,19 +21,19 @@ module.exports = {
         let user = {};
         let data = {};
         const isAdmin = util.isAdminUser(req);
-        let commentId = xss.sanitize(param.commentId || '').trim();
+        let commentId = util.trim(xss.sanitize(param.commentId));
 
         if (req.session.user) {
             user = req.session.user;
         }
 
         // 避免undefined问题
-        data.commentContent = xss.sanitize(param.commentContent || '').trim();
-        data.parentId = xss.sanitize(param.parentId || '').trim();
-        data.postId = xss.sanitize(param.postId || '').trim();
-        data.commentAuthor = xss.sanitize(param.commentUser || '').trim() || user.userDisplayName || '';
-        data.commentAuthorEmail = xss.sanitize(param.commentEmail || '').trim() || user.userEmail || '';
-        data.commentAuthorLink = xss.sanitize(param.commentLink || '').trim() || '';
+        data.commentContent = util.trim(xss.sanitize(param.commentContent));
+        data.parentId = util.trim(xss.sanitize(param.parentId));
+        data.postId = util.trim(xss.sanitize(param.postId));
+        data.commentAuthor = util.trim(xss.sanitize(param.commentUser)) || user.userDisplayName || '';
+        data.commentAuthorEmail = util.trim(xss.sanitize(param.commentEmail)) || user.userEmail || '';
+        data.commentAuthorLink = util.trim(xss.sanitize(param.commentLink));
         data.commentStatus = isAdmin ? 'normal' : 'pending';
         data.commentIp = req.ip || req._remoteAddress;// TODO:nginx代理前的IP
         data.commentAgent = req.headers['user-agent'];
@@ -40,9 +43,6 @@ module.exports = {
             commentId = '';
         }
         if (!data.postId || !idReg.test(data.postId)) {
-            data.postId = '';
-        }
-        if (!data.postId) {
             return util.catchError({
                 status: 200,
                 code: 400,
@@ -56,7 +56,7 @@ module.exports = {
                 message: '昵称不能为空'
             }, next);
         }
-        if (!/^[\da-zA-Z]+[\da-zA-Z_\.\-]*@[\da-zA-Z_\-]+\.[\da-zA-Z_\-]+$/i.test(data.commentAuthorEmail)) {
+        if (!/^[\da-zA-Z]+[\da-zA-Z_.\-]*@[\da-zA-Z_\-]+\.[\da-zA-Z_\-]+$/i.test(data.commentAuthorEmail)) {
             return util.catchError({
                 status: 200,
                 code: 400,
@@ -291,7 +291,7 @@ module.exports = {
                 formatter,
                 moment
             };
-            resData.paginator = util.paginator(page, Math.ceil(result.commentsCount / 10), 9);
+            resData.paginator = util.paginator(page, Math.ceil(result.commentsCount / 10), pagesOut);
             resData.paginator.linkUrl = '/admin/comment/page-';
             resData.paginator.linkParam = paramArr.length > 0 ? '?' + paramArr.join('&') : '';
             resData.paginator.pageLimit = 10;

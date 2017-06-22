@@ -1,7 +1,11 @@
 /**
  * Created by fuyun on 2017/04/13.
  */
-
+/** @namespace models.Link */
+/** @namespace models.Post */
+/** @namespace models.TermTaxonomy */
+/** @namespace models.Comment */
+/** @namespace models.Option */
 const models = require('../models/index');
 const util = require('../helper/util');
 
@@ -123,7 +127,15 @@ module.exports = {
         let catTree = {};
         let treeNodes = [];
 
-        function iterateCategory (treeData, parentId, parentNode, level) {
+        /**
+         * 递归生成树节点
+         * @param {Object} treeData 源数据
+         * @param {String} parentId 父节点ID
+         * @param {Object} parentNode 父节点
+         * @param {Number} level 当前层级
+         * @return {Undefined} null
+         */
+        function iterateCategory(treeData, parentId, parentNode, level) {
             for (let arrIdx = 0; arrIdx < treeData.length; arrIdx += 1) {
                 let curNode = treeData[arrIdx];
                 if (!treeNodes.includes(curNode.taxonomyId)) {

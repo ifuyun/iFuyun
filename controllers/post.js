@@ -3,6 +3,7 @@
  */
 /** @namespace models.Post */
 /** @namespace models.User */
+/** @namespace models.TermRelationships */
 const async = require('async');
 const moment = require('moment');
 const url = require('url');
