@@ -3,8 +3,6 @@
  * @author fuyun
  * @since 2017/06/08
  */
-/** @namespace models.TermTaxonomy */
-/** @namespace models.TermRelationship */
 /** @namespace req.session */
 const async = require('async');
 const xss = require('sanitizer');
@@ -14,6 +12,7 @@ const appConfig = require('../config/core');
 const util = require('../helper/util');
 const idReg = /^[0-9a-fA-F]{16}$/i;
 const pagesOut = 9;
+const {TermTaxonomy, TermRelationship} = models;
 
 module.exports = {
     listTaxonomy: function (req, res, next) {
@@ -66,13 +65,13 @@ module.exports = {
         async.auto({
             options: common.getInitOptions,
             count: (cb) => {
-                models.TermTaxonomy.count({
+                TermTaxonomy.count({
                     where
                 }).then((data) => cb(null, data));
             },
             categories: ['count', function (result, cb) {
                 page = (page > result.count / 10 ? Math.ceil(result.count / 10) : page) || 1;
-                models.TermTaxonomy.findAll({
+                TermTaxonomy.findAll({
                     where,
                     attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'termOrder', 'count', 'created', 'modified'],
                     order: [['termOrder', 'asc'], ['created', 'desc']],
@@ -142,7 +141,7 @@ module.exports = {
         };
         if (action === 'edit') {
             tasks.taxonomy = (cb) => {
-                models.TermTaxonomy.findById(taxonomyId, {
+                TermTaxonomy.findById(taxonomyId, {
                     attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'created']
                 }).then((taxonomy) => cb(null, taxonomy));
             };
@@ -240,7 +239,7 @@ module.exports = {
                         $ne: taxonomyId
                     };
                 }
-                models.TermTaxonomy.count({
+                TermTaxonomy.count({
                     where
                 }).then((count) => cb(null, count));
             },
@@ -251,7 +250,7 @@ module.exports = {
                 const nowTime = new Date();
                 if (taxonomyId) {
                     data.modified = nowTime;
-                    models.TermTaxonomy.update(data, {
+                    TermTaxonomy.update(data, {
                         where: {
                             taxonomyId
                         }
@@ -260,7 +259,7 @@ module.exports = {
                     data.taxonomyId = util.getUuid();
                     data.created = nowTime;
                     data.modified = nowTime;
-                    models.TermTaxonomy.create(data).then((taxonomy) => cb(null, taxonomy));
+                    TermTaxonomy.create(data).then((taxonomy) => cb(null, taxonomy));
                 }
             }]
         }, function (err) {
@@ -312,7 +311,7 @@ module.exports = {
         models.sequelize.transaction(function (t) {
             let tasks = {
                 taxonomy: function (cb) {
-                    models.TermTaxonomy.destroy({
+                    TermTaxonomy.destroy({
                         where: {
                             taxonomyId: taxonomyIds
                         },
@@ -321,14 +320,14 @@ module.exports = {
                 },
                 posts: function (cb) {
                     if (type === 'tag') {
-                        models.TermRelationship.destroy({
+                        TermRelationship.destroy({
                             where: {
                                 termTaxonomyId: taxonomyIds
                             },
                             transaction: t
                         }).then((termRel) => cb(null, termRel));
                     } else {
-                        models.TermRelationship.update({
+                        TermRelationship.update({
                             termTaxonomyId: type === 'post' ? '0000000000000000' : '0000000000000001'
                         }, {
                             where: {
@@ -341,7 +340,7 @@ module.exports = {
             };
             if (type !== 'tag') {// 标签没有父子关系
                 tasks.children = function (cb) {
-                    models.TermTaxonomy.update({
+                    TermTaxonomy.update({
                         parent: type === 'post' ? '0000000000000000' : '0000000000000001'
                     }, {
                         where: {

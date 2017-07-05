@@ -3,13 +3,13 @@
  * @author fuyun
  * @since 2017/05/25
  */
-/** @namespace models.Option */
 const async = require('async');
 const xss = require('sanitizer');
 const util = require('../helper/util');
 const models = require('../models/index');
 const common = require('./common');
 const appConfig = require('../config/core');
+const {Option} = models;
 
 module.exports = {
     welcome: function (req, res) {
@@ -118,7 +118,7 @@ module.exports = {
             // 需要返回promise实例
             return new Promise((resolve, reject) => {
                 async.times(settings.length, (i, nextFn) => {
-                    models.Option.update({
+                    Option.update({
                         optionValue: settings[i].value
                     }, {
                         where: {

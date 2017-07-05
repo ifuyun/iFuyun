@@ -1,8 +1,8 @@
 /**
- * Created by fuyun on 2017/05/19.
+ * 评论
+ * @author fuyun
+ * @since 2017/05/19.
  */
-/** @namespace models.Comment */
-/** @namespace models.Vote */
 const async = require('async');
 const moment = require('moment');
 const xss = require('sanitizer');
@@ -14,6 +14,7 @@ const formatter = require('../helper/formatter');
 const logger = require('../helper/logger').sysLog;
 const idReg = /^[0-9a-fA-F]{16}$/i;
 const pagesOut = 9;
+const {Comment, Vote} = models;
 
 module.exports = {
     saveComment: function (req, res, next) {
@@ -108,9 +109,9 @@ module.exports = {
                 if (!commentId) {
                     data.commentId = util.getUuid();
                     data.commentCreatedGmt = data.commentModifiedGmt = new Date();
-                    models.Comment.create(data).then((comment) => cb(null, comment));
+                    Comment.create(data).then((comment) => cb(null, comment));
                 } else {
-                    models.Comment.update(data, {
+                    Comment.update(data, {
                         where: {
                             commentId
                         }
@@ -181,7 +182,7 @@ module.exports = {
         }
         async.auto({// TODO: transaction
             comment: (cb) => {
-                models.Comment.update({
+                Comment.update({
                     commentVote
                 }, {
                     where: {
@@ -194,12 +195,12 @@ module.exports = {
             },
             vote: (cb) => {
                 data.voteId = util.getUuid();
-                models.Vote.create(data).then((vote) => {
+                Vote.create(data).then((vote) => {
                     cb(null, vote);
                 });
             },
             commentVote: ['comment', function (result, cb) {
-                models.Comment.findById(data.objectId, {
+                Comment.findById(data.objectId, {
                     attributes: ['commentId', 'commentVote']
                 }).then(function (comment) {
                     cb(null, comment);
@@ -244,13 +245,13 @@ module.exports = {
         async.auto({
             options: common.getInitOptions,
             commentsCount: (cb) => {
-                models.Comment.count({
+                Comment.count({
                     where
                 }).then((data) => cb(null, data));
             },
             comments: ['commentsCount', (result, cb) => {
                 page = (page > result.commentsCount / 10 ? Math.ceil(result.commentsCount / 10) : page) || 1;
-                models.Comment.findAll({
+                Comment.findAll({
                     where,
                     attributes: ['commentId', 'postId', 'commentContent', 'commentStatus', 'commentAuthor', 'commentAuthorEmail', 'commentIp', 'commentCreated', 'commentModified', 'commentVote'],
                     include: [{
@@ -264,7 +265,7 @@ module.exports = {
                 }).then((comments) => cb(null, comments));
             }],
             typeCount: (cb) => {
-                models.Comment.findAll({
+                Comment.findAll({
                     attributes: [
                         'commentStatus',
                         ['count(1)', 'count']
@@ -327,7 +328,7 @@ module.exports = {
         async.parallel({
             options: common.getInitOptions,
             comment: function (cb) {
-                models.Comment.findById(commentId, {
+                Comment.findById(commentId, {
                     attributes: ['commentId', 'postId', 'commentContent', 'commentStatus', 'commentAuthor', 'commentAuthorEmail', 'commentIp', 'commentCreated', 'commentModified'],
                     include: [{
                         model: models.Post,
@@ -388,7 +389,7 @@ module.exports = {
         };
         data.commentStatus = statusMap[param.action];
 
-        models.Comment.update(data, {
+        Comment.update(data, {
             where: {
                 commentId
             }

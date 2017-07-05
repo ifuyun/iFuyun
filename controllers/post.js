@@ -1,9 +1,8 @@
 /**
- * Created by fuyun on 2017/04/12.
+ * 文章
+ * @author fuyun
+ * @since 2017/04/12
  */
-/** @namespace models.Post */
-/** @namespace models.User */
-/** @namespace models.TermRelationships */
 const async = require('async');
 const moment = require('moment');
 const url = require('url');
@@ -16,6 +15,7 @@ const formatter = require('../helper/formatter');
 const logger = require('../helper/logger').sysLog;
 const idReg = /^[0-9a-fA-F]{16}$/i;
 const pagesOut = 9;
+const {Post, User} = models;
 
 /**
  * 查询公共数据
@@ -117,7 +117,7 @@ function queryPosts(param, cb) {
             'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'
         ],
         include: [{
-            model: models.User,
+            model: User,
             attributes: ['userDisplayName']
         }],
         order: [['postCreated', 'desc'], ['postDate', 'desc']],
@@ -135,7 +135,7 @@ function queryPosts(param, cb) {
             break;
         default:
     }
-    models.Post.findAll(queryOpt).then((posts) => {
+    Post.findAll(queryOpt).then((posts) => {
         let postIds = [];
         posts.forEach((v) => postIds.push(v.postId));
         queryPostsByIds(posts, postIds, cb);
@@ -224,7 +224,7 @@ module.exports = {
                 }, cb);
             },
             postsCount: (cb) => {
-                models.Post.count({
+                Post.count({
                     where
                 }).then((result) => cb(null, result));
             },
@@ -290,14 +290,14 @@ module.exports = {
                 }, cb);
             },
             post: function (cb) {
-                models.Post.findById(postId, {
+                Post.findById(postId, {
                     attributes: [
                         'postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus',
                         'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated',
                         'postGuid', 'commentCount', 'postViewCount'
                     ],
                     include: [{
-                        model: models.User,
+                        model: User,
                         attributes: ['userDisplayName']
                     }, {
                         model: models.TermTaxonomy,
@@ -431,13 +431,13 @@ module.exports = {
                 }, cb);
             },
             post: function (cb) {
-                models.Post.findOne({
+                Post.findOne({
                     attributes: [
                         'postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus',
                         'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'
                     ],
                     include: [{
-                        model: models.User,
+                        model: User,
                         attributes: ['userDisplayName']
                     }],
                     where: {
@@ -543,7 +543,7 @@ module.exports = {
                 cb(null);
             }],
             postsCount: ['setRelationshipWhere', (result, cb) => {
-                models.Post.count({
+                Post.count({
                     where,
                     include: includeOpt,
                     subQuery: false,
@@ -620,7 +620,7 @@ module.exports = {
                 }, cb);
             },
             postsCount: (cb) => {
-                models.Post.count({
+                Post.count({
                     where,
                     include: includeOpt
                 }).then((count) => cb(null, count));
@@ -703,7 +703,7 @@ module.exports = {
                 }, cb);
             },
             postsCount: (cb) => {
-                models.Post.count({
+                Post.count({
                     where
                 }).then((data) => cb(null, data));
             },
@@ -866,7 +866,7 @@ module.exports = {
                 }
             }],
             postsCount: ['subCategories', (result, cb) => {
-                models.Post.count({
+                Post.count({
                     where,
                     include: includeOpt
                 }).then((data) => cb(null, data));
@@ -882,7 +882,7 @@ module.exports = {
             }],
             comments: ['posts', (result, cb) => common.getCommentCountByPosts(result.posts, cb)],
             typeCount: (cb) => {
-                models.Post.findAll({
+                Post.findAll({
                     attributes: [
                         'postStatus',
                         'postType',
@@ -976,7 +976,7 @@ module.exports = {
                 }, next);
             }
             let includeOpt = [{
-                model: models.User,
+                model: User,
                 attributes: ['userDisplayName']
             }];
             if (req.query.type !== 'page') {
@@ -989,7 +989,7 @@ module.exports = {
                 });
             }
             tasks.post = (cb) => {
-                models.Post.findById(postId, {
+                Post.findById(postId, {
                     attributes: [
                         'postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus', 'postType', 'postPassword',
                         'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'],
@@ -1133,7 +1133,7 @@ module.exports = {
                             $ne: postId
                         };
                     }
-                    models.Post.count({
+                    Post.count({
                         where
                     }).then((count) => cb(null, count));
                 },
@@ -1145,11 +1145,11 @@ module.exports = {
                     if (!postId) {
                         data.postId = newPostId;
                         data.postModifiedGmt = nowTime;
-                        models.Post.create(data, {
+                        Post.create(data, {
                             transaction: t
                         }).then((post) => cb(null, post));
                     } else {
-                        models.Post.update(data, {
+                        Post.update(data, {
                             where: {
                                 postId
                             },
