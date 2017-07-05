@@ -1,8 +1,6 @@
 /*global $,hljs*/
 /* jslint nomen:true */
 require('../../vendor/jquery.poshytip.min');
-// require('../../vendor/highlight.pack');
-// const hljs = require('highlight.js');
 require('../../vendor/jquery.qrcode.min');
 
 let service;
@@ -10,14 +8,14 @@ const popup = require('../../lib/dialog');
 
 service = {
     initEvent: function () {
-        $('body').on('submit', '.j-form-comment', function (e) {
-            var $that = $(this);
+        $('body').on('submit', '.j-form-comment', function () {
+            const $that = $(this);
             $.ajax({
                 type: 'post',
                 url: $that.attr('action'),
                 data: $that.serialize(),
                 dataType: 'json',
-                success: function (d, s, xhr) {
+                success: function (d) {
                     if (d.code === 0) {
                         if (d.data.commentFlag === 'verify') {
                             popup.alert({
@@ -34,13 +32,13 @@ service = {
                         popup.alert(d.message);
                     }
                 },
-                error: function (xhr, s, err) {
+                error: function () {
                     return false;
                 }
             });
             return false;
         }).on('click', '.j-vote-up', function (e) {
-            var that = this;
+            const that = this;
             $.ajax({
                 type: 'post',
                 url: '/post/comment/vote',
@@ -50,7 +48,7 @@ service = {
                     _csrf: $('.csrfToken').val()
                 },
                 dataType: 'json',
-                success: function (d, s, xhr) {
+                success: function (d) {
                     $('.csrfToken').val(d.token);
                     if (d.code === 0) {
                         $(that).find('.j-vote-count').html(d.data.commentVote);
@@ -58,7 +56,7 @@ service = {
                         popup.alert(d.message);
                     }
                 },
-                error: function (xhr, s, err) {
+                error: function () {
                     return false;
                 }
             });
@@ -72,7 +70,8 @@ service = {
         }).on('mouseout', '#btnReward', function (e) {
             $('#qrcodeReward').hide();
         }).on('click', '#postContent img', function (e) {
-            var $that = $(this), $cloneImg = $that.clone(false);
+            const $that = $(this);
+            const $cloneImg = $that.clone(false);
             popup.custom({
                 title: ' ',
                 content: $cloneImg,
