@@ -1,4 +1,4 @@
-/*jslint nomen:true*/
+/* jslint nomen:true */
 /*global $*/
 require('../../vendor/jquery.cookie.min');
 require('../../vendor/jquery.poshytip.min');
@@ -7,6 +7,8 @@ require('../../vendor/json2');
 const util = require('../../lib/util');
 const md5 = require('../../vendor/md5.min');
 let service;
+const $userLogin = $('#userLogin');
+const $userPass = $('#userPass');
 
 service = {
     // poshytip: function ($input, msg) {
@@ -48,14 +50,18 @@ service = {
         return false;
     },
     doLogin: function () {
-        var offset = [15, 30, 15, 0, -15, -30, -15, 0];
+        const userLogin = $userLogin.val();
+        const userPass = $userPass.val();
+        const margin = 15;
+        const marginTwice = 30;
+        let offset = [margin, marginTwice, margin, 0, -margin, -marginTwice, -margin, 0];
         offset = offset.concat(offset.concat(offset));
 
-        if (!$('#userLogin').val()) {
-            return service.doShake($('#userLogin'), '请输入用户名', offset);
+        if (!userLogin) {
+            return service.doShake($userLogin, '请输入用户名', offset);
         }
-        if (!$('#userPass').val()) {
-            return service.doShake($('#userPass'), '请输入密码', offset);
+        if (!userPass) {
+            return service.doShake($userPass, '请输入密码', offset);
         }
 
         $.ajax({
@@ -63,23 +69,23 @@ service = {
             cache: false,
             // data: $('.m-form-login').serialize(),
             data: {
-                username: $('#userLogin').val(),
-                password: md5($('#userPass').val()),
+                username: userLogin,
+                password: md5(userPass),
                 rememberMe: $('#rememberMe').val(),
-                _csrf: $('#csrfToken').val()
+                '_csrf': $('#csrfToken').val()
             },
             type: 'post',
             dataType: 'json',
-            success: function (d, s, xhr) {
+            success: function (d) {
                 if (d.code !== 0) {
-                    service.doShake($('#userPass'), d.message, offset);
+                    service.doShake($userPass, d.message, offset);
                 } else {
                     location.replace(d.data.url);
-                    //assign
+                    // assign
                 }
             },
-            error: function (xhr, s, err) {
-                var d;
+            error: function (xhr) {
+                let d;
                 try {
                     d = JSON.parse(xhr.responseText);
                 } catch (e) {
@@ -89,28 +95,28 @@ service = {
                         'message': '登录失败，请重新登录'
                     };
                 }
-                service.doShake($('#userPass'), d.message || '登录失败，请重新登录', offset);
+                service.doShake($userPass, d.message || '登录失败，请重新登录', offset);
             }
         });
 
         return false;
     },
     initEvent: function () {
-        $('.m-form-login .u-input-login').focus(function (e) {
+        $('.m-form-login .u-input-login').focus(function () {
             $(this).addClass('focus');
-        }).blur(function (e) {
+        }).blur(function () {
             $(this).removeClass('focus');
-        }).change(function (e) {
+        }).change(function () {
             if ($(this).val()) {
                 $(this).poshytip('disable');
             } else {
                 $(this).poshytip('enable');
             }
         });
-        if ($('#userLogin').val()) {
-            $('#userPass').focus();
+        if ($userLogin.val()) {
+            $userPass.focus();
         } else {
-            $('#userLogin').focus();
+            $userLogin.focus();
         }
         $('.m-form-login').on('submit', service.doLogin);
     }
@@ -119,7 +125,7 @@ service = {
 $(function () {
     service.initEvent();
 
-    $('#userLogin').val($.cookie('username'));
+    $userLogin.val($.cookie('username'));
     if ($.cookie('rememberMe') === '1') {
         $('#rememberMe').attr({
             'checked': 'checked'

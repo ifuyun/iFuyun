@@ -5,6 +5,8 @@ require('../../vendor/jquery.qrcode.min');
 
 let service;
 const popup = require('../../lib/dialog');
+const $qrcodeShare = $('#qrcodeShare');
+const $qrcodeReward = $('#qrcodeReward');
 
 service = {
     initEvent: function () {
@@ -37,7 +39,7 @@ service = {
                 }
             });
             return false;
-        }).on('click', '.j-vote-up', function (e) {
+        }).on('click', '.j-vote-up', function () {
             const that = this;
             $.ajax({
                 type: 'post',
@@ -61,15 +63,15 @@ service = {
                 }
             });
             return false;
-        }).on('mouseover', '#btnShare', function (e) {
-            $('#qrcodeShare').show();
-        }).on('mouseout', '#btnShare', function (e) {
-            $('#qrcodeShare').hide();
-        }).on('mouseover', '#btnReward', function (e) {
-            $('#qrcodeReward').show();
-        }).on('mouseout', '#btnReward', function (e) {
-            $('#qrcodeReward').hide();
-        }).on('click', '#postContent img', function (e) {
+        }).on('mouseover', '#btnShare', function () {
+            $qrcodeShare.show();
+        }).on('mouseout', '#btnShare', function () {
+            $qrcodeShare.hide();
+        }).on('mouseover', '#btnReward', function () {
+            $qrcodeReward.show();
+        }).on('mouseout', '#btnReward', function () {
+            $qrcodeReward.hide();
+        }).on('click', '#postContent img', function () {
             const $that = $(this);
             const $cloneImg = $that.clone(false);
             popup.custom({
@@ -94,13 +96,13 @@ service = {
 $(function () {
     service.initEvent();
     hljs.initHighlightingOnLoad();
-    $('#qrcodeShare').qrcode({
+    $qrcodeShare.qrcode({
         width: 150,
         height: 150,
         foreground: '#5f5f5f',
-        text: $('#qrcodeShare').attr('data-url')
+        text: $qrcodeShare.attr('data-url')
     });
-    $('#qrcodeReward').qrcode({
+    $qrcodeReward.qrcode({
         width: 150,
         height: 150,
         foreground: '#5f5f5f',
