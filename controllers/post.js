@@ -26,7 +26,9 @@ const {Post, User} = models;
 function getCommonData(param, cb) {
     // 执行时间在30-60ms，间歇60-80ms
     async.parallel({
-        archiveDates: common.archiveDates,
+        archiveDates: (cb) => {
+            common.archiveDates(cb, param.postType || 'post');
+        },
         recentPosts: common.recentPosts,
         randPosts: common.randPosts,
         hotPosts: common.hotPosts,
@@ -427,7 +429,8 @@ module.exports = {
         async.auto({
             commonData: (cb) => {
                 getCommonData({
-                    from: 'page'
+                    from: 'page',
+                    postType: 'page'
                 }, cb);
             },
             post: function (cb) {
@@ -837,7 +840,9 @@ module.exports = {
 
         async.auto({
             options: common.getInitOptions,
-            archiveDates: common.archiveDates,
+            archiveDates: (cb) => {
+                common.archiveDates(cb, where.postType);
+            },
             categories: common.getCategoryTree.bind(common),
             subCategories: ['categories', (result, cb) => {
                 if (req.query.category) {
@@ -1173,9 +1178,6 @@ module.exports = {
                             nextFn(null);
                         }
                     }, (err, categories) => {
-                        // if (err) {
-                        //     return cb(err);
-                        // }
                         cb(err, categories);
                     });
                 }];
@@ -1228,9 +1230,6 @@ module.exports = {
                             nextFn(null);
                         }
                     }, (err, tags) => {
-                        // if (err) {
-                        //     return cb(err);
-                        // }
                         cb(err, tags);
                     });
                 }];
@@ -1266,7 +1265,147 @@ module.exports = {
         });
     },
     listMedia: function (req, res, next) {
-        res.send();
+        let page = parseInt(req.params.page, 10) || 1;
+        let where = {};
+        let titleArr = [];
+        let paramArr = [];
+        let from = 'admin';
+
+        if (req.query.status) {
+            if (req.query.status === 'draft') {
+                where.postStatus = ['draft', 'auto-draft'];
+            } else {
+                where.postStatus = req.query.status;
+            }
+            paramArr.push(`status=${req.query.status}`);
+            titleArr.push(formatter.postStatus(req.query.status) || req.query.status, '状态');
+        } else {
+            where.postStatus = ['publish', 'private', 'draft', 'auto-draft', 'trash'];
+        }
+        if (req.query.author) {
+            where.postAuthor = req.query.author;
+            paramArr.push(`author=${req.query.author}`);
+            titleArr.push('作者');
+        }
+        if (req.query.date) {
+            where.$and = [models.sequelize.where(models.sequelize.fn('date_format', models.sequelize.col('post_date'), '%Y/%m'), '=', req.query.date)];
+            paramArr.push(`date=${req.query.date}`);
+            titleArr.push(req.query.date, '日期');
+        }
+        if (req.query.keyword) {
+            where.$or = [{
+                postTitle: {
+                    $like: `%${req.query.keyword}%`
+                }
+            }, {
+                postContent: {
+                    $like: `%${req.query.keyword}%`
+                }
+            }, {
+                postExcerpt: {
+                    $like: `%${req.query.keyword}%`
+                }
+            }];
+            paramArr.push(`keyword=${req.query.keyword}`);
+            titleArr.push(req.query.keyword, '搜索');
+        }
+        where.postType = 'attachment';
+        paramArr.push(`type=${where.postType}`);
+
+        async.auto({
+            options: common.getInitOptions,
+            archiveDates: (cb) => {
+                common.archiveDates(cb, where.postType);
+            },
+            postsCount: (cb) => {
+                Post.count({
+                    where
+                }).then((data) => cb(null, data));
+            },
+            posts: ['postsCount', (result, cb) => {
+                page = (page > result.postsCount / 10 ? Math.ceil(result.postsCount / 10) : page) || 1;
+                queryPosts({
+                    page,
+                    where,
+                    from
+                }, cb);
+            }],
+            typeCount: (cb) => {
+                Post.findAll({
+                    attributes: [
+                        'postStatus',
+                        'postType',
+                        ['count(1)', 'count']
+                    ],
+                    where: {
+                        postType: where.postType,
+                        postStatus: ['publish', 'private', 'draft', 'auto-draft', 'trash']
+                    },
+                    group: ['postStatus']
+                }).then((data) => cb(null, data));
+            }
+        }, function (err, result) {
+            if (err) {
+                return next(err);
+            }
+            let resData = {
+                meta: {},
+                type: where.postType,
+                page: where.postType,
+                archiveDates: result.archiveDates,
+                options: result.options,
+                count: {
+                    all: 0,
+                    publish: 0,
+                    private: 0,
+                    draft: 0,
+                    trash: 0
+                },
+                posts: result.posts,
+                util,
+                formatter,
+                moment
+            };
+            resData.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), pagesOut);
+            resData.paginator.linkUrl = '/admin/media/page-';
+            resData.paginator.linkParam = paramArr.length > 0 ? '?' + paramArr.join('&') : '';
+            resData.paginator.pageLimit = 10;
+            resData.paginator.total = result.postsCount;
+
+            if (page > 1) {
+                resData.meta.title = util.getTitle(titleArr.concat(['第' + page + '页', '多媒体列表', '管理后台', result.options.site_name.optionValue]));
+            } else {
+                resData.meta.title = util.getTitle(titleArr.concat(['多媒体列表', '管理后台', result.options.site_name.optionValue]));
+            }
+
+            result.typeCount.forEach((item) => {
+                resData.count.all += item.get('count');
+
+                switch (item.postStatus) {
+                    case 'publish':
+                        resData.count.publish += item.get('count');
+                        break;
+                    case 'private':
+                        resData.count.private += item.get('count');
+                        break;
+                    case 'draft':
+                        resData.count.draft += item.get('count');
+                        break;
+                    case 'auto-draft':
+                        resData.count.draft += item.get('count');
+                        break;
+                    case 'trash':
+                        resData.count.trash += item.get('count');
+                        break;
+                    default:
+                }
+            });
+
+            resData.curStatus = req.query.status || 'all';
+            resData.curDate = req.query.date;
+            resData.curKeyword = req.query.keyword;
+            res.render(`${appConfig.pathViews}/admin/pages/mediaList`, resData);
+        });
     },
     editMedia: function (req, res, next) {
         res.send();

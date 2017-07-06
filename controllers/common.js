@@ -25,7 +25,7 @@ module.exports = {
             cb(null, tmpObj);
         });
     },
-    archiveDates: function (cb) {
+    archiveDates: function (cb, type) {
         // 模型定义之外（别名）的属性需要通过.get()方式访问
         Post.findAll({
             attributes: [
@@ -36,7 +36,7 @@ module.exports = {
             ],
             where: {
                 postStatus: 'publish',
-                postType: 'post'
+                postType: type || 'post'
             },
             group: [models.sequelize.fn('date_format', models.sequelize.col('postDate'), '%Y-%m')],
             order: [[models.sequelize.col('linkDate'), 'desc']]

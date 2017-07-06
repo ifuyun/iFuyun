@@ -149,6 +149,10 @@ module.exports = function (sequelize, DataTypes) {
             foreignKey: 'objectId',
             sourceKey: 'postId'
         });
+        Post.hasMany(models.Postmeta, {
+            foreignKey: 'postId',
+            sourceKey: 'postId'
+        });
     };
 
     return Post;
