@@ -4,6 +4,7 @@ const service = {
         const $form = $('#form-media');
         const fd = new FormData();
         fd.append('mediafile', file);
+        fd.append('uploadCloud', $('#uploadCloud').is(':checked'));
 
         $.ajax({
             type: 'post',
@@ -49,8 +50,14 @@ const service = {
         return false;
     },
     initEvent: function () {
-        $('#mediafile').on('change', function (e) {
-            service.upload(e.target.files[0]);
+        let file;
+        $('#mediafile').on('change', (e) => {
+            file = e.target.files[0];
+            $('#filename').html(file.name);
+        });
+        $('#form-media').on('submit', function () {
+            service.upload(file);
+            return false;
         });
     }
 };

@@ -1,0 +1,38 @@
+<? include ../common/header.html ?>
+<div id="body-wrapper">
+    <? include ../elements/leftNav.html ?>
+    <div id="content">
+        <? include ../elements/topBar.html ?>
+        <div id="control-panel">
+            <div id="control-body">
+                <h2>上传新媒体文件</h2>
+                <div class="split-line"><div class="split-corner">&nbsp;</div></div>
+                <form id="form-media" method="post" action="/admin/media/upload" enctype="multipart/form-data">
+                    <div class="form-wrap">
+                        <div class="form-field">
+                            <label class="form-label-left" for="mediafile">选择文件</label>
+                            <span class="form-field-upload">
+                                <a class="button" href="javascript:;">选择文件</a>
+                                <input type="file" class="form-upload" id="mediafile" name="mediafile" />
+                                <span id="filename"></span>
+                            </span>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label-left" for="uploadCloud">是否上传云端</label>
+                            <input type="checkbox" id="uploadCloud" name="uploadCloud" value="1" />
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label-left">&nbsp;</label>
+                            <input type="submit" class="submit" value="保存" />
+                        </div>
+                        <input type="hidden" name="_csrf" id="csrfToken" value="<?- token ?>" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <? include ../elements/pageFooter.html ?>
+</div>
+<script type="text/javascript" src="/js/common.js"></script>
+<script type="text/javascript" src="/js/admin/media.js"></script>
+<? include ../common/footer.html ?>

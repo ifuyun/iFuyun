@@ -3,10 +3,13 @@
  * @author fuyun
  * @since 2017/04/12
  */
+const fs = require('fs');
+const path = require('path');
 const async = require('async');
 const moment = require('moment');
 const url = require('url');
 const xss = require('sanitizer');
+const formidable = require('formidable');
 const models = require('../models/index');
 const common = require('./common');
 const appConfig = require('../config/core');
@@ -1407,7 +1410,131 @@ module.exports = {
             res.render(`${appConfig.pathViews}/admin/pages/mediaList`, resData);
         });
     },
-    editMedia: function (req, res, next) {
-        res.send();
+    createMedia: function (req, res, next) {
+        common.getInitOptions((err, options) => {
+            if (err) {
+                return next(err);
+            }
+            let resData = {
+                meta: {
+                    title: util.getTitle(['上传新媒体文件', '管理后台', options.site_name.optionValue])
+                },
+                page: 'media',
+                token: req.csrfToken(),
+                options
+            };
+            res.render(`${appConfig.pathViews}/admin/pages/mediaForm`, resData);
+        });
+    },
+    uploadFile: function (req, res, next) {
+        const form = new formidable.IncomingForm();
+        const now = moment();
+        const curYear = now.format('YYYY');
+        const curMonth = now.format('MM');
+        const sizeLimit = 500;
+        let yearPath;
+        let uploadPath;
+
+        yearPath = path.join(__dirname, '..', 'public', 'upload', curYear);
+        uploadPath = path.join(yearPath, curMonth);
+        if (!fs.existsSync(yearPath)) {
+            fs.mkdirSync(yearPath);
+        }
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath);
+        }
+        form.uploadDir = uploadPath;
+        form.keepExtensions = true;
+        form.maxFieldsSize = sizeLimit * 1024 * 1024;
+
+        form.on('error', function (err) {
+            logger.error(util.getErrorLog({
+                req: req,
+                funcName: 'uploadFile',
+                funcParam: {
+                    uploadPath: uploadPath
+                },
+                msg: err
+            }));
+        });
+        form.parse(req, function (err, fields, files) {
+            let fileExt = files.mediafile.name.split('.');
+            if (fileExt.length > 1) {
+                fileExt = '.' + fileExt.pop();
+            } else {
+                fileExt = '';
+            }
+            const filename = util.getUuid() + fileExt;
+            const filepath = path.join(uploadPath, filename);
+            const nowTime = new Date();
+            let fileData = {};
+            fs.renameSync(files.mediafile.path, filepath);
+
+            fileData.postTitle = fileData.postExcerpt = fileData.postContent = xss.sanitize(files.mediafile.name);
+            fileData.postAuthor = req.session.user.userId;
+            fileData.postStatus = 'publish';
+            fileData.postType = 'attachment';
+            fileData.postId = util.getUuid();
+            fileData.postGuid = '/static/' + curYear + '/' + curMonth + '/' + filename;
+            fileData.postModifiedGmt = fileData.postDateGmt = fileData.postDate = nowTime;
+
+            models.sequelize.transaction(function (t) {
+                let tasks = {
+                    checkGuid: function (cb) {
+                        let where = {
+                            postGuid: fileData.postGuid
+                        };
+                        Post.count({
+                            where
+                        }).then((count) => cb(null, count));
+                    },
+                    post: ['checkGuid', function (result, cb) {
+                        if (result.checkGuid > 0) {
+                            return cb('URL已存在');
+                        }
+                        Post.create(fileData, {
+                            transaction: t
+                        }).then((post) => cb(null, post));
+                    }]
+                };
+                // 需要返回promise实例
+                return new Promise((resolve, reject) => {
+                    async.auto(tasks, function (err, result) {
+                        if (err) {
+                            reject(new Error(err));
+                        } else {
+                            resolve(result);
+                        }
+                    });
+                });
+            }).then(() => {
+                delete req.session.referer;
+                res.set('Content-type', 'application/json');
+                res.send({
+                    status: 200,
+                    code: 0,
+                    message: null,
+                    data: {
+                        url: '/admin/media'
+                    }
+                });
+            }, (err) => {
+                next({
+                    status: 200,
+                    code: 500,
+                    message: err.message || err
+                });
+            });
+
+            logger.info(util.getInfoLog({
+                req: req,
+                funcName: 'uploadFile',
+                funcParam: {
+                    uploadPath: uploadPath,
+                    filename: files.mediafile.name
+                },
+                msg: 'Upload file: ' + filename
+            }));
+        });
     }
 };
