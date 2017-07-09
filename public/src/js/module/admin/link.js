@@ -1,8 +1,8 @@
 /*global $*/
 $(function () {
-    //链接列表
+    // 链接列表
     $('.btn-delete').on('click', function () {
-        var $that = $(this);
+        const $that = $(this);
         $.ajax({
             type: 'post',
             url: '/admin/link/remove',
@@ -28,10 +28,10 @@ $(function () {
         return false;
     });
 
-    //链接表单
+    // 链接表单
     $('#cat-name').focus();
     $('#form-link').on('submit', function () {
-        var $that = $(this);
+        const $that = $(this);
         $.ajax({
             type: 'post',
             url: $that.attr('action'),

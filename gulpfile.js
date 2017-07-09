@@ -198,12 +198,17 @@ gulp.task('copy-dev-js-admin', function () {
         .pipe(gulp.dest(path.join(config.pathDev, config.pathJsDevAdmin)));
 });
 
+gulp.task('copy-dev-js-web', function () {
+    return gulp.src(path.join(config.pathSrc, config.pathJsDevWeb, '**'))
+        .pipe(gulp.dest(path.join(config.pathDev, config.pathJsDevWeb)));
+});
+
 gulp.task('develop', (cb) => {
-    runSequence('clean-dev', 'less', 'copy-dev-style', 'webpack', 'copy-dev-js-plugin', 'copy-dev-js-admin', cb);
+    runSequence('clean-dev', 'less', 'copy-dev-style', 'webpack', 'copy-dev-js-plugin', 'copy-dev-js-admin', 'copy-dev-js-web', cb);
 });
 
 gulp.task('dev', function () {
-    runSequence('clean-dev', 'less', 'copy-dev-style', 'copy-dev-js-plugin', 'copy-dev-js-admin');
+    runSequence('clean-dev', 'less', 'copy-dev-style', 'copy-dev-js-plugin', 'copy-dev-js-admin', 'copy-dev-js-web');
 
     compiler.watch({
         aggregateTimeout: 300
@@ -216,9 +221,9 @@ gulp.task('dev', function () {
         }));
     });
     gulp.watch(['./public/src/js/plugins/**', './public/src/js/admin'], function (event) {
-        runSequence('copy-dev-js-plugin', 'copy-dev-js-admin');
+        runSequence('copy-dev-js-plugin', 'copy-dev-js-admin', 'copy-dev-js-web');
     });
-    gulp.watch(['./public/src/**/*.less', '!./public/src/js/plugin/**'], function (event) {
+    gulp.watch(['./public/src/style/**/*.less'], function (event) {
         runSequence('less', 'copy-dev-style');
     });
 });

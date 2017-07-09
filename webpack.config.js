@@ -30,7 +30,7 @@ const replaceHash = function () {
                 for (const chunkKey of Object.keys(chunks)) {
                     const chunk = chunks[chunkKey];
                     const curHtml = fs.readFileSync(curFile, 'utf8');
-                    const newHtml = curHtml.replace(new RegExp(chunk.name + '[\-_0-9a-zA-Z]*\.js', 'ig'), chunk.files[0]);
+                    const newHtml = curHtml.replace(new RegExp(chunk.name + '[\\-_0-9a-zA-Z]*\\.js', 'ig'), chunk.files[0]);
                     fs.writeFileSync(curFile, newHtml);
                 }
             }
@@ -49,7 +49,7 @@ const uglifyPlugin = new webpack.optimize.UglifyJsPlugin({
     exclude: [
         // path.resolve(__dirname, 'public/src/js/plugin'),
         // path.resolve(__dirname, 'public/src/js/vendor')
-        /\/(plugin|vendor)\/[\w\W]+(?:.js)?/i
+        /\/(plugins|vendor)\/[\w\W]+(?:.js)?/i
     ]
 });
 const providePlugin = new webpack.ProvidePlugin({

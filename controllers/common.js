@@ -1,13 +1,15 @@
 /**
- * Created by fuyun on 2017/04/13.
+ * 通用方法
+ * @author fuyun
+ * @since 2017/04/13.
  */
-
 const models = require('../models/index');
 const util = require('../helper/util');
+const {Link, Post, TermTaxonomy, Comment, Option} = models;
 
 module.exports = {
     getInitOptions: function (cb) {
-        models.Option.findAll({
+        Option.findAll({
             attributes: ['blogId', 'optionName', 'optionValue', 'autoload'],
             where: {
                 autoload: 1
@@ -23,9 +25,9 @@ module.exports = {
             cb(null, tmpObj);
         });
     },
-    archiveDates: function (cb) {
+    archiveDates: function (cb, type) {
         // 模型定义之外（别名）的属性需要通过.get()方式访问
-        models.Post.findAll({
+        Post.findAll({
             attributes: [
                 'postDate',
                 [models.sequelize.fn('date_format', models.sequelize.col('post_date'), '%Y/%m'), 'linkDate'],
@@ -34,7 +36,7 @@ module.exports = {
             ],
             where: {
                 postStatus: 'publish',
-                postType: 'post'
+                postType: type || 'post'
             },
             group: [models.sequelize.fn('date_format', models.sequelize.col('postDate'), '%Y-%m')],
             order: [[models.sequelize.col('linkDate'), 'desc']]
@@ -43,7 +45,7 @@ module.exports = {
         });
     },
     recentPosts: function (cb) {
-        models.Post.findAll({
+        Post.findAll({
             attributes: ['postId', 'postTitle', 'postGuid'],
             where: {
                 postStatus: 'publish',
@@ -60,7 +62,7 @@ module.exports = {
         });
     },
     randPosts: function (cb) {
-        models.Post.findAll({
+        Post.findAll({
             attributes: ['postId', 'postTitle', 'postGuid'],
             where: {
                 postStatus: 'publish',
@@ -76,7 +78,7 @@ module.exports = {
         });
     },
     hotPosts: function (cb) {
-        models.Post.findAll({
+        Post.findAll({
             attributes: ['postId', 'postTitle', 'postGuid'],
             where: {
                 postStatus: 'publish',
@@ -92,10 +94,10 @@ module.exports = {
         });
     },
     getLinks: function (slug, visible, cb) {
-        models.Link.findAll({
+        Link.findAll({
             attributes: ['linkDescription', 'linkUrl', 'linkTarget', 'linkName'],
             include: [{
-                model: models.TermTaxonomy,
+                model: TermTaxonomy,
                 attributes: ['created', 'modified'],
                 where: {
                     slug: slug,
@@ -123,7 +125,15 @@ module.exports = {
         let catTree = {};
         let treeNodes = [];
 
-        function iterateCategory (treeData, parentId, parentNode, level) {
+        /**
+         * 递归生成树节点
+         * @param {Object} treeData 源数据
+         * @param {String} parentId 父节点ID
+         * @param {Object} parentNode 父节点
+         * @param {Number} level 当前层级
+         * @return {Undefined} null
+         */
+        function iterateCategory(treeData, parentId, parentNode, level) {
             for (let arrIdx = 0; arrIdx < treeData.length; arrIdx += 1) {
                 let curNode = treeData[arrIdx];
                 if (!treeNodes.includes(curNode.taxonomyId)) {
@@ -164,7 +174,7 @@ module.exports = {
         return outArr;
     },
     getCategoryTree: function (cb, type) {
-        models.TermTaxonomy.findAll({
+        TermTaxonomy.findAll({
             attributes: ['name', 'description', 'slug', 'count', 'taxonomyId', 'parent'],
             where: {
                 taxonomy: type || 'post'
@@ -274,7 +284,7 @@ module.exports = {
         }
     },
     mainNavs: function (cb) {
-        models.TermTaxonomy.findAll({
+        TermTaxonomy.findAll({
             attributes: ['name', 'description', 'slug', 'count', 'taxonomyId'],
             where: {
                 taxonomy: 'post',
@@ -292,7 +302,7 @@ module.exports = {
         posts.forEach((v) => {
             postIds.push(v.post.postId);
         });
-        models.Comment.findAll({
+        Comment.findAll({
             attributes: ['postId', [models.sequelize.fn('count', 1), 'count']],
             where: {
                 postId: postIds,
@@ -308,7 +318,7 @@ module.exports = {
         });
     },
     getCommentsByPostId: function (postId, cb) {
-        models.Comment.findAll({
+        Comment.findAll({
             attributes: ['commentId', 'commentContent', 'commentAuthor', 'commentVote', 'commentCreated'],
             where: {
                 postId,
@@ -322,7 +332,7 @@ module.exports = {
         });
     },
     getPrevPost: function (postId, cb) {
-        models.Post.findOne({
+        Post.findOne({
             attributes: ['postId', 'postGuid', 'postTitle'],
             where: {
                 postStatus: 'publish',
@@ -339,7 +349,7 @@ module.exports = {
         });
     },
     getNextPost: function (postId, cb) {
-        models.Post.findOne({
+        Post.findOne({
             attributes: ['postId', 'postGuid', 'postTitle'],
             where: {
                 postStatus: 'publish',
@@ -354,23 +364,5 @@ module.exports = {
         }).then((data) => {
             cb(null, data);
         });
-        // },
-        // queryCategoryPath: function (catCrumb, catId, cb) {
-        //     models.TermTaxonomy.findById(catId, {
-        //         attributes: ['taxonomyId', 'name', 'slug', 'description']
-        //     }).then(function (category) {
-        //         catCrumb.unshift({
-        //             'title': category.name,
-        //             'tooltip': category.description,
-        //             'slug': category.slug,
-        //             'url': '/category/' + category.slug,
-        //             'headerFlag': false
-        //         });
-        //         if (category.parent) {
-        //             this.getCategoryPath(catCrumb, category.parent, cb);
-        //         } else {
-        //             cb(null, catCrumb);
-        //         }
-        //     });
     }
 };

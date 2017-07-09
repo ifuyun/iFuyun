@@ -1,5 +1,5 @@
 /**
- *
+ * 链接
  * @author fuyun
  * @since 2017/06/10
  */
@@ -12,6 +12,7 @@ const appConfig = require('../config/core');
 const util = require('../helper/util');
 const formatter = require('../helper/formatter');
 const idReg = /^[0-9a-fA-F]{16}$/i;
+const {Link, TermTaxonomy, TermRelationship} = models;
 
 module.exports = {
     listLink: function (req, res, next) {
@@ -19,11 +20,11 @@ module.exports = {
         async.auto({
             options: common.getInitOptions,
             count: (cb) => {
-                models.Link.count().then((data) => cb(null, data));
+                Link.count().then((data) => cb(null, data));
             },
             links: ['count', function (result, cb) {
                 page = (page > result.count / 10 ? Math.ceil(result.count / 10) : page) || 1;
-                models.Link.findAll({
+                Link.findAll({
                     attributes: ['linkId', 'linkUrl', 'linkName', 'linkTarget', 'linkDescription', 'linkVisible', 'linkRating', 'linkRss', 'linkCreated'],
                     order: [['linkRating', 'desc']],
                     limit: 10,
@@ -86,10 +87,10 @@ module.exports = {
         };
         if (action === 'edit') {
             tasks.link = (cb) => {
-                models.Link.findById(linkId, {
+                Link.findById(linkId, {
                     attributes: ['linkId', 'linkUrl', 'linkName', 'linkTarget', 'linkDescription', 'linkVisible', 'linkRating'],
                     include: [{
-                        model: models.TermTaxonomy,
+                        model: TermTaxonomy,
                         attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'count'],
                         where: {
                             taxonomy: ['link']
@@ -172,13 +173,13 @@ module.exports = {
                 link: function (cb) {
                     if (!linkId) {
                         data.linkId = newLinkId;
-                        models.Link.create(data, {
+                        Link.create(data, {
                             transaction: t
                         }).then((link) => {
                             cb(null, link);
                         });
                     } else {
-                        models.Link.update(data, {
+                        Link.update(data, {
                             where: {
                                 linkId
                             },
@@ -190,14 +191,14 @@ module.exports = {
                 },
                 taxonomy: function (cb) {
                     if (!linkId) {
-                        models.TermRelationship.create({
+                        TermRelationship.create({
                             objectId: newLinkId,
                             termTaxonomyId: taxonomyId
                         }, {
                             transaction: t
                         }).then((termRel) => cb(null, termRel));
                     } else {
-                        models.TermRelationship.update({
+                        TermRelationship.update({
                             termTaxonomyId: taxonomyId
                         }, {
                             where: {
@@ -259,7 +260,7 @@ module.exports = {
         models.sequelize.transaction(function (t) {
             let tasks = {
                 links: function (cb) {
-                    models.Link.destroy({
+                    Link.destroy({
                         where: {
                             linkId: linkIds
                         },
@@ -267,7 +268,7 @@ module.exports = {
                     }).then((link) => cb(null, link));
                 },
                 termRels: function (cb) {
-                    models.TermRelationship.destroy({
+                    TermRelationship.destroy({
                         where: {
                             objectId: linkIds
                         },

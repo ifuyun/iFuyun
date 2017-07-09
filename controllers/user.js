@@ -1,5 +1,5 @@
 /**
- *
+ * 用户管理
  * @author fuyun
  * @since 2017/05/23
  */
@@ -7,8 +7,9 @@ const util = require('../helper/util');
 const xss = require('sanitizer');
 const models = require('../models/index');
 const common = require('./common');
-const logger = require('../helper/logger').sysLog;
+// const logger = require('../helper/logger').sysLog;
 const appConfig = require('../config/core');
+const {User, Usermeta} = models;
 
 module.exports = {
     showLogin: function (req, res, next) {
@@ -41,10 +42,10 @@ module.exports = {
             path: '/',
             maxAge: appConfig.cookieExpires
         });
-        models.User.findOne({
+        User.findOne({
             attributes: ['userId', 'userLogin', 'userNicename', 'userEmail', 'userLink', 'userRegistered', 'userStatus', 'userDisplayName'],
             include: [{
-                model: models.Usermeta,
+                model: Usermeta,
                 attributes: ['metaId', 'userId', 'metaKey', 'metaValue']
             }],
             where: {

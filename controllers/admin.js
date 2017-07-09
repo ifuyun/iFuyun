@@ -9,9 +9,10 @@ const util = require('../helper/util');
 const models = require('../models/index');
 const common = require('./common');
 const appConfig = require('../config/core');
+const {Option} = models;
 
 module.exports = {
-    welcome: function (req, res, next) {
+    welcome: function (req, res) {
         res.redirect('/admin/post');
     },
     checkAuth: function (req, res, next) {
@@ -65,42 +66,42 @@ module.exports = {
         const param = req.body;
         const settings = [{
             name: 'site_name',
-            value: (xss.sanitize(param.siteName) || '').trim(),
+            value: util.trim(xss.sanitize(param.siteName)),
             required: true,
             message: '站点标题'
         }, {
             name: 'site_description',
-            value: (xss.sanitize(param.siteDescription) || '').trim(),
+            value: util.trim(xss.sanitize(param.siteDescription)),
             required: true,
             message: '站点描述'
         }, {
             name: 'site_slogan',
-            value: (xss.sanitize(param.siteSlogan) || '').trim(),
+            value: util.trim(xss.sanitize(param.siteSlogan)),
             required: true,
             message: '口号'
         }, {
             name: 'site_url',
-            value: (xss.sanitize(param.siteUrl) || '').trim(),
+            value: util.trim(xss.sanitize(param.siteUrl)),
             required: true,
             message: '站点地址'
         }, {
             name: 'site_keywords',
-            value: (xss.sanitize(param.siteKeywords) || '').trim(),
+            value: util.trim(xss.sanitize(param.siteKeywords)),
             required: true,
             message: '关键词'
         }, {
             name: 'admin_email',
-            value: (xss.sanitize(param.adminEmail) || '').trim(),
+            value: util.trim(xss.sanitize(param.adminEmail)),
             required: true,
             message: '电子邮件地址'
         }, {
             name: 'icp_num',
-            value: (xss.sanitize(param.icpNum) || '').trim(),
+            value: util.trim(xss.sanitize(param.icpNum)),
             required: false,
             message: 'ICP备案号'
         }, {
             name: 'copyright_notice',
-            value: (xss.sanitize(param.copyNotice) || '').trim(),
+            value: util.trim(xss.sanitize(param.copyNotice)),
             required: true,
             message: '版权信息'
         }];
@@ -117,7 +118,7 @@ module.exports = {
             // 需要返回promise实例
             return new Promise((resolve, reject) => {
                 async.times(settings.length, (i, nextFn) => {
-                    models.Option.update({
+                    Option.update({
                         optionValue: settings[i].value
                     }, {
                         where: {

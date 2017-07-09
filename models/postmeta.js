@@ -28,6 +28,12 @@ module.exports = function (sequelize, DataTypes) {
         tableName: 'postmeta',
         timestamps: false
     });
+    Postmeta.associate = function (models) {
+        Postmeta.belongsTo(models.Post, {
+            foreignKey: 'postId',
+            targetKey: 'postId'
+        });
+    };
 
     return Postmeta;
 };

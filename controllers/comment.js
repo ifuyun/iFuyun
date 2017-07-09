@@ -1,5 +1,7 @@
 /**
- * Created by fuyun on 2017/05/19.
+ * 评论
+ * @author fuyun
+ * @since 2017/05/19.
  */
 const async = require('async');
 const moment = require('moment');
@@ -11,6 +13,8 @@ const util = require('../helper/util');
 const formatter = require('../helper/formatter');
 const logger = require('../helper/logger').sysLog;
 const idReg = /^[0-9a-fA-F]{16}$/i;
+const pagesOut = 9;
+const {Comment, Vote} = models;
 
 module.exports = {
     saveComment: function (req, res, next) {
@@ -18,19 +22,19 @@ module.exports = {
         let user = {};
         let data = {};
         const isAdmin = util.isAdminUser(req);
-        let commentId = xss.sanitize(param.commentId || '').trim();
+        let commentId = util.trim(xss.sanitize(param.commentId));
 
         if (req.session.user) {
             user = req.session.user;
         }
 
         // 避免undefined问题
-        data.commentContent = xss.sanitize(param.commentContent || '').trim();
-        data.parentId = xss.sanitize(param.parentId || '').trim();
-        data.postId = xss.sanitize(param.postId || '').trim();
-        data.commentAuthor = xss.sanitize(param.commentUser || '').trim() || user.userDisplayName || '';
-        data.commentAuthorEmail = xss.sanitize(param.commentEmail || '').trim() || user.userEmail || '';
-        data.commentAuthorLink = xss.sanitize(param.commentLink || '').trim() || '';
+        data.commentContent = util.trim(xss.sanitize(param.commentContent));
+        data.parentId = util.trim(xss.sanitize(param.parentId));
+        data.postId = util.trim(xss.sanitize(param.postId));
+        data.commentAuthor = util.trim(xss.sanitize(param.commentUser)) || user.userDisplayName || '';
+        data.commentAuthorEmail = util.trim(xss.sanitize(param.commentEmail)) || user.userEmail || '';
+        data.commentAuthorLink = util.trim(xss.sanitize(param.commentLink));
         data.commentStatus = isAdmin ? 'normal' : 'pending';
         data.commentIp = req.ip || req._remoteAddress;// TODO:nginx代理前的IP
         data.commentAgent = req.headers['user-agent'];
@@ -40,9 +44,6 @@ module.exports = {
             commentId = '';
         }
         if (!data.postId || !idReg.test(data.postId)) {
-            data.postId = '';
-        }
-        if (!data.postId) {
             return util.catchError({
                 status: 200,
                 code: 400,
@@ -56,7 +57,7 @@ module.exports = {
                 message: '昵称不能为空'
             }, next);
         }
-        if (!/^[\da-zA-Z]+[\da-zA-Z_\.\-]*@[\da-zA-Z_\-]+\.[\da-zA-Z_\-]+$/i.test(data.commentAuthorEmail)) {
+        if (!/^[\da-zA-Z]+[\da-zA-Z_.\-]*@[\da-zA-Z_\-]+\.[\da-zA-Z_\-]+$/i.test(data.commentAuthorEmail)) {
             return util.catchError({
                 status: 200,
                 code: 400,
@@ -108,9 +109,9 @@ module.exports = {
                 if (!commentId) {
                     data.commentId = util.getUuid();
                     data.commentCreatedGmt = data.commentModifiedGmt = new Date();
-                    models.Comment.create(data).then((comment) => cb(null, comment));
+                    Comment.create(data).then((comment) => cb(null, comment));
                 } else {
-                    models.Comment.update(data, {
+                    Comment.update(data, {
                         where: {
                             commentId
                         }
@@ -181,7 +182,7 @@ module.exports = {
         }
         async.auto({// TODO: transaction
             comment: (cb) => {
-                models.Comment.update({
+                Comment.update({
                     commentVote
                 }, {
                     where: {
@@ -194,12 +195,12 @@ module.exports = {
             },
             vote: (cb) => {
                 data.voteId = util.getUuid();
-                models.Vote.create(data).then((vote) => {
+                Vote.create(data).then((vote) => {
                     cb(null, vote);
                 });
             },
             commentVote: ['comment', function (result, cb) {
-                models.Comment.findById(data.objectId, {
+                Comment.findById(data.objectId, {
                     attributes: ['commentId', 'commentVote']
                 }).then(function (comment) {
                     cb(null, comment);
@@ -244,13 +245,13 @@ module.exports = {
         async.auto({
             options: common.getInitOptions,
             commentsCount: (cb) => {
-                models.Comment.count({
+                Comment.count({
                     where
                 }).then((data) => cb(null, data));
             },
             comments: ['commentsCount', (result, cb) => {
                 page = (page > result.commentsCount / 10 ? Math.ceil(result.commentsCount / 10) : page) || 1;
-                models.Comment.findAll({
+                Comment.findAll({
                     where,
                     attributes: ['commentId', 'postId', 'commentContent', 'commentStatus', 'commentAuthor', 'commentAuthorEmail', 'commentIp', 'commentCreated', 'commentModified', 'commentVote'],
                     include: [{
@@ -264,7 +265,7 @@ module.exports = {
                 }).then((comments) => cb(null, comments));
             }],
             typeCount: (cb) => {
-                models.Comment.findAll({
+                Comment.findAll({
                     attributes: [
                         'commentStatus',
                         ['count(1)', 'count']
@@ -291,7 +292,7 @@ module.exports = {
                 formatter,
                 moment
             };
-            resData.paginator = util.paginator(page, Math.ceil(result.commentsCount / 10), 9);
+            resData.paginator = util.paginator(page, Math.ceil(result.commentsCount / 10), pagesOut);
             resData.paginator.linkUrl = '/admin/comment/page-';
             resData.paginator.linkParam = paramArr.length > 0 ? '?' + paramArr.join('&') : '';
             resData.paginator.pageLimit = 10;
@@ -327,7 +328,7 @@ module.exports = {
         async.parallel({
             options: common.getInitOptions,
             comment: function (cb) {
-                models.Comment.findById(commentId, {
+                Comment.findById(commentId, {
                     attributes: ['commentId', 'postId', 'commentContent', 'commentStatus', 'commentAuthor', 'commentAuthorEmail', 'commentIp', 'commentCreated', 'commentModified'],
                     include: [{
                         model: models.Post,
@@ -388,7 +389,7 @@ module.exports = {
         };
         data.commentStatus = statusMap[param.action];
 
-        models.Comment.update(data, {
+        Comment.update(data, {
             where: {
                 commentId
             }

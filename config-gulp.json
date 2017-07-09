@@ -8,6 +8,7 @@
   "pathJsPluginSrc": "js/plugins",
   "pathJsPluginDist": "js",
   "pathJsDevAdmin": "js/admin",
+  "pathJsDevWeb": "js/web",
   "pathStyle": "style",
   "pathLess": "style/less",
   "pathCss": "style/css",

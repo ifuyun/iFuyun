@@ -1,14 +1,10 @@
 /*global $*/
-var service = {
-    addFile: function () {
-
-    },
+const service = {
     upload: function (file) {
-        var fd,
-            $form = $('#form-media');
-
-        fd = new FormData();
+        const $form = $('#form-media');
+        const fd = new FormData();
         fd.append('mediafile', file);
+        fd.append('uploadCloud', $('#uploadCloud').is(':checked') ? 1 : 0);
 
         $.ajax({
             type: 'post',
@@ -30,32 +26,38 @@ var service = {
             //     }
             // },
             xhr: function () {
-                var xhr = $.ajaxSettings.xhr();
+                const xhr = $.ajaxSettings.xhr();
                 xhr.upload.addEventListener('progress', function (e) {
-                    var progress = 0;
-                    if (e.lengthComputable) {
-                        progress = (e.loaded / file.size * 100).toFixed(2);
-                    }
-                    console.log(progress);
+                    // let progress = 0;
+                    // if (e.lengthComputable) {
+                    //     progress = (e.loaded / file.size * 100).toFixed(2);
+                    // }
+                    // console.log(progress);
                 }, false);
                 return xhr;
             },
-            success: function (d, s, xhr) {
+            success: function (d) {
                 if (d.status === 200 && d.code === 0) {
                     alert('upload success');
                 } else {
                     alert('upload error');
                 }
             },
-            error: function (xhr, s, err) {
+            error: function () {
                 return false;
             }
         });
         return false;
     },
     initEvent: function () {
-        $('#mediafile').on('change', function (e) {
-            service.upload(e.target.files[0]);
+        let file;
+        $('#mediafile').on('change', (e) => {
+            file = e.target.files[0];
+            $('#filename').html(file.name);
+        });
+        $('#form-media').on('submit', function () {
+            service.upload(file);
+            return false;
         });
     }
 };

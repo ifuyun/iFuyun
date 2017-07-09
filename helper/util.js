@@ -1,4 +1,4 @@
-/*jslint nomen:true*/
+/* jslint nomen:true */
 /**
  * 工具类
  * @module util
@@ -25,28 +25,30 @@ module.exports = {
      * @since 1.0.0
      */
     formatPages: function (page, pages, pagesOut) {
-        var pageData = {
+        let pageData = {
             start: 1,
             end: 1
-        }, floorPage, ceilPage;
+        };
+        let floorPage;
+        let ceilPage;
         // page = page || 1;
         // pages = pages || 1;
         // pagesOut = pagesOut || 9;
-        //中间页
+        // 中间页
         floorPage = Math.floor((pagesOut + 1) / 2);
-        //中间页到两边的间距页数，偶数情况距离低页再减一，距离高页不变
+        // 中间页到两边的间距页数，偶数情况距离低页再减一，距离高页不变
         ceilPage = Math.ceil((pagesOut - 1) / 2);
 
-        if (pages <= pagesOut) {//总页数小于一屏输出页数
+        if (pages <= pagesOut) {// 总页数小于一屏输出页数
             pageData.start = 1;
             pageData.end = pages;
-        } else if (page <= floorPage) {//第一屏
+        } else if (page <= floorPage) {// 第一屏
             pageData.start = 1;
             pageData.end = pagesOut;
-        } else if (page > floorPage && (page + ceilPage) <= pages) {//非第一屏，且非最后一屏
+        } else if (page > floorPage && (page + ceilPage) <= pages) {// 非第一屏，且非最后一屏
             pageData.start = page - ceilPage + (pagesOut + 1) % 2;
             pageData.end = page + ceilPage;
-        } else {//最后一屏
+        } else {// 最后一屏
             pageData.start = pages - pagesOut + 1;
             pageData.end = pages;
         }
@@ -66,9 +68,10 @@ module.exports = {
      * @since 1.0.0
      */
     paginator: function (page, pages, pagesOut) {
-        var pageData, data;
+        let pageData;
+        let data;
 
-        if (typeof page === 'string') {//page是字符串
+        if (typeof page === 'string') {// page是字符串
             page = parseInt(page, 10);
         }
         page = page || 1;
@@ -121,7 +124,7 @@ module.exports = {
      * @since 1.0.0
      */
     getMonthName: function (month) {
-        var monthNames = {
+        const monthNames = {
             '1': '一月',
             '2': '二月',
             '3': '三月',
@@ -147,26 +150,29 @@ module.exports = {
      * @method cutStr
      * @static
      * @param {String} srcStr 源字符串
-     * @param {Number} 指定长度
+     * @param {Number} cutLength 指定长度
      * @return {String} 截取结果字符串
      * @author Fuyun
      * @version 1.0.0
      * @since 1.0.0
      */
     cutStr: function (srcStr, cutLength) {
-        var resultStr = '', i = 0, n = 0, curChar;
+        let resultStr;
+        let i = 0;
+        let n = 0;
+        let curChar;
 
         srcStr = srcStr || '';
         srcStr = typeof srcStr === 'string' ? srcStr : '';
 
         while (n < cutLength && i < srcStr.length) {
             curChar = srcStr.charCodeAt(i);
-            if (curChar >= 192 || (curChar >= 65 && curChar <= 90)) {//中文和大写字母计为1个
+            if (curChar >= 192 || (curChar >= 65 && curChar <= 90)) {// 中文和大写字母计为1个
                 n += 1;
                 if (n <= cutLength) {
                     i += 1;
                 }
-            } else {//其余字符计为半个
+            } else {// 其余字符计为半个
                 n += 0.5;
                 i += 1;
             }
@@ -202,7 +208,8 @@ module.exports = {
      * @since 1.0.0
      */
     getRemoteIp: function (req) {
-        return req.headers['x-real-ip'] || req.headers['x-forwarded-for'] || req.ip || req._remoteAddress || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress;
+        return req.headers['x-real-ip'] || req.headers['x-forwarded-for'] || req.ip ||
+            req._remoteAddress || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress;
     },
     /**
      * 获取请求类型
@@ -288,7 +295,7 @@ module.exports = {
      * @static
      * @param {Object} res 响应对象
      * @param {String} field 响应头字段名
-     * @return {Array|String} 指定的响应头字段值
+     * @return {*} 指定的响应头字段值
      * @author Fuyun
      * @version 1.0.0
      * @since 1.0.0
@@ -297,9 +304,7 @@ module.exports = {
         if (!res._header) {
             return;
         }
-
-        var header = res.getHeader(field);
-
+        const header = res.getHeader(field);
         return Array.isArray(header) ? header.join(', ') : header;
     },
     /**
@@ -350,13 +355,13 @@ module.exports = {
      *      {Number}[status=404] HTTP状态码
      *      {Number}[code=404] 错误码
      *      {String}[message='Page Not Found'] 错误消息
-     * @param {Object} next 路由对象
-     * @return {Error} 错误对象
+     * @param {Function} next 路由对象
+     * @return {Object} 错误对象
      * @author Fuyun
      * @version 1.0.0
      * @since 1.0.0
      */
-    catchError: function (msgObj, next) {
+    catchError: function (msgObj, next = null) {
         msgObj.message = msgObj.message || 'Page Not Found';
         msgObj.status = msgObj.status || 404;
         msgObj.code = msgObj.code || 404;
@@ -376,7 +381,7 @@ module.exports = {
      * @since 1.0.0
      */
     md5: function (str) {
-        var md5sum = crypto.createHash('md5');
+        let md5sum = crypto.createHash('md5');
         md5sum.update(str);
         return md5sum.digest('hex');
     },
@@ -386,7 +391,7 @@ module.exports = {
      * @static
      * @param {String|Array} titleArr 标题数组
      * @param {String} [delimiter=' - '] 分隔符
-     * @return {String} 拼接结果字符串
+     * @return {String} 拼接后的字符串
      * @author Fuyun
      * @version 1.0.0
      * @since 1.0.0
@@ -408,15 +413,20 @@ module.exports = {
      * @static
      * @return {String} ID
      * @author Fuyun
-     * @version 1.0.0(2014-06-18)
+     * @version 2.0.0(2014-06-18)
      * @since 1.0.0(2014-06-17)
      */
     getUuid: function () {
-        //1e12 + 0x4ba0000000
-        var timeStamp = new Date().getTime() - 1324806901760, uuid = timeStamp.toString(16), idx = 0, tmpStr = '';
+        // 1e12 + 0x4ba0000000
+        const idLen = 16;
+        const hex = 16;
+        const timeBased = 1324806901760;// 2011-12-25 17:55:01
+        const timeStamp = new Date().getTime() - timeBased;
+        const uuid = timeStamp.toString(hex);
+        let tmpStr = '';
 
-        for (idx = 0; idx < 16 - uuid.length; idx += 1) {
-            tmpStr += Math.floor(Math.random() * 16).toString(16);
+        for (let idx = 0; idx < idLen - uuid.length; idx += 1) {
+            tmpStr += Math.floor(Math.random() * hex).toString(hex);
         }
 
         return uuid + tmpStr;
@@ -432,8 +442,7 @@ module.exports = {
      * @since 1.0.0
      */
     isEmptyObject: function (obj) {
-        var name;
-        for (name in obj) {
+        for (let name in obj) {
             if (obj.hasOwnProperty(name)) {
                 return false;
             }
@@ -444,7 +453,7 @@ module.exports = {
      * 判断数组是否含有指定元素
      * @method inArray
      * @static
-     * @param {mixed} elem 元素
+     * @param {*} elem 元素
      * @param {Array} arr 数组
      * @param {Number} i 判断起始位置
      * @return {Number} 判断结果：找到返回所在位置，否则返回-1
@@ -453,9 +462,8 @@ module.exports = {
      * @since 1.0.0
      */
     inArray: function (elem, arr, i) {
-        var len;
         if (arr) {
-            len = arr.length;
+            const len = arr.length;
             i = i ? i < 0 ? Math.max(0, len + i) : i : 0;
 
             while (i < len) {
@@ -473,7 +481,7 @@ module.exports = {
      * 判断是否数组
      * @method isArray
      * @static
-     * @param {mixed} obj 任意对象
+     * @param {*} obj 任意对象
      * @return {Boolean} 判断结果：数组返回true，非数组返回false
      * @author Fuyun
      * @version 1.0.0
@@ -481,6 +489,18 @@ module.exports = {
      */
     isArray: function (obj) {
         return Object.prototype.toString.call(obj) === '[object Array]';
+    },
+    /**
+     * 去除头尾空白字符
+     * @method trim
+     * @static
+     * @param {String|Undefined} str 源字符串
+     * @return {String} 处理后的字符串
+     * @version 2.0.0
+     * @since 2.0.0
+     */
+    trim: function (str) {
+        return str ? str.trim() : '';
     },
     /**
      * 判断是否已登录
@@ -493,7 +513,7 @@ module.exports = {
      * @since 1.0.0
      */
     isLogin: function (req) {
-        var curUser = req.session.user;
+        const curUser = req.session.user;
         return curUser ? !!curUser : false;
     },
     /**
@@ -507,7 +527,7 @@ module.exports = {
      * @since 1.0.0
      */
     isAdminUser: function (req) {
-        var curUser = req.session.user;
+        const curUser = req.session.user;
         return this.isLogin(req) && curUser.usermeta && curUser.usermeta.role === 'admin';
     },
     /**
@@ -528,7 +548,7 @@ module.exports = {
         // msg: ''
         // };
         // IP - "UserAgent" - "Function: function, Param: {"a":"b","c":"d"}, Error: some error"
-        var errStr = '';
+        let errStr = '';
 
         errStr += this.getAccessUser(logObj.req);
         errStr += ' - "Function: ' + logObj.funcName + ', Param: ' + JSON.stringify(logObj.funcParam) + ', Error: ' + logObj.msg + '"';
@@ -546,7 +566,7 @@ module.exports = {
      * @since 2.2.0
      */
     getInfoLog: function (logObj) {
-        var logStr = '';
+        let logStr = '';
 
         logStr += this.getAccessUser(logObj.req);
         logStr += ' - "Function: ' + logObj.funcName + ', Param: ' + JSON.stringify(logObj.funcParam) + ', Msg: ' + logObj.msg + '"';

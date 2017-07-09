@@ -1,8 +1,8 @@
 /*global $*/
 $(function () {
-    //分类目录列表
+    // 分类目录列表
     $('.btn-delete').on('click', function () {
-        var $that = $(this);
+        const $that = $(this);
         $.ajax({
             type: 'post',
             url: '/admin/taxonomy/remove?type=' + $that.data('type'),
@@ -28,24 +28,24 @@ $(function () {
         return false;
     });
 
-    //分类目录表单
+    // 分类目录表单
     $('#cat-name').focus();
-    $('#form-category').on('submit', function(e){
-        var $that = $(this);
+    $('#form-category').on('submit', function () {
+        const $that = $(this);
         $.ajax({
             type: 'post',
             url: $that.attr('action'),
             data: $that.serialize(),
             dataType: 'json',
-            success: function (d, s, xhr) {
-                if(d.code === 0){
+            success: function (d) {
+                if (d.code === 0) {
                     location.href = d.data.url;
                 } else {
                     $('#csrfToken').val(d.token);
                     alert(d.message);
                 }
             },
-            error: function (xhr, s, err) {
+            error: function () {
                 return false;
             }
         });

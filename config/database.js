@@ -1,3 +1,4 @@
+/*global process*/
 /**
  * 数据库配置
  * @module cfg_database
@@ -5,22 +6,22 @@
  * @version 3.0.0
  * @since 1.0.0
  */
-const credential = require('./credentials');
+const credentials = require('./credentials');
 const logger = require('../helper/logger').dbLog;
 module.exports = {
-    use_env_variable: (process.env.ENV && process.env.ENV.trim()) || 'development',
-    //TODO: to be removed.
+    'use_env_variable': (process.env.ENV && process.env.ENV.trim()) || 'development',
+    // TODO: to be removed.
     ifuyun: {
         host: 'localhost',
         port: '3306',
-        user: credential.db.development.username,
-        password: credential.db.development.password,
+        user: credentials.db.development.username,
+        password: credentials.db.development.password,
         database: 'ifuyun',
         charset: 'UTF8_GENERAL_CI'
     },
     development: {
-        username: credential.db.development.username,
-        password: credential.db.development.password,
+        username: credentials.db.development.username,
+        password: credentials.db.development.password,
         database: 'ifuyun',
         host: 'localhost',
         dialect: 'mysql',
@@ -30,13 +31,13 @@ module.exports = {
             min: 0,
             idle: 30000
         },
-        logging: function (sql) {
+        logging: function(sql) {
             logger.info(sql);
         }
     },
     production: {
-        username: credential.db.production.username,
-        password: credential.db.production.password,
+        username: credentials.db.production.username,
+        password: credentials.db.production.password,
         database: 'ifuyun',
         host: 'localhost',
         dialect: 'mysql',
@@ -46,7 +47,7 @@ module.exports = {
             min: 0,
             idle: 30000
         },
-        logging: function (sql) {
+        logging: function(sql) {
             logger.info(sql);
         }
     }

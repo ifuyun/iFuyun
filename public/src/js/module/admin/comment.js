@@ -1,6 +1,6 @@
 /*global $*/
 $(function () {
-    //评论列表
+    // 评论列表
     function sendAction(action, commentId) {
         $.ajax({
             type: 'post',
@@ -43,10 +43,10 @@ $(function () {
         return false;
     });
 
-    //评论表单
+    // 评论表单
     $('.j-focus:first').focus();
-    $('#form-comment').on('submit', function (e) {
-        var $that = $(this);
+    $('#form-comment').on('submit', function () {
+        const $that = $(this);
         $.ajax({
             type: 'post',
             url: $that.attr('action'),

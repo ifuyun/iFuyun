@@ -31,8 +31,8 @@ module.exports = function (app, router) {
 
     router.get('/media', post.listMedia);
     router.get('/media/page-:page', post.listMedia);
-    router.get('/media/detail', post.editMedia);
-    // router.post('/media/upload', post.uploadFile);
+    router.get('/media/create', post.createMedia);
+    router.post('/media/upload', post.uploadFile);
 
     router.get('/comment', comment.listComments);
     router.get('/comment/page-:page', comment.listComments);
@@ -53,7 +53,7 @@ module.exports = function (app, router) {
     router.post('/link/save', link.saveLink);
     router.post('/link/remove', link.removeLink);
 
-    router.get('/settings', admin.settings);// general writing reading discussion
+    router.get('/settings', admin.settings);
     router.post('/settings', admin.saveSettings);
 
     return router;

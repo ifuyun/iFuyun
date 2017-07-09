@@ -1,23 +1,23 @@
-/*global $*/
+/*global $,hljs*/
 /* jslint nomen:true */
 require('../../vendor/jquery.poshytip.min');
-// require('../../vendor/highlight.pack');
-// const hljs = require('highlight.js');
 require('../../vendor/jquery.qrcode.min');
 
-var service,
-    popup = require('../../lib/dialog');
+let service;
+const popup = require('../../lib/dialog');
+const $qrcodeShare = $('#qrcodeShare');
+const $qrcodeReward = $('#qrcodeReward');
 
 service = {
     initEvent: function () {
-        $('body').on('submit', '.j-form-comment', function (e) {
-            var $that = $(this);
+        $('body').on('submit', '.j-form-comment', function () {
+            const $that = $(this);
             $.ajax({
                 type: 'post',
                 url: $that.attr('action'),
                 data: $that.serialize(),
                 dataType: 'json',
-                success: function (d, s, xhr) {
+                success: function (d) {
                     if (d.code === 0) {
                         if (d.data.commentFlag === 'verify') {
                             popup.alert({
@@ -34,13 +34,13 @@ service = {
                         popup.alert(d.message);
                     }
                 },
-                error: function (xhr, s, err) {
+                error: function () {
                     return false;
                 }
             });
             return false;
-        }).on('click', '.j-vote-up', function (e) {
-            var that = this;
+        }).on('click', '.j-vote-up', function () {
+            const that = this;
             $.ajax({
                 type: 'post',
                 url: '/post/comment/vote',
@@ -50,7 +50,7 @@ service = {
                     _csrf: $('.csrfToken').val()
                 },
                 dataType: 'json',
-                success: function (d, s, xhr) {
+                success: function (d) {
                     $('.csrfToken').val(d.token);
                     if (d.code === 0) {
                         $(that).find('.j-vote-count').html(d.data.commentVote);
@@ -58,21 +58,22 @@ service = {
                         popup.alert(d.message);
                     }
                 },
-                error: function (xhr, s, err) {
+                error: function () {
                     return false;
                 }
             });
             return false;
-        }).on('mouseover', '#btnShare', function (e) {
-            $('#qrcodeShare').show();
-        }).on('mouseout', '#btnShare', function (e) {
-            $('#qrcodeShare').hide();
-        }).on('mouseover', '#btnReward', function (e) {
-            $('#qrcodeReward').show();
-        }).on('mouseout', '#btnReward', function (e) {
-            $('#qrcodeReward').hide();
-        }).on('click', '#postContent img', function (e) {
-            var $that = $(this), $cloneImg = $that.clone(false);
+        }).on('mouseover', '#btnShare', function () {
+            $qrcodeShare.show();
+        }).on('mouseout', '#btnShare', function () {
+            $qrcodeShare.hide();
+        }).on('mouseover', '#btnReward', function () {
+            $qrcodeReward.show();
+        }).on('mouseout', '#btnReward', function () {
+            $qrcodeReward.hide();
+        }).on('click', '#postContent img', function () {
+            const $that = $(this);
+            const $cloneImg = $that.clone(false);
             popup.custom({
                 title: ' ',
                 content: $cloneImg,
@@ -95,13 +96,13 @@ service = {
 $(function () {
     service.initEvent();
     hljs.initHighlightingOnLoad();
-    $('#qrcodeShare').qrcode({
+    $qrcodeShare.qrcode({
         width: 150,
         height: 150,
         foreground: '#5f5f5f',
-        text: $('#qrcodeShare').attr('data-url')
+        text: $qrcodeShare.attr('data-url')
     });
-    $('#qrcodeReward').qrcode({
+    $qrcodeReward.qrcode({
         width: 150,
         height: 150,
         foreground: '#5f5f5f',
