@@ -15,10 +15,12 @@ const common = require('./common');
 const appConfig = require('../config/core');
 const util = require('../helper/util');
 const formatter = require('../helper/formatter');
+const uploader = require('./upload');
+const credentials = require('../config/credentials');
 const logger = require('../helper/logger').sysLog;
 const idReg = /^[0-9a-fA-F]{16}$/i;
 const pagesOut = 9;
-const {Post, User} = models;
+const {Post, User, Postmeta} = models;
 
 /**
  * 查询公共数据
@@ -83,6 +85,12 @@ function queryPostsByIds(posts, postIds, cb) {
         posts.forEach((post) => {
             let tags = [];
             let categories = [];
+            if (post.Postmeta) {
+                post.meta = {};
+                post.Postmeta.forEach((u) => {
+                    post.meta[u.metaKey] = u.metaValue;
+                });
+            }
             data.forEach((u) => {
                 if (u.taxonomy === 'tag') {
                     u.TermRelationships.forEach((v) => {
@@ -124,6 +132,9 @@ function queryPosts(param, cb) {
         include: [{
             model: User,
             attributes: ['userDisplayName']
+        }, {
+            model: Postmeta,
+            attributes: ['metaKey', 'metaValue']
         }],
         order: [['postCreated', 'desc'], ['postDate', 'desc']],
         limit: 10,
@@ -1458,6 +1469,9 @@ module.exports = {
             }));
         });
         form.parse(req, function (err, fields, files) {
+            if (err) {
+                return next(err);
+            }
             let fileExt = files.mediafile.name.split('.');
             if (fileExt.length > 1) {
                 fileExt = '.' + fileExt.pop();
@@ -1478,63 +1492,90 @@ module.exports = {
             fileData.postGuid = '/static/' + curYear + '/' + curMonth + '/' + filename;
             fileData.postModifiedGmt = fileData.postDateGmt = fileData.postDate = nowTime;
 
-            models.sequelize.transaction(function (t) {
-                let tasks = {
-                    checkGuid: function (cb) {
-                        let where = {
-                            postGuid: fileData.postGuid
+            const saveDb = function (cloudPath) {
+                models.sequelize.transaction(function (t) {
+                    let tasks = {
+                        checkGuid: function (cb) {
+                            const where = {
+                                postGuid: fileData.postGuid
+                            };
+                            Post.count({
+                                where
+                            }).then((count) => cb(null, count));
+                        },
+                        post: ['checkGuid', function (result, cb) {
+                            if (result.checkGuid > 0) {
+                                return cb('URL已存在');
+                            }
+                            Post.create(fileData, {
+                                transaction: t
+                            }).then((post) => cb(null, post));
+                        }]
+                    };
+                    if (cloudPath) {
+                        tasks.postMeta = (cb) => {
+                            Postmeta.create({
+                                metaId: util.getUuid(),
+                                postId: fileData.postId,
+                                metaKey: 'cloudPath',
+                                metaValue: cloudPath
+                            }, {
+                                transaction: t
+                            }).then((postMeta) => cb(null, postMeta));
                         };
-                        Post.count({
-                            where
-                        }).then((count) => cb(null, count));
-                    },
-                    post: ['checkGuid', function (result, cb) {
-                        if (result.checkGuid > 0) {
-                            return cb('URL已存在');
-                        }
-                        Post.create(fileData, {
-                            transaction: t
-                        }).then((post) => cb(null, post));
-                    }]
-                };
-                // 需要返回promise实例
-                return new Promise((resolve, reject) => {
-                    async.auto(tasks, function (err, result) {
-                        if (err) {
-                            reject(new Error(err));
-                        } else {
-                            resolve(result);
+                    }
+                    // 需要返回promise实例
+                    return new Promise((resolve, reject) => {
+                        async.auto(tasks, function (err, result) {
+                            if (err) {
+                                reject(new Error(err));
+                            } else {
+                                resolve(result);
+                            }
+                        });
+                    });
+                }).then(() => {
+                    delete req.session.referer;
+                    res.set('Content-type', 'application/json');
+                    res.send({
+                        status: 200,
+                        code: 0,
+                        message: null,
+                        data: {
+                            url: '/admin/media'
                         }
                     });
+                }, (err) => {
+                    next({
+                        status: 200,
+                        code: 500,
+                        message: err.message || err
+                    });
                 });
-            }).then(() => {
-                delete req.session.referer;
-                res.set('Content-type', 'application/json');
-                res.send({
-                    status: 200,
-                    code: 0,
-                    message: null,
-                    data: {
-                        url: '/admin/media'
-                    }
-                });
-            }, (err) => {
-                next({
-                    status: 200,
-                    code: 500,
-                    message: err.message || err
-                });
-            });
 
-            logger.info(util.getInfoLog({
-                req: req,
-                funcName: 'uploadFile',
-                funcParam: {
-                    uploadPath: uploadPath,
-                    filename: files.mediafile.name
-                },
-                msg: 'Upload file: ' + filename
-            }));
+                logger.info(util.getInfoLog({
+                    req: req,
+                    funcName: 'uploadFile',
+                    funcParam: {
+                        uploadPath: uploadPath,
+                        filename: files.mediafile.name
+                    },
+                    msg: 'Upload file: ' + filename
+                }));
+            };
+            if (fields.uploadCloud === '1') {
+                uploader.init({
+                    appKey: credentials.appKey,
+                    appSecret: credentials.appSecret,
+                    appAccessKey: credentials.appAccessKey,
+                    appSecretKey: credentials.appSecretKey,
+                    bucket: credentials.bucket,
+                    trunkSize: 4 * 1024 * 1024
+                });
+                uploader.upload(filepath, saveDb);
+            } else {
+                saveDb();
+            }
         });
     }
 };

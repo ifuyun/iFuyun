@@ -4,7 +4,7 @@ const service = {
         const $form = $('#form-media');
         const fd = new FormData();
         fd.append('mediafile', file);
-        fd.append('uploadCloud', $('#uploadCloud').is(':checked'));
+        fd.append('uploadCloud', $('#uploadCloud').is(':checked') ? 1 : 0);
 
         $.ajax({
             type: 'post',

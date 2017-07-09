@@ -10,7 +10,7 @@ const request = require('request');
 const sqlite3 = require('sqlite3').verbose();
 const log4js = require('log4js');
 const crypto = require('crypto');
-const uploader = uploads();
+let uploader;
 let db;
 let fd;
 let filepath;
@@ -56,6 +56,7 @@ function createTable() {
         'nosObject VARCHAR(256)',
         'nosToken TEXT',
         'created INTEGER'];
+    uploader = uploads();
     db.run('CREATE TABLE IF NOT EXISTS files (' + columns.join(',') + ')', () => uploader.next());
 }
 
@@ -374,6 +375,9 @@ function * uploads() {
         yield removeFile(fileData);
         logger.info('upload success.');
         logger.info(`File path: /${initData.nosBucket}/${initData.nosObject}`);
+        if (typeof config.onSuccess === 'function') {
+            config.onSuccess(`/${initData.nosBucket}/${initData.nosObject}`);
+        }
     } catch (e) {
         logger.error(e);
     }
@@ -411,10 +415,13 @@ function init(conf) {
  * @param {String} filePath 上传文件路径（相对路径或绝对路径）
  * @return {*} null
  */
-function upload(filePath) {
+function upload(filePath, cb) {
     if (!config.appKey || !config.appSecret) {
         logger.error('appKey或appSecret无效。');
         return false;
+    }
+    if (typeof cb === 'function') {
+        config.onSuccess = cb;
     }
     filepath = filePath;
     fs.open(filePath, 'r', (err, result) => {
