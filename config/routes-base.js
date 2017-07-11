@@ -6,7 +6,7 @@
  * @static
  * @requires cfg_core, m_base, util, m_option
  * @author Fuyun
- * @version 3.0.0
+ * @version 2.0.0
  * @since 1.0.0
  */
 const appConfig = require('./core');
@@ -29,7 +29,6 @@ module.exports = {
         const rememberMe = req.cookies.rememberMe;
         const curUser = req.session.user;
         res.locals.isLogin = curUser ? !!curUser : false;
-        // res.locals.staticEnv = process.env.ENV && process.env.ENV.trim() === 'production' ? 'dist' : 'dev';
         if (res.locals.isLogin && rememberMe && rememberMe === '1') {// 2015-07-28：不能regenerate，否则将导致后续请求无法设置session
             req.session.cookie.expires = new Date(Date.now() + appConfig.cookieExpires);
             req.session.cookie.maxAge = appConfig.cookieExpires;

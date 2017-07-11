@@ -44,6 +44,11 @@ function getCommonData(param, cb) {
         options: common.getInitOptions
     }, function (err, result) {
         if (err) {
+            logger.error(formatOpLog({
+                fn: 'getCommonData',
+                msg: err.message,
+                data: param
+            }));
             cb(err);
         } else {
             cb(null, result);
@@ -255,6 +260,14 @@ module.exports = {
             comments: ['posts', (result, cb) => common.getCommentCountByPosts(result.posts, cb)]
         }, function (err, result) {
             if (err) {
+                logger.error(formatOpLog({
+                    fn: 'listPosts',
+                    msg: err.message,
+                    data: {
+                        where
+                    },
+                    req
+                }));
                 return next(err);
             }
             let resData = {
@@ -297,6 +310,11 @@ module.exports = {
     showPost: function (req, res, next) {
         const postId = req.params.postId;
         if (!postId || !/^[0-9a-fA-F]{16}$/i.test(postId)) {// 不能抛出错误，有可能是/page
+            logger.warn(formatOpLog({
+                fn: 'showPost',
+                msg: `Post: ${postId} is not a post, will redirect to next.`,
+                req
+            }));
             return next();
         }
         async.auto({
@@ -326,10 +344,7 @@ module.exports = {
                     if (!post || !post.postId) {
                         logger.error(formatOpLog({
                             fn: 'showPost',
-                            msg: 'Post Not Exist.',
-                            data: {
-                                postId: post.postId
-                            },
+                            msg: `Post: ${postId} Not Exist.`,
                             req
                         }));
                         return cb(util.catchError({
@@ -342,12 +357,7 @@ module.exports = {
                     if (!util.isAdminUser(req) && post.postStatus !== 'publish') {
                         logger.warn(formatOpLog({
                             fn: 'showPost',
-                            msg: post.postTitle + ' is ' + post.postStatus,
-                            data: {
-                                postId: post.postId,
-                                postTitle: post.postTitle,
-                                postStatus: post.postStatus
-                            },
+                            msg: `[Unauthorized]${post.postId}: ${post.postTitle} is ${post.postStatus}`,
                             req
                         }));
                         return cb(util.catchError({
@@ -379,7 +389,11 @@ module.exports = {
                             },
                             req
                         }));
-                        return cb('Category Not Exist.');
+                        return cb(util.catchError({
+                            status: 404,
+                            code: 500,
+                            message: 'Page Not Found.'
+                        }));
                     }
                     cb(null, common.getCategoryPath({
                         catData: result.commonData.categories.catData,
@@ -390,9 +404,11 @@ module.exports = {
             nextPost: (cb) => common.getNextPost(postId, cb)
         }, function (err, result) {
             if (err) {
-                if (err.code === 404) {
-                    return next();
-                }
+                logger.error(formatOpLog({
+                    fn: 'showPost',
+                    msg: err.message,
+                    req
+                }));
                 return next(err);
             }
             let resData = {
@@ -460,14 +476,11 @@ module.exports = {
                     where: {
                         postGuid: decodeURIComponent(reqPath)
                     }
-                }).then(function (result) {
-                    if (!result || !result.postId) {
+                }).then(function (post) {
+                    if (!post || !post.postId) {
                         logger.error(formatOpLog({
                             fn: 'showPage',
-                            msg: 'Post Not Exist.',
-                            data: {
-                                pageUrl: reqPath
-                            },
+                            msg: `Post: ${reqPath} Not Exist.`,
                             req
                         }));
                         return cb(util.catchError({
@@ -477,15 +490,10 @@ module.exports = {
                         }));
                     }
                     // 无管理员权限不允许访问非公开文章(包括草稿)
-                    if (!util.isAdminUser(req) && result.postStatus !== 'publish') {
+                    if (!util.isAdminUser(req) && post.postStatus !== 'publish') {
                         logger.warn(formatOpLog({
                             fn: 'showPage',
-                            msg: result.postTitle + ' is ' + result.postStatus,
-                            data: {
-                                postId: result.postId,
-                                postTitle: result.postTitle,
-                                postStatus: result.postStatus
-                            },
+                            msg: `[Unauthorized]${post.postId}: ${post.postTitle} is ${post.postStatus}`,
                             req
                         }));
                         return cb(util.catchError({
@@ -494,12 +502,17 @@ module.exports = {
                             message: 'Page Not Found.'
                         }));
                     }
-                    cb(null, result);
+                    cb(null, post);
                 });
             },
             comments: ['post', (result, cb) => common.getCommentsByPostId(result.post.postId, cb)]
         }, function (err, result) {
             if (err) {
+                logger.error(formatOpLog({
+                    fn: 'showPage',
+                    msg: err.message,
+                    req
+                }));
                 return next(err);
             }
             let resData = {
