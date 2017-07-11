@@ -16,15 +16,6 @@ const service = {
                 'x-csrf-token': $('#csrfToken').val()
             },
             dataType: 'json',
-            // 此方式无效
-            // xhrFields: {
-            //     onsendstart: function () {
-            //         console.log(this.upload.onprogress);
-            //         this.upload.addEventListener('progress', function (e) {
-            //             console.log(1, e);
-            //         }, false);
-            //     }
-            // },
             xhr: function () {
                 const xhr = $.ajaxSettings.xhr();
                 xhr.upload.addEventListener('progress', function (e) {

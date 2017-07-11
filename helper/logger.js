@@ -1,4 +1,4 @@
-/*jslint nomen:true es5:true*/
+/* jslint nomen:true es5:true */
 /*global module*/
 /**
  * 日志工具类
@@ -11,6 +11,8 @@
  * @since 2.0.0
  */
 const log4js = require('log4js');
+const appConfig = require('../config/core');
+const util = require('./util');
 
 log4js.configure({
     appenders: [{
@@ -37,23 +39,85 @@ log4js.configure({
         pattern: '_yyyy-MM-dd.log',
         alwaysIncludePattern: true,
         category: 'db'
+    }, {
+        type: 'dateFile',
+        filename: 'logs/upload',
+        maxLogSize: 10485760,
+        backups: 5,
+        pattern: '_yyyy-MM-dd.log',
+        alwaysIncludePattern: true,
+        category: 'upload'
     }]
 });
 
+// ['ALL', 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL', 'OFF']
 module.exports = {
     /**
      * 访问日志
-     * @property accessLog
-     * @writeOnce
-     * @type {Object}
+     * @method accessLog
+     * @static
+     * @return {Object} 日志对象
      */
-    accessLog: log4js.getLogger('access'),
+    accessLog: function () {
+        const logger = log4js.getLogger('access');
+        logger.setLevel(appConfig.logLevel);
+        return logger;
+    },
     /**
      * 操作、系统日志
-     * @property sysLog
-     * @writeOnce
-     * @type {Object}
+     * @method sysLog
+     * @static
+     * @return {Object} 日志对象
      */
-    sysLog: log4js.getLogger('system'),
-    dbLog: log4js.getLogger('db')
+    sysLog: function () {
+        const logger = log4js.getLogger('system');
+        logger.setLevel(appConfig.logLevel);
+        return logger;
+    },
+    /**
+     * 数据库日志
+     * @method dbLog
+     * @static
+     * @return {Object} 日志对象
+     */
+    dbLog: function () {
+        const logger = log4js.getLogger('db');
+        logger.setLevel(appConfig.logLevel);
+        return logger;
+    },
+    /**
+     * 上传日志
+     * @method uploadLog
+     * @static
+     * @return {Object} 日志对象
+     */
+    uploadLog: function () {
+        const logger = log4js.getLogger('upload');
+        logger.setLevel(appConfig.logLevel);
+        return logger;
+    },
+    /**
+     * 格式化日志消息
+     * @method formatOpLog
+     * @static
+     * @param {Object} logObj 日志数据对象
+     *      {String}[fn] 函数名
+     *      {Object}[msg] 日志消息
+     *      {Object}[data] 日志数据
+     *      {Object}[req] 请求对象
+     * @return {String} 日志内容:"Function: function; Msg: some error; Data: {"a":"b","c":"d"}" - IP - "UserAgent"
+     * @author Fuyun
+     * @version 2.0.0
+     * @since 2.0.0
+     */
+    formatOpLog: function (logObj) {
+        let logStr = '';
+
+        logStr += '"Function: ' + (logObj.fn || '') + '; Msg: ' + (logObj.msg || '') + '; Data: ' + JSON.stringify(logObj.data || {}) + '"';
+        if (logObj.req) {
+            logStr += ' - ' + util.getAccessUser(logObj.req);
+        }
+
+        return logStr;
+    }
 };

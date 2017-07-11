@@ -3,22 +3,13 @@
  * 数据库配置
  * @module cfg_database
  * @author Fuyun
- * @version 3.0.0
+ * @version 2.0.0
  * @since 1.0.0
  */
 const credentials = require('./credentials');
 const logger = require('../helper/logger').dbLog;
 module.exports = {
     'use_env_variable': (process.env.ENV && process.env.ENV.trim()) || 'development',
-    // TODO: to be removed.
-    ifuyun: {
-        host: 'localhost',
-        port: '3306',
-        user: credentials.db.development.username,
-        password: credentials.db.development.password,
-        database: 'ifuyun',
-        charset: 'UTF8_GENERAL_CI'
-    },
     development: {
         username: credentials.db.development.username,
         password: credentials.db.development.password,
@@ -31,7 +22,7 @@ module.exports = {
             min: 0,
             idle: 30000
         },
-        logging: function(sql) {
+        logging: function (sql) {
             logger.info(sql);
         }
     },
@@ -47,7 +38,7 @@ module.exports = {
             min: 0,
             idle: 30000
         },
-        logging: function(sql) {
+        logging: function (sql) {
             logger.info(sql);
         }
     }
