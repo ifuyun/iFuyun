@@ -112,8 +112,18 @@ module.exports = {
      */
     formatOpLog: function (logObj) {
         let logStr = '';
+        let logData = [];
+        if (logObj.fn) {
+            logData.push('Function: ' + logObj.fn);
+        }
+        if (logObj.msg) {
+            logData.push('Msg: ' + logObj.msg);
+        }
+        if (logObj.data) {
+            logData.push('Data: ' + JSON.stringify(logObj.data));
+        }
 
-        logStr += '"Function: ' + (logObj.fn || '') + '; Msg: ' + (logObj.msg || '') + '; Data: ' + JSON.stringify(logObj.data || {}) + '"';
+        logStr += '"' + logData.join('; ') + '"';
         if (logObj.req) {
             logStr += ' - ' + util.getAccessUser(logObj.req);
         }

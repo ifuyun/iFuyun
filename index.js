@@ -39,7 +39,6 @@ if (cluster.isMaster) {
 
     cluster.on('exit', function (worker, code, signal) {
         logger.warn(formatOpLog({
-            fn: 'main',
             msg: `Worker ${worker.process.pid} exit.`,
             data: {
                 code,
@@ -48,7 +47,6 @@ if (cluster.isMaster) {
         }));
         process.nextTick(function () {
             logger.info(formatOpLog({
-                fn: 'main',
                 msg: 'New process is forking...'
             }));
             cluster.fork();
@@ -97,7 +95,6 @@ if (cluster.isMaster) {
     });
     app.use(function (req, res, next) {
         logger.trace(formatOpLog({
-            fn: 'main',
             msg: `Request [${req.url}] is processed by ${cluster.isWorker ? 'Worker' : 'Master'}: ${cluster.worker.id}`
         }));
         next();
@@ -107,7 +104,6 @@ if (cluster.isMaster) {
 
     if (require.main === module) {
         http.createServer(app).listen(config.port, config.host, () => logger.trace(formatOpLog({
-            fn: 'main',
             msg: `Server listening on: ${config.host}:${config.port}`
         })));
     }
