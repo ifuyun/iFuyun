@@ -11,7 +11,7 @@ const common = require('./common');
 const appConfig = require('../config/core');
 const util = require('../helper/util');
 const formatter = require('../helper/formatter');
-const logger = require('../helper/logger').sysLog;
+const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const idReg = /^[0-9a-fA-F]{16}$/i;
 const pagesOut = 9;
 const {Comment, Vote} = models;
@@ -78,13 +78,13 @@ module.exports = {
                     attributes: ['postId', 'postTitle', 'postGuid', 'postStatus', 'commentFlag']
                 }).then(function (post) {
                     if (!post || !post.postId) {
-                        logger.error(util.getErrorLog({
-                            req: req,
-                            funcName: 'saveComment',
-                            funcParam: {
+                        logger.error(formatOpLog({
+                            fn: 'saveComment',
+                            msg: 'Post Not Exist.',
+                            data: {
                                 postId: post.postId
                             },
-                            msg: 'Post Not Exist.'
+                            req
                         }));
                         return cb(util.catchError({
                             status: 404,

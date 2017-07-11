@@ -8,31 +8,22 @@
 const fs = require('fs');
 const request = require('request');
 const sqlite3 = require('sqlite3').verbose();
-const log4js = require('log4js');
 const crypto = require('crypto');
+const {uploadLog: logger, formatOpLog} = require('../helper/logger');
 let uploader;
 let db;
 let fd;
 let filepath;
-let logger;
 const codeSuccess = 200;
 const progressPrecision = 2;
+const maxTrunkSize = 4;// MB
 
 // 配置对象
 let config = {
     nonce: Math.round(Math.random() * Math.pow(10, 16)).toString(),
     curTime: Math.round(Date.now() / 1000).toString(),
-    trunkSize: 4 * 1024 * 1024,
-    logLevel: 'INFO'
+    trunkSize: maxTrunkSize * 1024 * 1024
 };
-// 日志启用
-log4js.configure({
-    appenders: [{
-        type: 'console',
-        category: 'upload'
-    }]
-});
-logger = log4js.getLogger('upload');
 
 /**
  * 创建DB
@@ -243,7 +234,10 @@ function getFile(fileInfo) {
 function checkExist(fileInfo) {
     const where = 'WHERE filepath = "' + fileInfo.filepath + '" and mtime = ' + +fileInfo.mtime + ' and filesize = ' + fileInfo.size;
     const sql = 'SELECT COUNT(1) count FROM files ' + where;
-    logger.trace('check exist:', sql);
+    logger.trace(formatOpLog({
+        fn: 'checkExist',
+        data: `sql: ${sql}`
+    }));
     db.all(sql, (err, rows) => {
         if (err) {
             uploader.throw(err.message);
@@ -265,7 +259,10 @@ function checkExist(fileInfo) {
 function saveFile(fileInfo) {
     const sql = 'INSERT INTO files (filepath, mtime, filesize, created, nosToken, nosObject, nosBucket, nosContext) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
     const values = [fileInfo.filepath, fileInfo.mtime, fileInfo.filesize, fileInfo.created, fileInfo.nosToken, fileInfo.nosObject, fileInfo.nosBucket, ''];
-    logger.trace('save file:', sql, values);
+    logger.trace(formatOpLog({
+        fn: 'saveFile',
+        data: `sql: ${sql}, values: ${values}`
+    }));
     db.run(sql, values, (err) => {
         if (err) {
             uploader.throw(err.message);
@@ -283,7 +280,10 @@ function saveFile(fileInfo) {
 function removeFile(fileInfo) {
     const where = 'WHERE filepath = "' + fileInfo.filepath + '" and mtime = ' + +fileInfo.mtime + ' and filesize = ' + fileInfo.size;
     const sql = 'DELETE FROM files ' + where;
-    logger.trace('remove file:', sql);
+    logger.trace(formatOpLog({
+        fn: 'removeFile',
+        data: `sql: ${sql}`
+    }));
     db.run(sql, (err) => {
         if (err) {
             uploader.throw(err.message);
@@ -301,7 +301,10 @@ function removeFile(fileInfo) {
 function saveContext(fileInfo) {
     const where = 'WHERE filepath = "' + fileInfo.filepath + '" and mtime = ' + +fileInfo.mtime + ' and filesize = ' + fileInfo.filesize;
     const sql = 'UPDATE files SET nosContext = ?' + where;
-    logger.trace('save context:', sql);
+    logger.trace(formatOpLog({
+        fn: 'saveContext',
+        data: `sql: ${sql}`
+    }));
     db.run(sql, [fileInfo.nosContext], (err) => {
         if (err) {
             uploader.throw(err.message);
@@ -347,39 +350,65 @@ function * uploads() {
                 uploadOffset = JSON.parse(uploadOffset);
             }
             uploadOffset = uploadOffset.offset || 0;
-            logger.info('last offset:', uploadOffset);
+            logger.info(formatOpLog({
+                fn: 'uploads',
+                msg: `last offset: ${uploadOffset}`
+            }));
         }
-        logger.debug('file info:', initData);
-        logger.trace('nos data:', nosData);
-        logger.info('upload start...');
-        logger.info('upload init progress:', (uploadOffset / fileData.size * 100).toFixed(progressPrecision) + '%');
+        logger.debug(formatOpLog({
+            fn: 'uploads',
+            msg: '[file info]',
+            data: initData
+        }));
+        logger.trace(formatOpLog({
+            fn: 'uploads',
+            msg: '[nos data]',
+            data: nosData
+        }));
+        logger.info(formatOpLog({
+            fn: 'uploads',
+            msg: 'upload start...'
+        }));
+        logger.info(formatOpLog({
+            fn: 'uploads',
+            msg: 'upload initial progress: ' + (uploadOffset / fileData.size * 100).toFixed(progressPrecision) + '%'
+        }));
 
         while (uploadOffset < fileData.size) {
             initData.offset = uploadOffset;
             initData.finish = uploadOffset + config.trunkSize >= fileData.size;
             let trunkResult = yield uploadTrunk(nosData.upload[0], initData);
-            logger.debug('trunk upload result:', trunkResult);
             if (typeof trunkResult === 'string') {
                 trunkResult = JSON.parse(trunkResult);
             }
+            logger.debug(formatOpLog({
+                fn: 'uploads',
+                msg: 'trunk uploaded.',
+                data: trunkResult
+            }));
             initData.nosContext = trunkResult.context;
             if (initData.nosContext && initData.nosContext.toLowerCase() !== 'null') {
                 yield saveContext(initData);
             }
-            uploadOffset += config.trunkSize;
-            if (initData.finish) {
-                uploadOffset = fileData.size;
-            }
-            logger.info('upload progress:', (uploadOffset / fileData.size * 100).toFixed(progressPrecision) + '%');
+            uploadOffset = initData.finish ? fileData.size : (uploadOffset + config.trunkSize);
+            logger.info(formatOpLog({
+                fn: 'uploads',
+                msg: 'upload progress: ' + (uploadOffset / fileData.size * 100).toFixed(progressPrecision) + '%'
+            }));
         }
         yield removeFile(fileData);
-        logger.info('upload success.');
-        logger.info(`File path: /${initData.nosBucket}/${initData.nosObject}`);
+        logger.info(formatOpLog({
+            fn: 'uploads',
+            msg: `upload success. File path: /${initData.nosBucket}/${initData.nosObject}`
+        }));
         if (typeof config.onSuccess === 'function') {
             config.onSuccess(`/${initData.nosBucket}/${initData.nosObject}`);
         }
     } catch (e) {
-        logger.error(e);
+        logger.error(formatOpLog({
+            fn: 'uploads',
+            msg: e.message
+        }));
     }
 }
 
@@ -389,22 +418,21 @@ function * uploads() {
  *     {String}[appKey] App Key,
  *     {String}[appSecret] App Secret,
  *     {Number}[trunkSize=4*1024*1024] 分片大小（单位：Byte），最大值：4MB,
- *     {String}[logLevel='INFO'] 'INFO'
  * @return {*} null
  */
 function init(conf) {
-    const logLevels = ['ALL', 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL', 'OFF'];
-    if (conf.logLevel && logLevels.includes(conf.logLevel)) {
-        config.logLevel = conf.logLevel;
-    }
-    logger.setLevel(config.logLevel);
-
     if (!conf.appKey || !conf.appSecret) {
-        logger.error('请传入appKey和appSecret。');
+        logger.error(formatOpLog({
+            fn: 'init',
+            msg: '请传入appKey和appSecret。'
+        }));
         return false;
     }
     if (conf.trunkSize > config.trunkSize) {
-        logger.warn('分片大小超过最大限制（4MB），将设为上限值。');
+        logger.warn(formatOpLog({
+            fn: 'init',
+            msg: '分片大小超过最大限制（4MB），将设为上限值。'
+        }));
     }
     Object.assign(config, conf);
     config.trunkSize = Math.min(config.trunkSize, conf.trunkSize);
@@ -413,11 +441,15 @@ function init(conf) {
 /**
  * 上传API
  * @param {String} filePath 上传文件路径（相对路径或绝对路径）
+ * @param {Function} cb 回调函数
  * @return {*} null
  */
 function upload(filePath, cb) {
     if (!config.appKey || !config.appSecret) {
-        logger.error('appKey或appSecret无效。');
+        logger.error(formatOpLog({
+            fn: 'upload',
+            msg: 'appKey或appSecret无效。'
+        }));
         return false;
     }
     if (typeof cb === 'function') {
@@ -426,7 +458,10 @@ function upload(filePath, cb) {
     filepath = filePath;
     fs.open(filePath, 'r', (err, result) => {
         if (err) {
-            logger.error(err.message);
+            logger.error(formatOpLog({
+                fn: 'upload',
+                msg: err.message
+            }));
             return false;
         }
         fd = result;
