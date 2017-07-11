@@ -17,7 +17,7 @@ const util = require('../helper/util');
 const formatter = require('../helper/formatter');
 const uploader = require('./upload');
 const credentials = require('../config/credentials');
-const logger = require('../helper/logger').sysLog;
+const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const idReg = /^[0-9a-fA-F]{16}$/i;
 const pagesOut = 9;
 const {Post, User, Postmeta} = models;
@@ -324,13 +324,13 @@ module.exports = {
                     }]
                 }).then(function (post) {
                     if (!post || !post.postId) {
-                        logger.error(util.getErrorLog({
-                            req: req,
-                            funcName: 'showPost',
-                            funcParam: {
+                        logger.error(formatOpLog({
+                            fn: 'showPost',
+                            msg: 'Post Not Exist.',
+                            data: {
                                 postId: post.postId
                             },
-                            msg: 'Post Not Exist.'
+                            req
                         }));
                         return cb(util.catchError({
                             status: 404,
@@ -340,15 +340,15 @@ module.exports = {
                     }
                     // 无管理员权限不允许访问非公开文章(包括草稿)
                     if (!util.isAdminUser(req) && post.postStatus !== 'publish') {
-                        logger.warn(util.getErrorLog({
-                            req: req,
-                            funcName: 'showPost',
-                            funcParam: {
+                        logger.warn(formatOpLog({
+                            fn: 'showPost',
+                            msg: post.postTitle + ' is ' + post.postStatus,
+                            data: {
                                 postId: post.postId,
                                 postTitle: post.postTitle,
                                 postStatus: post.postStatus
                             },
-                            msg: post.postTitle + ' is ' + post.postStatus
+                            req
                         }));
                         return cb(util.catchError({
                             status: 404,
@@ -370,14 +370,14 @@ module.exports = {
                         }
                     });
                     if (categories.length < 1) {
-                        logger.error(util.getErrorLog({
-                            req: req,
-                            funcName: 'showPost',
-                            funcParam: {
+                        logger.error(formatOpLog({
+                            fn: 'showPost',
+                            msg: 'Category Not Exist.',
+                            data: {
                                 postId: post.postId,
                                 postTitle: post.postTitle
                             },
-                            msg: 'Category Not Exist.'
+                            req
                         }));
                         return cb('Category Not Exist.');
                     }
@@ -462,13 +462,13 @@ module.exports = {
                     }
                 }).then(function (result) {
                     if (!result || !result.postId) {
-                        logger.error(util.getErrorLog({
-                            req: req,
-                            funcName: 'showPage',
-                            funcParam: {
+                        logger.error(formatOpLog({
+                            fn: 'showPage',
+                            msg: 'Post Not Exist.',
+                            data: {
                                 pageUrl: reqPath
                             },
-                            msg: 'Post Not Exist.'
+                            req
                         }));
                         return cb(util.catchError({
                             status: 404,
@@ -478,15 +478,15 @@ module.exports = {
                     }
                     // 无管理员权限不允许访问非公开文章(包括草稿)
                     if (!util.isAdminUser(req) && result.postStatus !== 'publish') {
-                        logger.warn(util.getErrorLog({
-                            req: req,
-                            funcName: 'showPage',
-                            funcParam: {
+                        logger.warn(formatOpLog({
+                            fn: 'showPage',
+                            msg: result.postTitle + ' is ' + result.postStatus,
+                            data: {
                                 postId: result.postId,
                                 postTitle: result.postTitle,
                                 postStatus: result.postStatus
                             },
-                            msg: result.postTitle + ' is ' + result.postStatus
+                            req
                         }));
                         return cb(util.catchError({
                             status: 404,
@@ -1015,13 +1015,13 @@ module.exports = {
                     include: includeOpt
                 }).then(function (post) {
                     if (!post || !post.postId) {
-                        logger.error(util.getErrorLog({
-                            req: req,
-                            funcName: 'editPost',
-                            funcParam: {
+                        logger.error(formatOpLog({
+                            fn: 'editPost',
+                            msg: 'Post Not Exist.',
+                            data: {
                                 postId: postId
                             },
-                            msg: 'Post Not Exist.'
+                            req
                         }));
                         return cb(util.catchError({
                             status: 404,
@@ -1098,22 +1098,18 @@ module.exports = {
             postDate: param.postDate ? new Date(+moment(param.postDate)) : nowTime,
             postType: type
         };
-        let postCategory = util.trim(xss.sanitize(param.postCategory));
-        if (postCategory === '') {
-            postCategory = [];
-        } else if (typeof postCategory === 'string') {
-            postCategory = postCategory.split(/[,\s]/i);
-        } else {
-            postCategory = util.isArray(postCategory) ? postCategory : [];
-        }
-        let postTag = util.trim(xss.sanitize(param.postTag));
-        if (postTag === '') {
-            postTag = [];
-        } else if (typeof postTag === 'string') {
-            postTag = postTag.split(/[,\s]/i);
-        } else {
-            postTag = util.isArray(postTag) ? postTag : [];
-        }
+        const toArray = function (param) {
+            if (param === '') {
+                param = [];
+            } else if (typeof param === 'string') {
+                param = param.split(/[,\s]/i);
+            } else {
+                param = util.isArray(param) ? param : [];
+            }
+            return param;
+        };
+        const postCategory = toArray(util.trim(xss.sanitize(param.postCategory)));
+        const postTag = toArray(util.trim(xss.sanitize(param.postTag)));
 
         const checkResult = checkPostFields({
             data,
@@ -1459,13 +1455,13 @@ module.exports = {
         form.maxFieldsSize = sizeLimit * 1024 * 1024;
 
         form.on('error', function (err) {
-            logger.error(util.getErrorLog({
-                req: req,
-                funcName: 'uploadFile',
-                funcParam: {
+            logger.error(formatOpLog({
+                fn: 'uploadFile',
+                msg: err,
+                data: {
                     uploadPath: uploadPath
                 },
-                msg: err
+                req
             }));
         });
         form.parse(req, function (err, fields, files) {
@@ -1553,14 +1549,14 @@ module.exports = {
                     });
                 });
 
-                logger.info(util.getInfoLog({
-                    req: req,
-                    funcName: 'uploadFile',
-                    funcParam: {
+                logger.info(formatOpLog({
+                    fn: 'uploadFile',
+                    msg: 'Upload file: ' + filename,
+                    data: {
                         uploadPath: uploadPath,
                         filename: files.mediafile.name
                     },
-                    msg: 'Upload file: ' + filename
+                    req
                 }));
             };
             if (fields.uploadCloud === '1') {
@@ -1569,8 +1565,7 @@ module.exports = {
                     appSecret: credentials.appSecret,
                     appAccessKey: credentials.appAccessKey,
                     appSecretKey: credentials.appSecretKey,
-                    bucket: credentials.bucket,
-                    trunkSize: 4 * 1024 * 1024
+                    bucket: credentials.bucket
                 });
                 uploader.upload(filepath, saveDb);
             } else {

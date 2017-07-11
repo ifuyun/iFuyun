@@ -14,9 +14,6 @@ const express = require('express');
 const cluster = require('cluster');
 const app = express();
 const numCPUs = require('os').cpus().length;
-const Logger = require('./helper/logger');
-const logger = Logger.sysLog;
-
 const path = require('path');
 const favicon = require('serve-favicon');
 const cookieParser = require('cookie-parser');
@@ -24,16 +21,16 @@ const bodyParser = require('body-parser');
 const http = require('http');
 const ejs = require('ejs');
 const compress = require('compression');
-// const debug = require('debug');
 const csrf = require('csurf');
 const log4js = require('log4js');
 const session = require('express-session');
 const RedisStore = require('connect-redis')(session);
 const redis = require('redis');
 const redisCfg = require('./config/redis');
-const redisClient = redis.createClient(redisCfg.port, redisCfg.host, {auth_pass: redisCfg.passwd});
+const redisClient = redis.createClient(redisCfg.port, redisCfg.host, {'auth_pass': redisCfg.passwd});
 const config = require('./config/core');
 const routes = require('./config/routes');
+const {sysLog: logger, accessLog, formatOpLog} = require('./helper/logger');
 
 if (cluster.isMaster) {
     for (let cpuIdx = 0; cpuIdx < numCPUs; cpuIdx += 1) {
@@ -41,9 +38,17 @@ if (cluster.isMaster) {
     }
 
     cluster.on('exit', function (worker, code, signal) {
-        logger.warn('Worker ' + worker.process.pid + ' exit');
+        logger.warn(formatOpLog({
+            msg: `Worker ${worker.process.pid} exit.`,
+            data: {
+                code,
+                signal
+            }
+        }));
         process.nextTick(function () {
-            logger.info('New process is forking...');
+            logger.info(formatOpLog({
+                msg: 'New process is forking...'
+            }));
             cluster.fork();
         });
     });
@@ -52,7 +57,7 @@ if (cluster.isMaster) {
     app.set('view engine', 'html');
     ejs.delimiter = '?';
     app.engine('.html', ejs.__express);
-    app.use(log4js.connectLogger(Logger.accessLog, {
+    app.use(log4js.connectLogger(accessLog, {
         level: log4js.levels.INFO,
         format: ':remote-addr - :method :status HTTP/:http-version :url - [:response-time ms/:content-length B] ":referrer" ":user-agent"'
     }));
@@ -89,14 +94,18 @@ if (cluster.isMaster) {
         next();
     });
     app.use(function (req, res, next) {
-        logger.trace('Request [%s] is processed by %s: %d', req.url, cluster.isWorker ? 'Worker' : 'Master', cluster.worker.id);
+        logger.trace(formatOpLog({
+            msg: `Request [${req.url}] is processed by ${cluster.isWorker ? 'Worker' : 'Master'}: ${cluster.worker.id}`
+        }));
         next();
     });
 
     routes(app, express);
 
     if (require.main === module) {
-        http.createServer(app).listen(config.port, config.host, () => logger.log('Server listening on: ' + config.host + ', port ' + config.port));
+        http.createServer(app).listen(config.port, config.host, () => logger.trace(formatOpLog({
+            msg: `Server listening on: ${config.host}:${config.port}`
+        })));
     }
 }
 

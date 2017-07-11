@@ -6,7 +6,7 @@
  * @static
  * @requires crypto
  * @author Fuyun
- * @version 3.0.0
+ * @version 2.0.0
  * @since 1.0.0
  */
 const crypto = require('crypto');
@@ -529,48 +529,5 @@ module.exports = {
     isAdminUser: function (req) {
         const curUser = req.session.user;
         return this.isLogin(req) && curUser.usermeta && curUser.usermeta.role === 'admin';
-    },
-    /**
-     * 获取错误日志
-     * @method getErrorLog
-     * @static
-     * @param {Object} logObj 日志数据对象
-     * @return {String} 日志内容
-     * @author Fuyun
-     * @version 2.2.0
-     * @since 2.2.0
-     */
-    getErrorLog: function (logObj) {
-        // logObj = {
-        // req: '',
-        // funcName: '',
-        // funcParam: {},
-        // msg: ''
-        // };
-        // IP - "UserAgent" - "Function: function, Param: {"a":"b","c":"d"}, Error: some error"
-        let errStr = '';
-
-        errStr += this.getAccessUser(logObj.req);
-        errStr += ' - "Function: ' + logObj.funcName + ', Param: ' + JSON.stringify(logObj.funcParam) + ', Error: ' + logObj.msg + '"';
-
-        return errStr;
-    },
-    /**
-     * 获取操作日志
-     * @method getInfoLog
-     * @static
-     * @param {Object} logObj 日志数据对象
-     * @return {String} 日志内容
-     * @author Fuyun
-     * @version 2.2.0
-     * @since 2.2.0
-     */
-    getInfoLog: function (logObj) {
-        let logStr = '';
-
-        logStr += this.getAccessUser(logObj.req);
-        logStr += ' - "Function: ' + logObj.funcName + ', Param: ' + JSON.stringify(logObj.funcParam) + ', Msg: ' + logObj.msg + '"';
-
-        return logStr;
     }
 };
