@@ -46,7 +46,7 @@ function getCommonData(param, cb) {
         if (err) {
             logger.error(formatOpLog({
                 fn: 'getCommonData',
-                msg: err.message,
+                msg: err,
                 data: param
             }));
             cb(err);
@@ -262,7 +262,7 @@ module.exports = {
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'listPosts',
-                    msg: err.message,
+                    msg: err,
                     data: {
                         where
                     },
@@ -406,7 +406,7 @@ module.exports = {
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'showPost',
-                    msg: err.message,
+                    msg: err,
                     req
                 }));
                 return next(err);
@@ -510,7 +510,7 @@ module.exports = {
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'showPage',
-                    msg: err.message,
+                    msg: err,
                     req
                 }));
                 return next(err);
@@ -592,6 +592,11 @@ module.exports = {
             comments: ['posts', (result, cb) => common.getCommentCountByPosts(result.posts, cb)]
         }, function (err, result) {
             if (err) {
+                logger.error(formatOpLog({
+                    fn: 'listByCategory',
+                    msg: err,
+                    req
+                }));
                 return next(err);
             }
             let resData = {
@@ -667,6 +672,11 @@ module.exports = {
             comments: ['posts', (result, cb) => common.getCommentCountByPosts(result.posts, cb)]
         }, function (err, result) {
             if (err) {
+                logger.error(formatOpLog({
+                    fn: 'listByTag',
+                    msg: err,
+                    req
+                }));
                 return next(err);
             }
             let resData = {
@@ -748,6 +758,11 @@ module.exports = {
             comments: ['posts', (result, cb) => common.getCommentCountByPosts(result.posts, cb)]
         }, (err, result) => {
             if (err) {
+                logger.error(formatOpLog({
+                    fn: 'listByDate',
+                    msg: err,
+                    req
+                }));
                 return next(err);
             }
             let resData = {
@@ -881,6 +896,15 @@ module.exports = {
                         slug: req.query.category
                     }, (err, data) => {
                         if (err) {
+                            logger.error(formatOpLog({
+                                fn: 'listEdit.getSubCategoriesBySlug',
+                                msg: err,
+                                data: {
+                                    catData: result.categories.catData,
+                                    slug: req.query.category
+                                },
+                                req
+                            }));
                             return cb(err);
                         }
                         includeOpt.push({
@@ -929,6 +953,11 @@ module.exports = {
             }
         }, function (err, result) {
             if (err) {
+                logger.error(formatOpLog({
+                    fn: 'listEdit',
+                    msg: err,
+                    req
+                }));
                 return next(err);
             }
             let resData = {
@@ -1048,6 +1077,11 @@ module.exports = {
         }
         async.parallel(tasks, function (err, result) {
             if (err) {
+                logger.error(formatOpLog({
+                    fn: 'editPost',
+                    msg: err,
+                    req
+                }));
                 return next(err);
             }
             let resData = {
@@ -1261,6 +1295,12 @@ module.exports = {
             return new Promise((resolve, reject) => {
                 async.auto(tasks, function (err, result) {
                     if (err) {
+                        logger.error(formatOpLog({
+                            fn: 'savePost',
+                            msg: err,
+                            data,
+                            req
+                        }));
                         reject(new Error(err));
                     } else {
                         resolve(result);
@@ -1369,6 +1409,11 @@ module.exports = {
             }
         }, function (err, result) {
             if (err) {
+                logger.error(formatOpLog({
+                    fn: 'listMedia',
+                    msg: err,
+                    req
+                }));
                 return next(err);
             }
             let resData = {
@@ -1433,6 +1478,11 @@ module.exports = {
     createMedia: function (req, res, next) {
         common.getInitOptions((err, options) => {
             if (err) {
+                logger.error(formatOpLog({
+                    fn: 'createMedia.getInitOptions',
+                    msg: err,
+                    req
+                }));
                 return next(err);
             }
             let resData = {
@@ -1472,13 +1522,22 @@ module.exports = {
                 fn: 'uploadFile',
                 msg: err,
                 data: {
-                    uploadPath: uploadPath
+                    uploadPath
                 },
                 req
             }));
         });
         form.parse(req, function (err, fields, files) {
             if (err) {
+                logger.error(formatOpLog({
+                    fn: 'uploadFile',
+                    msg: err,
+                    data: {
+                        fields,
+                        files
+                    },
+                    req
+                }));
                 return next(err);
             }
             let fileExt = files.mediafile.name.split('.');
@@ -1537,6 +1596,14 @@ module.exports = {
                     return new Promise((resolve, reject) => {
                         async.auto(tasks, function (err, result) {
                             if (err) {
+                                logger.error(formatOpLog({
+                                    fn: 'uploadFile',
+                                    msg: err,
+                                    data: {
+                                        fileData
+                                    },
+                                    req
+                                }));
                                 reject(new Error(err));
                             } else {
                                 resolve(result);
@@ -1544,6 +1611,16 @@ module.exports = {
                         });
                     });
                 }).then(() => {
+                    logger.info(formatOpLog({
+                        fn: 'uploadFile',
+                        msg: 'File saved: ' + filename,
+                        data: {
+                            uploadPath: uploadPath,
+                            filename: files.mediafile.name,
+                            uploadCloud: fields.uploadCloud === '1'
+                        },
+                        req
+                    }));
                     delete req.session.referer;
                     res.set('Content-type', 'application/json');
                     res.send({
@@ -1561,16 +1638,6 @@ module.exports = {
                         message: err.message || err
                     });
                 });
-
-                logger.info(formatOpLog({
-                    fn: 'uploadFile',
-                    msg: 'Upload file: ' + filename,
-                    data: {
-                        uploadPath: uploadPath,
-                        filename: files.mediafile.name
-                    },
-                    req
-                }));
             };
             if (fields.uploadCloud === '1') {
                 uploader.init({

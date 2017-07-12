@@ -117,7 +117,7 @@ module.exports = {
             logData.push('Function: ' + logObj.fn);
         }
         if (logObj.msg) {
-            logData.push('Msg: ' + logObj.msg);
+            logData.push('Msg: ' + (typeof logObj.msg === 'string' ? logObj.msg : (logObj.msg.message || '未知错误')));
         }
         if (logObj.data) {
             logData.push('Data: ' + JSON.stringify(logObj.data));

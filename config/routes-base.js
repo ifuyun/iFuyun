@@ -11,7 +11,7 @@
  */
 const appConfig = require('./core');
 const util = require('../helper/util');
-// const logger = require('../helper/logger');
+const {sysLog: logger, formatOpLog} = require('../helper/logger');
 module.exports = {
     /**
      * 起始路由
@@ -72,6 +72,12 @@ module.exports = {
      */
     error: function (err, req, res, next) {// TODO: IE can not custom page
         // app.get('env') === 'development'
+        if (err.stack) {// 对未捕获的错误记录堆栈信息
+            logger.error(formatOpLog({
+                msg: err.stack,
+                req
+            }));
+        }
         if (req.xhr) {
             res.status(err.status || 200).type('application/json');
             res.send({
