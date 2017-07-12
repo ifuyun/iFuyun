@@ -10,6 +10,7 @@ const models = require('../models/index');
 const common = require('./common');
 const appConfig = require('../config/core');
 const util = require('../helper/util');
+const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const idReg = /^[0-9a-fA-F]{16}$/i;
 const pagesOut = 9;
 const {TermTaxonomy, TermRelationship} = models;
@@ -20,6 +21,11 @@ module.exports = {
         const type = (req.query.type || 'post').toLowerCase();
 
         if (!['post', 'tag', 'link'].includes(type)) {
+            logger.error(formatOpLog({
+                fn: 'listTaxonomy',
+                msg: `Taxonomy type: ${type} is not allowed.`,
+                req
+            }));
             return util.catchError({
                 status: 200,
                 code: 400,
@@ -81,6 +87,15 @@ module.exports = {
             }]
         }, function (err, result) {
             if (err) {
+                logger.error(formatOpLog({
+                    fn: 'listTaxonomy',
+                    msg: err,
+                    data: {
+                        where,
+                        page
+                    },
+                    req
+                }));
                 return next(err);
             }
 
@@ -114,6 +129,11 @@ module.exports = {
         const type = (req.query.type || 'post').toLowerCase();
 
         if (!['post', 'tag', 'link'].includes(type)) {
+            logger.error(formatOpLog({
+                fn: 'editTaxonomy',
+                msg: `Taxonomy type: ${type} is not allowed.`,
+                req
+            }));
             return util.catchError({
                 status: 200,
                 code: 400,
@@ -121,6 +141,11 @@ module.exports = {
             }, next);
         }
         if (!['create', 'edit'].includes(action)) {
+            logger.error(formatOpLog({
+                fn: 'editTaxonomy',
+                msg: `Operate: ${action} is not allowed.`,
+                req
+            }));
             return util.catchError({
                 status: 200,
                 code: 400,
@@ -129,6 +154,14 @@ module.exports = {
         }
         const taxonomyId = req.query.taxonomyId;
         if (action === 'edit' && !idReg.test(taxonomyId)) {
+            logger.error(formatOpLog({
+                fn: 'editTaxonomy',
+                msg: `Taxonomy: ${taxonomyId} is not exist.`,
+                data: {
+                    type
+                },
+                req
+            }));
             return util.catchError({
                 status: 404,
                 code: 404,
@@ -153,6 +186,16 @@ module.exports = {
         }
         async.auto(tasks, function (err, result) {
             if (err) {
+                logger.error(formatOpLog({
+                    fn: 'editTaxonomy',
+                    msg: err,
+                    data: {
+                        action,
+                        type,
+                        taxonomyId
+                    },
+                    req
+                }));
                 return next(err);
             }
             let title = '';
@@ -188,6 +231,11 @@ module.exports = {
     saveTaxonomy: function (req, res, next) {
         const type = (req.query.type || 'post').toLowerCase();
         if (!['post', 'tag', 'link'].includes(type)) {
+            logger.error(formatOpLog({
+                fn: 'saveTaxonomy',
+                msg: `Taxonomy type: ${type} is not allowed.`,
+                req
+            }));
             return util.catchError({
                 status: 200,
                 code: 400,
@@ -264,6 +312,12 @@ module.exports = {
             }]
         }, function (err) {
             if (err) {
+                logger.error(formatOpLog({
+                    fn: 'saveTaxonomy',
+                    msg: err,
+                    data,
+                    req
+                }));
                 return next(err);
             }
             const referer = req.session.referer;
@@ -284,6 +338,11 @@ module.exports = {
         const type = (req.query.type || 'post').toLowerCase();
 
         if (!['post', 'tag', 'link'].includes(type)) {
+            logger.error(formatOpLog({
+                fn: 'removeTaxonomy',
+                msg: `Taxonomy type: ${type} is not allowed.`,
+                req
+            }));
             return util.catchError({
                 status: 200,
                 code: 400,
@@ -293,6 +352,14 @@ module.exports = {
         if (typeof taxonomyIds === 'string') {
             taxonomyIds = xss.sanitize(taxonomyIds).split(',');
         } else if (!util.isArray(taxonomyIds)) {
+            logger.error(formatOpLog({
+                fn: 'removeTaxonomy',
+                msg: 'invalid parameters',
+                data: {
+                    taxonomyIds
+                },
+                req
+            }));
             return util.catchError({
                 status: 200,
                 code: 400,
@@ -354,8 +421,21 @@ module.exports = {
             return new Promise((resolve, reject) => {
                 async.auto(tasks, function (err, result) {
                     if (err) {
+                        logger.error(formatOpLog({
+                            fn: 'removeTaxonomy',
+                            msg: err,
+                            data: {
+                                taxonomyIds
+                            },
+                            req
+                        }));
                         reject(new Error(err));
                     } else {
+                        logger.info(formatOpLog({
+                            fn: 'removeTaxonomy',
+                            msg: `Taxonomies: ${taxonomyIds} is removed.`,
+                            req
+                        }));
                         resolve(result);
                     }
                 });

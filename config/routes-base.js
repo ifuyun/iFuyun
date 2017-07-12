@@ -2,9 +2,7 @@
 /**
  * 全局控制器
  * @module c_base
- * @class C_Base
  * @static
- * @requires cfg_core, m_base, util, m_option
  * @author Fuyun
  * @version 2.0.0
  * @since 1.0.0
@@ -12,6 +10,10 @@
 const appConfig = require('./core');
 const util = require('../helper/util');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
+const codeSuccess = 200;
+const codeError = 500;
+const codeNotFound = 404;
+
 module.exports = {
     /**
      * 起始路由
@@ -19,7 +21,7 @@ module.exports = {
      * @static
      * @param {Object} req 请求对象
      * @param {Object} res 响应对象
-     * @param {Object} next 路由对象
+     * @param {Function} next 路由对象
      * @return {void}
      * @author Fuyun
      * @version 1.1.0
@@ -44,16 +46,16 @@ module.exports = {
      * @static
      * @param {Object} req 请求对象
      * @param {Object} res 响应对象
-     * @param {Object} next 路由对象
-     * @return {void}
+     * @param {Function} next 路由对象
+     * @return {*} null
      * @author Fuyun
-     * @version 1.0.0
+     * @version 2.0.0
      * @since 1.0.0
      */
     last: function (req, res, next) {
         return util.catchError({
-            status: 404,
-            code: 404,
+            status: codeNotFound,
+            code: codeNotFound,
             message: 'Page Not Found'
         }, next);
     },
@@ -64,13 +66,12 @@ module.exports = {
      * @param {Error} err 错误对象
      * @param {Object} req 请求对象
      * @param {Object} res 响应对象
-     * @param {Object} next 路由对象
      * @return {void}
      * @author Fuyun
-     * @version 1.0.0
+     * @version 2.0.0
      * @since 1.0.0
      */
-    error: function (err, req, res, next) {// TODO: IE can not custom page
+    error: function (err, req, res) {// TODO: IE can not custom page
         // app.get('env') === 'development'
         if (err.stack) {// 对未捕获的错误记录堆栈信息
             logger.error(formatOpLog({
@@ -78,20 +79,21 @@ module.exports = {
                 req
             }));
         }
+        const message = err.message || err || 'Unknown Error.';
         if (req.xhr) {
-            res.status(err.status || 200).type('application/json');
+            res.status(err.status || codeSuccess).type('application/json');
             res.send({
-                // status: err.status || 200,
-                code: err.code || 500,
-                message: err.message || err || '未知错误',
+                code: err.code || codeError,
+                message,
                 token: req.csrfToken ? req.csrfToken() : ''
             });
         } else {
-            res.status(err.status || 404).type('text/html');
-            res.render(`${appConfig.pathViews}/error/${err.status || 404}`, {
-                status: err.status || 404,
-                code: err.code || 404,
-                message: err.message || err || 'Page Not Found'
+            const status = err.status || codeNotFound;
+            res.status(status).type('text/html');
+            res.render(`${appConfig.pathViews}/error/${status}`, {
+                code: err.code || codeNotFound,
+                status,
+                message
             });
         }
     }

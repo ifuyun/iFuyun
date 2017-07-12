@@ -264,7 +264,8 @@ module.exports = {
                     fn: 'listPosts',
                     msg: err,
                     data: {
-                        where
+                        where,
+                        page
                     },
                     req
                 }));
@@ -357,7 +358,7 @@ module.exports = {
                     if (!util.isAdminUser(req) && post.postStatus !== 'publish') {
                         logger.warn(formatOpLog({
                             fn: 'showPost',
-                            msg: `[Unauthorized]${post.postId}: ${post.postTitle} is ${post.postStatus}`,
+                            msg: `[Unauthorized]${post.postId}:${post.postTitle} is ${post.postStatus}`,
                             req
                         }));
                         return cb(util.catchError({
@@ -407,6 +408,9 @@ module.exports = {
                 logger.error(formatOpLog({
                     fn: 'showPost',
                     msg: err,
+                    data: {
+                        postId
+                    },
                     req
                 }));
                 return next(err);
@@ -493,7 +497,7 @@ module.exports = {
                     if (!util.isAdminUser(req) && post.postStatus !== 'publish') {
                         logger.warn(formatOpLog({
                             fn: 'showPage',
-                            msg: `[Unauthorized]${post.postId}: ${post.postTitle} is ${post.postStatus}`,
+                            msg: `[Unauthorized]${post.postId}:${post.postTitle} is ${post.postStatus}`,
                             req
                         }));
                         return cb(util.catchError({
@@ -511,6 +515,9 @@ module.exports = {
                 logger.error(formatOpLog({
                     fn: 'showPage',
                     msg: err,
+                    data: {
+                        reqUrl
+                    },
                     req
                 }));
                 return next(err);
@@ -595,6 +602,11 @@ module.exports = {
                 logger.error(formatOpLog({
                     fn: 'listByCategory',
                     msg: err,
+                    data: {
+                        where,
+                        category,
+                        page
+                    },
                     req
                 }));
                 return next(err);
@@ -675,6 +687,11 @@ module.exports = {
                 logger.error(formatOpLog({
                     fn: 'listByTag',
                     msg: err,
+                    data: {
+                        where,
+                        tag,
+                        page
+                    },
                     req
                 }));
                 return next(err);
@@ -761,6 +778,11 @@ module.exports = {
                 logger.error(formatOpLog({
                     fn: 'listByDate',
                     msg: err,
+                    data: {
+                        year,
+                        month,
+                        page
+                    },
                     req
                 }));
                 return next(err);
@@ -956,6 +978,10 @@ module.exports = {
                 logger.error(formatOpLog({
                     fn: 'listEdit',
                     msg: err,
+                    data: {
+                        where,
+                        page
+                    },
                     req
                 }));
                 return next(err);
@@ -1080,6 +1106,9 @@ module.exports = {
                 logger.error(formatOpLog({
                     fn: 'editPost',
                     msg: err,
+                    data:{
+                        postId
+                    },
                     req
                 }));
                 return next(err);
@@ -1303,6 +1332,12 @@ module.exports = {
                         }));
                         reject(new Error(err));
                     } else {
+                        logger.info(formatOpLog({
+                            fn: 'savePost',
+                            msg: `Post: ${newPostId}:${data.postTitle} is saved.`,
+                            data,
+                            req
+                        }));
                         resolve(result);
                     }
                 });
@@ -1412,6 +1447,10 @@ module.exports = {
                 logger.error(formatOpLog({
                     fn: 'listMedia',
                     msg: err,
+                    data:{
+                        where,
+                        page
+                    },
                     req
                 }));
                 return next(err);
@@ -1599,28 +1638,26 @@ module.exports = {
                                 logger.error(formatOpLog({
                                     fn: 'uploadFile',
                                     msg: err,
-                                    data: {
-                                        fileData
-                                    },
+                                    data: fileData,
                                     req
                                 }));
                                 reject(new Error(err));
                             } else {
+                                logger.info(formatOpLog({
+                                    fn: 'uploadFile',
+                                    msg: `File saved: ${filename}`,
+                                    data: {
+                                        uploadPath: uploadPath,
+                                        filename: files.mediafile.name,
+                                        uploadCloud: fields.uploadCloud === '1'
+                                    },
+                                    req
+                                }));
                                 resolve(result);
                             }
                         });
                     });
                 }).then(() => {
-                    logger.info(formatOpLog({
-                        fn: 'uploadFile',
-                        msg: 'File saved: ' + filename,
-                        data: {
-                            uploadPath: uploadPath,
-                            filename: files.mediafile.name,
-                            uploadCloud: fields.uploadCloud === '1'
-                        },
-                        req
-                    }));
                     delete req.session.referer;
                     res.set('Content-type', 'application/json');
                     res.send({

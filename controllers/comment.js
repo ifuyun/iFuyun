@@ -44,6 +44,11 @@ module.exports = {
             commentId = '';
         }
         if (!data.postId || !idReg.test(data.postId)) {
+            logger.warn(formatOpLog({
+                fn: 'saveComment',
+                msg: `comment's post: ${data.postId} is not exist.`,
+                req
+            }));
             return util.catchError({
                 status: 200,
                 code: 400,
@@ -80,10 +85,7 @@ module.exports = {
                     if (!post || !post.postId) {
                         logger.error(formatOpLog({
                             fn: 'saveComment',
-                            msg: 'Post Not Exist.',
-                            data: {
-                                postId: post.postId
-                            },
+                            msg: `Post: ${data.postId} is not exist.`,
                             req
                         }));
                         return cb(util.catchError({
@@ -93,6 +95,11 @@ module.exports = {
                         }));
                     }
                     if (post.commentFlag === 'closed' && !isAdmin) {
+                        logger.warn(formatOpLog({
+                            fn: 'saveComment',
+                            msg: `[Forbidden]${post.postId}:${post.postTitle} is not allowed comment.`,
+                            req
+                        }));
                         return cb(util.catchError({
                             status: 403,
                             code: 403,
@@ -120,6 +127,11 @@ module.exports = {
             }]
         }, function (err, result) {
             if (err) {
+                logger.error(formatOpLog({
+                    fn: 'saveComment',
+                    msg: err,
+                    req
+                }));
                 return next(err);
             }
             const referer = req.session.referer;
@@ -131,6 +143,15 @@ module.exports = {
                 commentFlag = result.post.commentFlag;
             }
             const postUrl = postGuid || ('/post/' + result.post.postId);
+
+            logger.info(formatOpLog({
+                fn: 'uploadFile',
+                msg: `Comment: ${data.commentId}:${data.postTitle} is saved.`,
+                data: {
+                    data
+                },
+                req
+            }));
             res.set('Content-type', 'application/json');
             res.send({
                 status: 200,
@@ -160,6 +181,11 @@ module.exports = {
         data.objectId = xss.sanitize(param.commentId.trim());
 
         if (!idReg.test(data.objectId)) {
+            logger.warn(formatOpLog({
+                fn: 'saveVote',
+                msg: `comment id: ${data.objectId} is invalid.`,
+                req
+            }));
             return util.catchError({
                 status: 500,
                 code: 500,
@@ -167,6 +193,11 @@ module.exports = {
             }, next);
         }
         if (param.type !== 'up' && param.type !== 'down') {
+            logger.error(formatOpLog({
+                fn: 'saveVote',
+                msg: `Operate: ${param.type} is not allowed.`,
+                req
+            }));
             return util.catchError({
                 status: 500,
                 code: 500,
@@ -208,6 +239,12 @@ module.exports = {
             }]
         }, function (err, result) {
             if (err) {
+                logger.error(formatOpLog({
+                    fn: 'saveVote',
+                    msg: err,
+                    data,
+                    req
+                }));
                 return next(err);
             }
             res.set('Content-type', 'application/json');
@@ -275,6 +312,12 @@ module.exports = {
             }
         }, function (err, result) {
             if (err) {
+                logger.error(formatOpLog({
+                    fn: 'listComments',
+                    msg: err,
+                    where,
+                    req
+                }));
                 return next(err);
             }
             let resData = {
@@ -317,7 +360,12 @@ module.exports = {
             action = 'show';
         }
         const commentId = req.params.commentId || '';
-        if (!commentId || !idReg.test(commentId)) {
+        if (!idReg.test(commentId)) {
+            logger.warn(formatOpLog({
+                fn: 'editComment',
+                msg: `comment id: ${commentId} is invalid.`,
+                req
+            }));
             return util.catchError({
                 status: 404,
                 code: 404,
@@ -338,6 +386,11 @@ module.exports = {
             }
         }, function (err, result) {
             if (err) {
+                logger.error(formatOpLog({
+                    fn: 'editComment',
+                    msg: err,
+                    req
+                }));
                 return next(err);
             }
             if (!result.comment) {
@@ -368,6 +421,11 @@ module.exports = {
 
         param.action = (param.action || '').toLowerCase();
         if (!['approve', 'reject', 'spam', 'delete'].includes(param.action)) {
+            logger.error(formatOpLog({
+                fn: 'updateStatus',
+                msg: `Operate: ${param.action} is not allowed.`,
+                req
+            }));
             return util.catchError({
                 status: 200,
                 code: 400,

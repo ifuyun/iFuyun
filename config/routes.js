@@ -1,6 +1,5 @@
 /* jslint nomen:true es5:true */
-/* global console */
-/* global __dirname */
+/* global console,process,__dirname */
 /**
  * 路由定义，含错误路由
  * @module cfg_routes
@@ -11,18 +10,20 @@
  * @version 2.0.0
  * @since 1.0.0
  */
-module.exports = function (app, express) {
-    const path = require('path');
-    const router = express.Router();
-    const base = require('./routes-base');
-    const post = require('../controllers/post');
-    const user = require('../controllers/user');
-    const comment = require('../controllers/comment');
-    const admin = require('./routes-admin')(app, router);
+const path = require('path');
+const base = require('./routes-base');
+const post = require('../controllers/post');
+const user = require('../controllers/user');
+const comment = require('../controllers/comment');
+const routesAdmin = require('./routes-admin');
 
+module.exports = function (app, express) {
+    const router = express.Router();
+    const admin = routesAdmin(app, router);
+    const {ENV: env} = process.env;
     // 静态文件(若先路由后静态文件，将导致session丢失)
     app.use(express.static(path.join(__dirname, '..', 'public', 'static')));
-    app.use(express.static(path.join(__dirname, '..', 'public', process.env.ENV && process.env.ENV.trim() === 'production' ? 'dist' : 'dev')));
+    app.use(express.static(path.join(__dirname, '..', 'public', env && env.trim() === 'production' ? 'dist' : 'dev')));
 
     app.use(base.init);
     app.get('/', post.listPosts);

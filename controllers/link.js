@@ -11,6 +11,7 @@ const common = require('./common');
 const appConfig = require('../config/core');
 const util = require('../helper/util');
 const formatter = require('../helper/formatter');
+const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const idReg = /^[0-9a-fA-F]{16}$/i;
 const {Link, TermTaxonomy, TermRelationship} = models;
 
@@ -33,6 +34,14 @@ module.exports = {
             }]
         }, function (err, result) {
             if (err) {
+                logger.error(formatOpLog({
+                    fn: 'listLink',
+                    msg: err,
+                    data: {
+                        page
+                    },
+                    req
+                }));
                 return next(err);
             }
             let resData = {
@@ -64,6 +73,11 @@ module.exports = {
     editLink: function (req, res, next) {
         const action = (req.query.action || 'create').toLowerCase();
         if (!['create', 'edit'].includes(action)) {
+            logger.error(formatOpLog({
+                fn: 'editLink',
+                msg: `Operate: ${action} is not allowed.`,
+                req
+            }));
             return util.catchError({
                 status: 200,
                 code: 400,
@@ -101,6 +115,15 @@ module.exports = {
         }
         async.auto(tasks, function (err, result) {
             if (err) {
+                logger.error(formatOpLog({
+                    fn: 'editLink',
+                    msg: err,
+                    data: {
+                        action,
+                        linkId
+                    },
+                    req
+                }));
                 return next(err);
             }
             let title = '';
@@ -129,15 +152,15 @@ module.exports = {
     },
     saveLink: function (req, res, next) {
         const param = req.body;
-        let linkId = xss.sanitize(param.linkId) || '';
-        const taxonomyId = (xss.sanitize(param.linkTaxonomy) || '').trim();
+        let linkId = util.trim(xss.sanitize(param.linkId));
+        const taxonomyId = util.trim(xss.sanitize(param.linkTaxonomy));
         let data = {};
-        data.linkName = (xss.sanitize(param.linkName) || '').trim();
-        data.linkUrl = (xss.sanitize(param.linkUrl) || '').trim();
-        data.linkDescription = (xss.sanitize(param.linkDescription) || '').trim();
-        data.linkVisible = (xss.sanitize(param.linkVisible) || '').trim();
-        data.linkTarget = (xss.sanitize(param.linkTarget) || '').trim();
-        data.linkRating = (xss.sanitize(param.linkRating) || '').trim();
+        data.linkName = util.trim(xss.sanitize(param.linkName));
+        data.linkUrl = util.trim(xss.sanitize(param.linkUrl));
+        data.linkDescription = util.trim(xss.sanitize(param.linkDescription));
+        data.linkVisible = util.trim(xss.sanitize(param.linkVisible));
+        data.linkTarget = util.trim(xss.sanitize(param.linkTarget));
+        data.linkRating = util.trim(xss.sanitize(param.linkRating));
 
         if (!idReg.test(linkId)) {
             linkId = '';
@@ -213,8 +236,20 @@ module.exports = {
             return new Promise((resolve, reject) => {
                 async.auto(tasks, function (err, result) {
                     if (err) {
+                        logger.error(formatOpLog({
+                            fn: 'saveLink',
+                            msg: err,
+                            data,
+                            req
+                        }));
                         reject(new Error(err));
                     } else {
+                        logger.info(formatOpLog({
+                            fn: 'saveLink',
+                            msg: `Link: ${linkId || newLinkId}:${data.linkName} is saved.`,
+                            data,
+                            req
+                        }));
                         resolve(result);
                     }
                 });
@@ -242,6 +277,14 @@ module.exports = {
         if (typeof linkIds === 'string') {
             linkIds = xss.sanitize(linkIds).split(',');
         } else if (!util.isArray(linkIds)) {
+            logger.error(formatOpLog({
+                fn: 'removeLink',
+                msg: 'invalid parameters',
+                data: {
+                    linkIds
+                },
+                req
+            }));
             return util.catchError({
                 status: 200,
                 code: 400,
@@ -280,8 +323,21 @@ module.exports = {
             return new Promise((resolve, reject) => {
                 async.auto(tasks, function (err, result) {
                     if (err) {
+                        logger.error(formatOpLog({
+                            fn: 'removeLink',
+                            msg: err,
+                            data: {
+                                linkIds
+                            },
+                            req
+                        }));
                         reject(new Error(err));
                     } else {
+                        logger.info(formatOpLog({
+                            fn: 'removeLink',
+                            msg: `Links: ${linkIds} is removed.`,
+                            req
+                        }));
                         resolve(result);
                     }
                 });

@@ -7,8 +7,8 @@ const util = require('../helper/util');
 const xss = require('sanitizer');
 const models = require('../models/index');
 const common = require('./common');
-// const logger = require('../helper/logger').sysLog;
 const appConfig = require('../config/core');
+const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const {User, Usermeta} = models;
 
 module.exports = {
@@ -20,6 +20,11 @@ module.exports = {
         }
         common.getInitOptions((err, result) => {
             if (err) {
+                logger.error(formatOpLog({
+                    fn: 'showLogin.getInitOptions',
+                    msg: err,
+                    req
+                }));
                 return next(err);
             }
             res.render(`${appConfig.pathViews}/front/pages/login`, {
@@ -77,6 +82,11 @@ module.exports = {
             delete req.session.loginReferer;
             req.session.regenerate((err) => {
                 if (err) {
+                    logger.error(formatOpLog({
+                        fn: 'login',
+                        msg: err,
+                        req
+                    }));
                     return next(err);
                 }
                 res.set('Content-type', 'application/json');
@@ -110,6 +120,11 @@ module.exports = {
     logout: function (req, res, next) {
         req.session.destroy(function (err) {
             if (err) {
+                logger.error(formatOpLog({
+                    fn: 'logout',
+                    msg: err,
+                    req
+                }));
                 return next(err);
             }
             res.redirect('/');

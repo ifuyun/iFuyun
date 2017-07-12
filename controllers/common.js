@@ -5,6 +5,7 @@
  */
 const models = require('../models/index');
 const util = require('../helper/util');
+const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const {Link, Post, TermTaxonomy, Comment, Option} = models;
 
 module.exports = {
@@ -191,6 +192,13 @@ module.exports = {
                     catArray: this.getCategoryArray(catTree, [])
                 });
             } else {
+                logger.error(formatOpLog({
+                    fn: 'getCategoryTree',
+                    msg: '分类不存在',
+                    data: {
+                        type
+                    }
+                }));
                 cb('分类不存在');
             }
         });
@@ -280,6 +288,14 @@ module.exports = {
                 catRoot: rootNode || {}
             });
         } else {
+            logger.error(formatOpLog({
+                fn: 'getSubCategoriesBySlug',
+                msg: '分类不存在',
+                data: {
+                    catData,
+                    slug
+                }
+            }));
             cb('分类不存在');
         }
     },
