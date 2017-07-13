@@ -20,6 +20,7 @@ const less = require('gulp-less');
 const webpack = require('webpack');
 const uglify = require('gulp-uglify');
 const webpackConfig = require('./webpack.config');
+const compiler = webpack(webpackConfig);
 
 gulp.task('clean', function () {
     return gulp.src([config.pathDist, config.pathTmp], {
@@ -128,39 +129,6 @@ gulp.task('revreplace-ejs', function () {
         .pipe(gulp.dest(path.join(config.pathTmp2, config.pathViews)));
 });
 
-gulp.task('copy-build-css', function () {
-    return gulp.src(path.join(config.pathTmp2, config.pathCss, '**'))
-        .pipe(gulp.dest(path.join(config.pathDist, config.pathCss)));
-});
-
-gulp.task('copy-build-js', function () {
-    return gulp.src(path.join(config.pathTmp2, config.pathJs, '**'))
-        .pipe(gulp.dest(path.join(config.pathDist, config.pathJs)));
-});
-
-gulp.task('copy-build-image', function () {
-    return gulp.src(path.join(config.pathTmp2, config.pathImg, '**'))
-        .pipe(gulp.dest(path.join(config.pathDist, config.pathImg)));
-});
-
-gulp.task('copy-build-fonts', function () {
-    return gulp.src(path.join(config.pathSrc, config.pathFonts, '**'))
-        .pipe(gulp.dest(path.join(config.pathDist, config.pathFonts)));
-});
-
-gulp.task('copy-build-views', function () {
-    return gulp.src(path.join(config.pathTmp2, config.pathViews, '**'))
-        .pipe(gulp.dest(path.join(config.pathViews, config.pathViewsDist)));
-});
-
-gulp.task('copy-js-plugin', function () {
-    return gulp.src(path.join(config.pathSrc, config.pathJsPluginSrc, '**'))
-        .pipe(gulp.dest(path.join(config.pathDist, config.pathJsPluginDist)));
-});
-
-gulp.task('copy-build', ['copy-build-css', 'copy-build-js', 'copy-build-image', 'copy-build-fonts', 'copy-js-plugin', 'copy-build-views']);
-
-const compiler = webpack(webpackConfig);
 gulp.task('webpack', function (cb) {
     compiler.run(function (err, stats) {
         if (err) {
@@ -172,6 +140,15 @@ gulp.task('webpack', function (cb) {
         cb();
     });
 });
+
+gulp.task('copy-build-css', () => gulp.src(path.join(config.pathTmp2, config.pathCss, '**')).pipe(gulp.dest(path.join(config.pathDist, config.pathCss))));
+gulp.task('copy-build-js', () => gulp.src(path.join(config.pathTmp2, config.pathJs, '**')).pipe(gulp.dest(path.join(config.pathDist, config.pathJs))));
+gulp.task('copy-build-image', () => gulp.src(path.join(config.pathTmp2, config.pathImg, '**')).pipe(gulp.dest(path.join(config.pathDist, config.pathImg))));
+gulp.task('copy-build-fonts', () => gulp.src(path.join(config.pathSrc, config.pathFonts, '**')).pipe(gulp.dest(path.join(config.pathDist, config.pathFonts))));
+gulp.task('copy-build-views', () => gulp.src(path.join(config.pathTmp2, config.pathViews, '**')).pipe(gulp.dest(path.join(config.pathViews, config.pathViewsDist))));
+gulp.task('copy-js-plugin', () => gulp.src(path.join(config.pathSrc, config.pathJsPluginSrc, '**')).pipe(gulp.dest(path.join(config.pathDist, config.pathJsPluginDist))));
+
+gulp.task('copy-build', ['copy-build-css', 'copy-build-js', 'copy-build-image', 'copy-build-fonts', 'copy-js-plugin', 'copy-build-views']);
 
 gulp.task('build', (cb) => {
     runSequence('clean', 'less', 'useref', 'imagemin', 'rev-image', 'revreplace-css', 'rev-css', 'rev-js', 'revreplace-ejs', 'webpack', 'copy-build', cb);
