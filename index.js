@@ -30,7 +30,7 @@ const redisCfg = require('./config/redis');
 const redisClient = redis.createClient(redisCfg.port, redisCfg.host, {'auth_pass': redisCfg.passwd});
 const config = require('./config/core');
 const routes = require('./config/routes');
-const {sysLog: logger, accessLog, formatOpLog} = require('./helper/logger');
+const {sysLog, threadLog, accessLog, formatOpLog} = require('./helper/logger');
 
 if (cluster.isMaster) {
     for (let cpuIdx = 0; cpuIdx < numCPUs; cpuIdx += 1) {
@@ -38,7 +38,7 @@ if (cluster.isMaster) {
     }
 
     cluster.on('exit', function (worker, code, signal) {
-        logger.warn(formatOpLog({
+        threadLog.warn(formatOpLog({
             msg: `Worker ${worker.process.pid} exit.`,
             data: {
                 code,
@@ -46,7 +46,7 @@ if (cluster.isMaster) {
             }
         }));
         process.nextTick(function () {
-            logger.info(formatOpLog({
+            threadLog.info(formatOpLog({
                 msg: 'New process is forking...'
             }));
             cluster.fork();
@@ -94,7 +94,7 @@ if (cluster.isMaster) {
         next();
     });
     app.use(function (req, res, next) {
-        logger.trace(formatOpLog({
+        threadLog.trace(formatOpLog({
             msg: `Request [${req.url}] is processed by ${cluster.isWorker ? 'Worker' : 'Master'}: ${cluster.worker.id}`
         }));
         next();
@@ -103,7 +103,7 @@ if (cluster.isMaster) {
     routes(app, express);
 
     if (require.main === module) {
-        http.createServer(app).listen(config.port, config.host, () => logger.info(formatOpLog({
+        http.createServer(app).listen(config.port, config.host, () => sysLog.info(formatOpLog({
             msg: `Server listening on: ${config.host}:${config.port}`
         })));
     }

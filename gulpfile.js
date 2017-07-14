@@ -38,7 +38,7 @@ const checkJsFile = function (file) {
     if (/[\-\.]min.js$/.test(file.path)) {
         return false;
     }
-    if (/.js$/.test(file.path)) {
+    if (/\.js$/.test(file.path)) {
         return true;
     }
     return false;
@@ -197,7 +197,7 @@ gulp.task('dev', function () {
             colors: true
         }));
     });
-    gulp.watch(['./public/src/js/plugins/**', './public/src/js/admin'], function (event) {
+    gulp.watch(['./public/src/js/plugins/**', './public/src/js/admin', './public/src/js/web'], function (event) {
         runSequence('copy-dev-js-plugin', 'copy-dev-js-admin', 'copy-dev-js-web');
     });
     gulp.watch(['./public/src/style/**/*.less'], function (event) {

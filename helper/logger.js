@@ -13,41 +13,28 @@
 const log4js = require('log4js');
 const appConfig = require('../config/core');
 const util = require('./util');
+const moment = require('moment');
 
 log4js.configure({
-    appenders: [{
-        type: 'dateFile',
-        filename: 'logs/access',
-        maxLogSize: 10485760, // 10MB, 只在 type: 'file' 中才支持
-        backups: 5, // 默认5，指定pattern后backups参数无效，除非pattern是小于backups的数字，原理是不指定pattern时备份的文件是在文件名后加'.n'的数字，n从1开始自增
-        pattern: '_yyyy-MM-dd.log', // 指定pattern后无限备份
-        alwaysIncludePattern: true, // 不指定pattern时若为true会使用默认值'.yyyy-MM-dd'
-        category: 'access'
-    }, {
-        type: 'dateFile',
-        filename: 'logs/system',
-        maxLogSize: 10485760,
-        backups: 5,
-        pattern: '_yyyy-MM-dd.log',
-        alwaysIncludePattern: true,
-        category: 'system'
-    }, {
-        type: 'dateFile',
-        filename: 'logs/db',
-        maxLogSize: 10485760,
-        backups: 5,
-        pattern: '_yyyy-MM-dd.log',
-        alwaysIncludePattern: true,
-        category: 'db'
-    }, {
-        type: 'dateFile',
-        filename: 'logs/upload',
-        maxLogSize: 10485760,
-        backups: 5,
-        pattern: '_yyyy-MM-dd.log',
-        alwaysIncludePattern: true,
-        category: 'upload'
-    }]
+    appenders: {
+        system: {
+            type: 'multiFile',
+            base: 'logs/',
+            extension: '.log',
+            property: 'logDay',
+            compress: false, // backup files will have .gz extension
+            // pattern: '_yyyy-MM-dd.log',
+            // alwaysIncludePattern: true,
+            maxLogSize: 10485760, // 10MB
+            backups: 5 // 默认5
+        }
+    },
+    categories: {
+        default: {
+            appenders: ['system'],
+            level: appConfig.logLevel
+        }
+    }
 });
 
 // ['ALL', 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL', 'OFF']
@@ -60,7 +47,7 @@ module.exports = {
      */
     accessLog: (function () {
         const logger = log4js.getLogger('access');
-        logger.setLevel(appConfig.logLevel);
+        logger.addContext('logDay', 'access/' + moment().format('YYYY-MM-DD'));
         return logger;
     })(),
     /**
@@ -71,7 +58,7 @@ module.exports = {
      */
     sysLog: (function () {
         const logger = log4js.getLogger('system');
-        logger.setLevel(appConfig.logLevel);
+        logger.addContext('logDay', 'system/' + moment().format('YYYY-MM-DD'));
         return logger;
     })(),
     /**
@@ -82,7 +69,7 @@ module.exports = {
      */
     dbLog: (function () {
         const logger = log4js.getLogger('db');
-        logger.setLevel(appConfig.logLevel);
+        logger.addContext('logDay', 'db/' + moment().format('YYYY-MM-DD'));
         return logger;
     })(),
     /**
@@ -93,7 +80,18 @@ module.exports = {
      */
     uploadLog: (function () {
         const logger = log4js.getLogger('upload');
-        logger.setLevel(appConfig.logLevel);
+        logger.addContext('logDay', 'upload/' + moment().format('YYYY-MM-DD'));
+        return logger;
+    })(),
+    /**
+     * 进程跟踪日志
+     * @property threadLog
+     * @writeOnce
+     * @type {Object}
+     */
+    threadLog: (function () {
+        const logger = log4js.getLogger('thread');
+        logger.addContext('logDay', 'thread/' + moment().format('YYYY-MM-DD'));
         return logger;
     })(),
     /**
