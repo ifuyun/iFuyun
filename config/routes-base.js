@@ -71,8 +71,7 @@ module.exports = {
      * @version 2.0.0
      * @since 1.0.0
      */
-    error: function (err, req, res) {// TODO: IE can not custom page
-        // app.get('env') === 'development'
+    error: function (err, req, res, next) {// TODO: IE can not custom page
         if (err.stack) {// 对未捕获的错误记录堆栈信息
             logger.error(formatOpLog({
                 msg: err.stack,

@@ -206,7 +206,18 @@ function uploadTrunk(uploadIP, initData) {
             uploader.throw(err.message);
             return false;
         }
-        uploader.next(body);
+        try {
+            if (typeof body === 'string') {
+                body = JSON.parse(body);
+            }
+            if (body.errCode && body.errMsg) {
+                uploader.throw(body.errMsg);
+            } else {
+                uploader.next(body);
+            }
+        } catch (e) {
+            uploader.throw(e.message);
+        }
     });
 }
 
@@ -377,10 +388,11 @@ function * uploads() {
         while (uploadOffset < fileData.size) {
             initData.offset = uploadOffset;
             initData.finish = uploadOffset + config.trunkSize >= fileData.size;
+            logger.debug(formatOpLog({
+                fn: 'uploads',
+                msg: `trunk offset: ${uploadOffset} B, file size: ${fileData.size} B`
+            }));
             let trunkResult = yield uploadTrunk(nosData.upload[0], initData);
-            if (typeof trunkResult === 'string') {
-                trunkResult = JSON.parse(trunkResult);
-            }
             logger.debug(formatOpLog({
                 fn: 'uploads',
                 msg: 'trunk uploaded.',
@@ -407,8 +419,11 @@ function * uploads() {
     } catch (e) {
         logger.error(formatOpLog({
             fn: 'uploads',
-            msg: e.message
+            msg: e
         }));
+        if (typeof config.onError === 'function') {
+            config.onError(e);
+        }
     }
 }
 
@@ -435,25 +450,21 @@ function init(conf) {
         }));
     }
     Object.assign(config, conf);
-    config.trunkSize = Math.min(config.trunkSize, conf.trunkSize);
+    config.trunkSize = Math.min(config.trunkSize, conf.trunkSize || config.trunkSize);
 }
 
 /**
  * 上传API
  * @param {String} filePath 上传文件路径（相对路径或绝对路径）
- * @param {Function} cb 回调函数
  * @return {*} null
  */
-function upload(filePath, cb) {
+function upload(filePath) {
     if (!config.appKey || !config.appSecret) {
         logger.error(formatOpLog({
             fn: 'upload',
             msg: 'appKey或appSecret无效。'
         }));
         return false;
-    }
-    if (typeof cb === 'function') {
-        config.onSuccess = cb;
     }
     filepath = filePath;
     fs.open(filePath, 'r', (err, result) => {

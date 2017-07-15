@@ -52,8 +52,6 @@ module.exports = function (app, express) {
     app.use('/admin', admin);
     // 独立页面
     app.use(post.showPage);
-    // 可以省略
-    app.use(base.last);
     // 错误路由
     app.use(base.error);
 };

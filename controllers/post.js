@@ -1659,7 +1659,7 @@ module.exports = {
                     });
                 }).then(() => {
                     delete req.session.referer;
-                    res.set('Content-type', 'application/json');
+                    res.type('application/json');
                     res.send({
                         status: 200,
                         code: 0,
@@ -1680,11 +1680,22 @@ module.exports = {
                 uploader.init({
                     appKey: credentials.appKey,
                     appSecret: credentials.appSecret,
-                    appAccessKey: credentials.appAccessKey,
-                    appSecretKey: credentials.appSecretKey,
-                    bucket: credentials.bucket
+                    // appAccessKey: credentials.appAccessKey,
+                    // appSecretKey: credentials.appSecretKey,
+                    // bucket: credentials.bucket,
+                    // trunkSize: 4 * 1024 * 1024,
+                    onSuccess: saveDb,
+                    onError: (err) => {
+                        res.type('application/json');
+                        res.send({
+                            status: 200,
+                            code: 500,
+                            message: typeof err === 'string' ? err : err.message,
+                            token: req.csrfToken ? req.csrfToken() : ''
+                        });
+                    }
                 });
-                uploader.upload(filepath, saveDb);
+                uploader.upload(filepath);
             } else {
                 saveDb();
             }

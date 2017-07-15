@@ -1,4 +1,10 @@
 /*global console*/
+const post = require('../controllers/post');
+// const user = require('../controllers/user');
+const admin = require('../controllers/admin');
+const comment = require('../controllers/comment');
+const taxonomy = require('../controllers/taxonomy');
+const link = require('../controllers/link');
 /**
  * 后台路由
  * @module cfg_routes_admin
@@ -10,13 +16,6 @@
  * @since 1.1.0
  */
 module.exports = function (app, router) {
-    const post = require('../controllers/post');
-    // const user = require('../controllers/user');
-    const admin = require('../controllers/admin');
-    const comment = require('../controllers/comment');
-    const taxonomy = require('../controllers/taxonomy');
-    const link = require('../controllers/link');
-
     router.use(admin.checkAuth);
     router.get('/', admin.welcome);
     // router.get('/profile', user.profile);
