@@ -1345,7 +1345,7 @@ module.exports = {
         }).then(() => {
             const referer = req.session.referer;
             delete req.session.referer;
-            res.set('Content-type', 'application/json');
+            res.type('application/json');
             res.send({
                 status: 200,
                 code: 0,
@@ -1680,10 +1680,6 @@ module.exports = {
                 uploader.init({
                     appKey: credentials.appKey,
                     appSecret: credentials.appSecret,
-                    // appAccessKey: credentials.appAccessKey,
-                    // appSecretKey: credentials.appSecretKey,
-                    // bucket: credentials.bucket,
-                    // trunkSize: 4 * 1024 * 1024,
                     onSuccess: saveDb,
                     onError: (err) => {
                         res.type('application/json');

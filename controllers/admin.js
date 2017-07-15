@@ -135,7 +135,7 @@ module.exports = {
                 });
             });
         }).then(() => {
-            res.set('Content-type', 'application/json');
+            res.type('application/json');
             res.send({
                 code: 0,
                 message: null,

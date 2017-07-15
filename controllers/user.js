@@ -89,7 +89,7 @@ module.exports = {
                     }));
                     return next(err);
                 }
-                res.set('Content-type', 'application/json');
+                res.type('application/json');
                 if (params.rememberMe && params.rememberMe === '1') {
                     res.cookie('rememberMe', 1, {
                         path: '/',

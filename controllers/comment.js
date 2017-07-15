@@ -152,7 +152,7 @@ module.exports = {
                 },
                 req
             }));
-            res.set('Content-type', 'application/json');
+            res.type('application/json');
             res.send({
                 status: 200,
                 code: 0,
@@ -247,7 +247,7 @@ module.exports = {
                 }));
                 return next(err);
             }
-            res.set('Content-type', 'application/json');
+            res.type('application/json');
             res.send({
                 status: 200,
                 code: 0,
@@ -455,7 +455,7 @@ module.exports = {
             const referer = req.session.referer;
             delete req.session.referer;
 
-            res.set('Content-type', 'application/json');
+            res.type('application/json');
             res.send({
                 status: 200,
                 code: 0,

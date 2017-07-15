@@ -257,7 +257,7 @@ module.exports = {
         }).then(() => {
             const referer = req.session.referer;
             delete req.session.referer;
-            res.set('Content-type', 'application/json');
+            res.type('application/json');
             res.send({
                 code: 0,
                 message: null,
@@ -345,7 +345,7 @@ module.exports = {
         }).then(() => {
             const referer = req.session.referer;
             delete req.session.referer;
-            res.set('Content-type', 'application/json');
+            res.type('application/json');
             res.send({
                 code: 0,
                 message: null,
