@@ -7,7 +7,7 @@
  * @since 1.0.0
  */
 const credentials = require('./credentials');
-const logger = require('../helper/logger').dbLog;
+const {dbLog: logger} = require('../helper/logger');
 module.exports = {
     'use_env_variable': (process.env.ENV && process.env.ENV.trim()) || 'development',
     development: {
@@ -23,7 +23,7 @@ module.exports = {
             idle: 30000
         },
         logging: function (sql) {
-            logger.info(sql);
+            logger.trace(sql);
         }
     },
     production: {
@@ -39,7 +39,7 @@ module.exports = {
             idle: 30000
         },
         logging: function (sql) {
-            logger.info(sql);
+            logger.trace(sql);
         }
     }
 };
