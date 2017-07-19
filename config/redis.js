@@ -2,7 +2,7 @@
  * Redis配置
  * @module cfg_redis
  * @author Fuyun
- * @version 3.0.0
+ * @version 2.0.0
  * @since 1.0.0
  */
 const credential = require('./credentials');

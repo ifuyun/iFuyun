@@ -37,63 +37,30 @@ log4js.configure({
     }
 });
 
+let loggers = {
+    accessLog: 'access',
+    sysLog: 'system',
+    dbLog: 'db',
+    uploadLog: 'upload',
+    threadLog: 'thread'
+};
+let logDay = moment().format('YYYY-MM-DD');
+Object.keys(loggers).forEach((key) => {
+    loggers[key] = log4js.getLogger(loggers[key]);
+    loggers[key].addContext('logDay', loggers[key].category + '/' + logDay);
+});
+
 // ['ALL', 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL', 'OFF']
-module.exports = {
-    /**
-     * 访问日志
-     * @property accessLog
-     * @writeOnce
-     * @type {Object}
-     */
-    accessLog: (function () {
-        const logger = log4js.getLogger('access');
-        logger.addContext('logDay', 'access/' + moment().format('YYYY-MM-DD'));
-        return logger;
-    })(),
-    /**
-     * 操作、系统日志
-     * @property sysLog
-     * @writeOnce
-     * @type {Object}
-     */
-    sysLog: (function () {
-        const logger = log4js.getLogger('system');
-        logger.addContext('logDay', 'system/' + moment().format('YYYY-MM-DD'));
-        return logger;
-    })(),
-    /**
-     * 数据库日志
-     * @property dbLog
-     * @writeOnce
-     * @type {Object}
-     */
-    dbLog: (function () {
-        const logger = log4js.getLogger('db');
-        logger.addContext('logDay', 'db/' + moment().format('YYYY-MM-DD'));
-        return logger;
-    })(),
-    /**
-     * 上传日志
-     * @property uploadLog
-     * @writeOnce
-     * @type {Object}
-     */
-    uploadLog: (function () {
-        const logger = log4js.getLogger('upload');
-        logger.addContext('logDay', 'upload/' + moment().format('YYYY-MM-DD'));
-        return logger;
-    })(),
-    /**
-     * 进程跟踪日志
-     * @property threadLog
-     * @writeOnce
-     * @type {Object}
-     */
-    threadLog: (function () {
-        const logger = log4js.getLogger('thread');
-        logger.addContext('logDay', 'thread/' + moment().format('YYYY-MM-DD'));
-        return logger;
-    })(),
+module.exports = Object.assign({}, loggers, {
+    updateContext: function () {
+        const today = moment().format('YYYY-MM-DD');
+        if (today !== logDay) {
+            logDay = today;
+            Object.keys(loggers).forEach((key) => {
+                loggers[key].addContext('logDay', loggers[key].category + '/' + logDay);
+            });
+        }
+    },
     /**
      * 格式化日志消息
      * @method formatOpLog
@@ -128,4 +95,4 @@ module.exports = {
 
         return logStr;
     }
-};
+});

@@ -1,13 +1,12 @@
 /* jslint nomen:true es5:true */
-/* global console, process */
-/* global __dirname */
+/* global console,process,__dirname */
 /**
  * 网站总入口
  * @module index
  * @main index
  * @requires redis, core, routes
  * @author Fuyun
- * @version 3.0.0
+ * @version 2.0.0
  * @since 1.0.0
  */
 const express = require('express');
@@ -30,7 +29,7 @@ const redisCfg = require('./config/redis');
 const redisClient = redis.createClient(redisCfg.port, redisCfg.host, {'auth_pass': redisCfg.passwd});
 const config = require('./config/core');
 const routes = require('./config/routes');
-const {sysLog, threadLog, accessLog, formatOpLog} = require('./helper/logger');
+const {sysLog, threadLog, accessLog, formatOpLog, updateContext} = require('./helper/logger');
 
 if (cluster.isMaster) {
     for (let cpuIdx = 0; cpuIdx < numCPUs; cpuIdx += 1) {
@@ -94,6 +93,7 @@ if (cluster.isMaster) {
         next();
     });
     app.use(function (req, res, next) {
+        updateContext();
         threadLog.trace(formatOpLog({
             msg: `Request [${req.url}] is processed by ${cluster.isWorker ? 'Worker' : 'Master'}: ${cluster.worker.id}`
         }));

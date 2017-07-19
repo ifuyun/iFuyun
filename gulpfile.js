@@ -38,10 +38,7 @@ const checkJsFile = function (file) {
     if (/[\-\.]min.js$/.test(file.path)) {
         return false;
     }
-    if (/\.js$/.test(file.path)) {
-        return true;
-    }
-    return false;
+    return /\.js$/.test(file.path);
 };
 /**
  * 针对较大的第三方库（>100KB），通过webpack打包性能较差；
