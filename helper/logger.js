@@ -54,7 +54,7 @@ Object.keys(loggers).forEach((key) => {
 module.exports = Object.assign({}, loggers, {
     updateContext: function () {
         const today = moment().format('YYYY-MM-DD');
-        if (today !== logDay) {
+        if (logDay !== today) {
             logDay = today;
             Object.keys(loggers).forEach((key) => {
                 loggers[key].addContext('logDay', loggers[key].category + '/' + logDay);
