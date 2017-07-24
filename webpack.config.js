@@ -18,7 +18,6 @@ const getEntry = function () {
         var n = name.slice(name.indexOf('module/') + 7, name.length - 3);
         entry[n] = name;
     });
-    // console.log(entry);
     return entry;
 };
 const replaceHash = function () {
@@ -67,11 +66,9 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.(js|jsx)$/,
+                test: /\.js$/,
                 use: 'babel-loader',
                 exclude: [
-                    // path.resolve(__dirname, 'public/src/js/plugin'),
-                    // path.resolve(__dirname, 'public/src/js/vendor')
                     /\/(plugin|vendor)\/[\w\W]+(?:.js)?/i
                 ]
             }

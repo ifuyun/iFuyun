@@ -1,13 +1,11 @@
 /*global $*/
 'use strict';
 require('../vendor/jquery.poshytip.min');
+require('./validate/customRules');
 
 module.exports = {
     initValidate: function () {
-        var that = this;
-        // require('./poshytip/themes/tip-yellowsimple.css');
-        // require('./poshytip/jquery.poshytip.min');
-        require('./validate/customRules');
+        const that = this;
 
         $.validator.setDefaults({
             errorPlacement: function ($label, $inputEle) {
@@ -47,18 +45,6 @@ module.exports = {
     },
     showTip: function ($input, msg) {
         this.hideTip($input);
-        // $input.closest('.form-group').addClass('has-error');
-        // $input.poshytip({
-        // className: 'tip-yellowsimple',
-        // showOn: 'focus',
-        // alignTo: 'target',
-        // alignX: 'inner-left',
-        // alignY: 'top',
-        // offsetX: 0,
-        // offsetY: 5,
-        // showTimeout: 10,
-        // content: msg
-        // });
         $input.poshytip({
             content: msg,
             className: 'poshytip',
@@ -74,8 +60,7 @@ module.exports = {
     /**
      * 监听指定元素只允许其输入数字和部分控制字符，即屏蔽除数字、.(110,190)、Tab(9)、Delete(46)和退格键(8)和左右箭头外的所有输入
      * @param {Object} cfgObj 配置对象，包括：待监听元素选择符、是否小数、是否负数
-     * @return {void}
-     * @author luoweiping
+     * @return {*}
      */
     filterNonNumInput: function (cfgObj) {
         cfgObj = $.extend({
@@ -85,31 +70,24 @@ module.exports = {
             allowPlus: false
         }, cfgObj);
 
-        $('body').on("keydown", cfgObj.srcEleStr, function (e) {
-            var curKey = e.which;
+        $('body').on('keydown', cfgObj.srcEleStr, function (e) {
+            const curKey = e.which;
+            // Enter; <--,Tab,Delete; <-,->; Home,End
+            const ctrlKeys = [13, 8, 9, 46, 37, 39, 36, 35];
 
-            if (!e.shiftKey && ((curKey > 95 && curKey < 106) || (curKey > 47 && curKey < 58))) {//0-9
+            if (!e.shiftKey && ((curKey > 95 && curKey < 106) || (curKey > 47 && curKey < 58))) {// 0-9
                 return true;
             }
-            if (curKey === 13) {//Enter
+            if (ctrlKeys.includes(curKey)) {
                 return true;
             }
-            if (curKey === 8 || curKey === 9 || curKey === 46) {//<--,Tab,Delete
+            if (cfgObj.isFraction && (curKey === 110 || curKey === 190)) {// .
                 return true;
             }
-            if (curKey === 37 || curKey === 39) {//<-,->
+            if (cfgObj.isNegative && (curKey === 109 || (curKey === 173 && !e.shiftKey))) {// -
                 return true;
             }
-            if (curKey === 36 || curKey === 35) {//Home,End
-                return true;
-            }
-            if (cfgObj.isFraction && (curKey === 110 || curKey === 190)) {//.
-                return true;
-            }
-            if (cfgObj.isNegative && (curKey === 109 || (curKey === 173 && !e.shiftKey))) {//-
-                return true;
-            }
-            if (cfgObj.allowPlus && (curKey === 107 || (curKey === 61 && e.shiftKey))) {//+
+            if (cfgObj.allowPlus && (curKey === 107 || (curKey === 61 && e.shiftKey))) {// +
                 return true;
             }
             e.preventDefault();

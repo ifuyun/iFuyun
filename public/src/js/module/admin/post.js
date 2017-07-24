@@ -1,4 +1,4 @@
-/*global $, tinymce*/
+/*global $,tinymce*/
 require('../../lib/jquery.textposition');
 require('../../lib/jquery.datepicker');
 
@@ -32,17 +32,16 @@ const service = {
                 }
             });
             return false;
-        });
-        $('#form-search,#form-filter').on('submit', function () {
-            location.href = $(this).attr('action') + '&' + $(this).serialize();
-            return false;
-        });
-        $('#form-post .postStatus').on('click', function () {
+        }).on('click', '.postStatus', function () {
             if ($('#post-status-password').is(':checked')) {
                 $('#post-password-wrap').show();
             } else {
                 $('#post-password-wrap').hide();
             }
+        });
+        $('#form-search,#form-filter').on('submit', function () {
+            location.href = $(this).attr('action') + '&' + $(this).serialize();
+            return false;
         });
     },
     initMce: function () {
@@ -84,6 +83,7 @@ const service = {
             'Wingdings=wingdings,zapf dingbats'
         ];
         tinymce.suffix = '.min';
+        // init_instance_callback
         tinymce.init({
             selector: '#post-content',
             height: 400,

@@ -11,21 +11,6 @@ const $userLogin = $('#userLogin');
 const $userPass = $('#userPass');
 
 service = {
-    // poshytip: function ($input, msg) {
-    // $input.poshytip('disable');
-    // $input.poshytip('destroy');
-    // $input.poshytip({
-    // content: msg,
-    // className: 'poshytip',
-    // showOn: 'focus',
-    // alignTo: 'target',
-    // alignX: 'right',
-    // alignY: 'center',
-    // offsetX: 10,
-    // offsetY: 0,
-    // showTimeout: 10
-    // });
-    // },
     shake: function ($target, offset, interval, callback) {
         $target.css({
             'margin-left': offset.shift() + 'px'
@@ -67,7 +52,6 @@ service = {
         $.ajax({
             url: '/user/login',
             cache: false,
-            // data: $('.m-form-login').serialize(),
             data: {
                 username: userLogin,
                 password: md5(userPass),
@@ -80,8 +64,8 @@ service = {
                 if (d.code !== 0) {
                     service.doShake($userPass, d.message, offset);
                 } else {
+                    // location.assign
                     location.replace(d.data.url);
-                    // assign
                 }
             },
             error: function (xhr) {
