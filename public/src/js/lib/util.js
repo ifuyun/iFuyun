@@ -60,7 +60,7 @@ module.exports = {
     /**
      * 监听指定元素只允许其输入数字和部分控制字符，即屏蔽除数字、.(110,190)、Tab(9)、Delete(46)和退格键(8)和左右箭头外的所有输入
      * @param {Object} cfgObj 配置对象，包括：待监听元素选择符、是否小数、是否负数
-     * @return {*}
+     * @return {*} none
      */
     filterNonNumInput: function (cfgObj) {
         cfgObj = $.extend({

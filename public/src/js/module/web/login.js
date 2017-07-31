@@ -2,6 +2,7 @@
 /*global $*/
 require('../../vendor/jquery.cookie.min');
 require('../../vendor/jquery.poshytip.min');
+require('../../vendor/validate/jquery.validate.min');
 require('../../vendor/json2');
 
 const util = require('../../lib/util');
