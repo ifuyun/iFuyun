@@ -252,7 +252,7 @@ module.exports = {
                 status: 200,
                 code: 0,
                 message: null,
-                token: req.csrfToken ? req.csrfToken() : '',
+                token: req.csrfToken(),
                 data: {
                     commentVote: result.commentVote.commentVote
                 }

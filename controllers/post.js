@@ -10,6 +10,7 @@ const moment = require('moment');
 const url = require('url');
 const xss = require('sanitizer');
 const formidable = require('formidable');
+const gm = require('gm').subClass({imageMagick: true});
 const models = require('../models/index');
 const common = require('./common');
 const appConfig = require('../config/core');
@@ -213,6 +214,69 @@ function checkPostFields({data, type, postCategory, postTag}) {
         }
     }
     return true;
+}
+
+function watermark(imgPath, cb) {
+    const fontSize = 18;
+    const lineMargin = 2;
+    const markWidth = 138;
+    // const markCopyWidth = 50;
+    const markHeight = fontSize * 2 + lineMargin;
+    // 字体实际高度比字体大小略小≈17
+    const markMarginX = 10;
+    const markMarginY = 6;
+    const copy = '@抚云';
+    const site = 'www.ifuyun.com';
+    const fontPath = path.join(__dirname, '..', 'config', 'PingFang.ttc');
+    let imgWidth;
+    let imgHeight;
+    let markedWidth;
+    let markedHeight;
+    let ratio = 1;
+    // let markX;
+    // let markY;
+    let gmImg = gm(imgPath);
+    gmImg
+        .size((err, data) => {
+            if (err) {
+                return cb(err);
+            }
+            imgWidth = markedWidth = data.width;
+            imgHeight = markedHeight = data.height;
+            ratio = Math.max(markWidth / imgWidth, markHeight / imgHeight);
+
+            if (ratio > 1) {
+                markedWidth = imgWidth * ratio;
+                markedHeight = imgHeight * ratio;
+                gmImg = gmImg.resize(markedWidth, markedHeight, '!');
+            }
+            // markX = markedWidth - markWidth - markMargin;
+            // markY = markedHeight - markMargin;
+            // gmImg = gmImg.font(fontPath, fontSize)
+            //     .fill('#222222')
+            //     .drawText(markX + markWidth - markCopyWidth, markY - fontSize - lineMargin, copy)
+            //     .drawText(markX, markY, site)
+            //     .fill('#ffffff')
+            //     .drawText(markX + markWidth - markCopyWidth - 2, markY - fontSize - lineMargin - 2, copy)
+            //     .drawText(markX - 2, markY - 2, site);
+            gmImg.font(fontPath, fontSize)
+                .fill('#222222')
+                .drawText(markMarginX, markMarginY + fontSize + lineMargin, copy, 'SouthEast')
+                .drawText(markMarginX, markMarginY, site, 'SouthEast')
+                .fill('#ffffff')
+                .drawText(markMarginX + 1, markMarginY + fontSize + lineMargin + 1, copy, 'SouthEast')
+                .drawText(markMarginX + 1, markMarginY + 1, site, 'SouthEast');
+            if (ratio > 1) {
+                gmImg = gmImg.resize(markedWidth / ratio, markedHeight / ratio, '!');
+            }
+            gmImg
+                .write(imgPath, (err) => {
+                    if (err) {
+                        return cb(err);
+                    }
+                    cb();
+                });
+        });
 }
 
 module.exports = {
@@ -1106,7 +1170,7 @@ module.exports = {
                 logger.error(formatOpLog({
                     fn: 'editPost',
                     msg: err,
-                    data:{
+                    data: {
                         postId
                     },
                     req
@@ -1447,7 +1511,7 @@ module.exports = {
                 logger.error(formatOpLog({
                     fn: 'listMedia',
                     msg: err,
-                    data:{
+                    data: {
                         where,
                         page
                     },
@@ -1659,35 +1723,47 @@ module.exports = {
                     });
                 }).then(() => {
                     delete req.session.referer;
-                    res.type('application/json');
+                    const response = function (err) {
+                        if (err) {
+                            return res.send({
+                                status: 200,
+                                code: 600,
+                                message: `水印处理失败: ${err.message}`,
+                                token: req.csrfToken()
+                            });
+                        }
+                        res.send({
+                            status: 200,
+                            code: 0,
+                            message: null,
+                            data: {
+                                url: '/admin/media'
+                            }
+                        });
+                    };
+                    watermark(filepath, response);
+                }, (err) => {
                     res.send({
                         status: 200,
-                        code: 0,
-                        message: null,
-                        data: {
-                            url: '/admin/media'
-                        }
-                    });
-                }, (err) => {
-                    next({
-                        status: 200,
                         code: 500,
-                        message: err.message || err
+                        message: typeof err === 'string' ? err : err.message,
+                        token: req.csrfToken()
                     });
                 });
             };
+            res.type('application/json');
+
             if (fields.uploadCloud === '1') {
                 uploader.init({
                     appKey: credentials.appKey,
                     appSecret: credentials.appSecret,
                     onSuccess: saveDb,
                     onError: (err) => {
-                        res.type('application/json');
                         res.send({
                             status: 200,
                             code: 500,
                             message: typeof err === 'string' ? err : err.message,
-                            token: req.csrfToken ? req.csrfToken() : ''
+                            token: req.csrfToken()
                         });
                     }
                 });

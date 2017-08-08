@@ -84,7 +84,7 @@ module.exports = {
             res.send({
                 code: err.code || codeError,
                 message,
-                token: req.csrfToken ? req.csrfToken() : ''
+                token: req.csrfToken()
             });
         } else {
             const status = err.status || codeNotFound;
