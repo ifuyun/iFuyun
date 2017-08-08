@@ -220,7 +220,6 @@ function watermark(imgPath, cb) {
     const fontSize = 18;
     const lineMargin = 2;
     const markWidth = 138;
-    // const markCopyWidth = 50;
     const markHeight = fontSize * 2 + lineMargin;
     // 字体实际高度比字体大小略小≈17
     const markMarginX = 10;
@@ -233,8 +232,6 @@ function watermark(imgPath, cb) {
     let markedWidth;
     let markedHeight;
     let ratio = 1;
-    // let markX;
-    // let markY;
     let gmImg = gm(imgPath);
     gmImg
         .size((err, data) => {
@@ -250,15 +247,6 @@ function watermark(imgPath, cb) {
                 markedHeight = imgHeight * ratio;
                 gmImg = gmImg.resize(markedWidth, markedHeight, '!');
             }
-            // markX = markedWidth - markWidth - markMargin;
-            // markY = markedHeight - markMargin;
-            // gmImg = gmImg.font(fontPath, fontSize)
-            //     .fill('#222222')
-            //     .drawText(markX + markWidth - markCopyWidth, markY - fontSize - lineMargin, copy)
-            //     .drawText(markX, markY, site)
-            //     .fill('#ffffff')
-            //     .drawText(markX + markWidth - markCopyWidth - 2, markY - fontSize - lineMargin - 2, copy)
-            //     .drawText(markX - 2, markY - 2, site);
             gmImg.font(fontPath, fontSize)
                 .fill('#222222')
                 .drawText(markMarginX, markMarginY + fontSize + lineMargin, copy, 'SouthEast')
@@ -274,6 +262,13 @@ function watermark(imgPath, cb) {
                     if (err) {
                         return cb(err);
                     }
+                    logger.info(formatOpLog({
+                        fn: 'watermark',
+                        msg: 'Watermark added',
+                        data: {
+                            imgPath
+                        }
+                    }));
                     cb();
                 });
         });
@@ -1711,8 +1706,9 @@ module.exports = {
                                     fn: 'uploadFile',
                                     msg: `File saved: ${filename}`,
                                     data: {
-                                        uploadPath: uploadPath,
+                                        uploadPath,
                                         filename: files.mediafile.name,
+                                        watermark: fields.watermark === '1',
                                         uploadCloud: fields.uploadCloud === '1'
                                     },
                                     req
@@ -1725,6 +1721,17 @@ module.exports = {
                     delete req.session.referer;
                     const response = function (err) {
                         if (err) {
+                            logger.error(formatOpLog({
+                                fn: 'uploadFile',
+                                msg: `水印处理失败: ${err.message}`,
+                                data: {
+                                    uploadPath,
+                                    filename: files.mediafile.name,
+                                    watermark: fields.watermark === '1',
+                                    uploadCloud: fields.uploadCloud === '1'
+                                },
+                                req
+                            }));
                             return res.send({
                                 status: 200,
                                 code: 600,
@@ -1741,7 +1748,11 @@ module.exports = {
                             }
                         });
                     };
-                    watermark(filepath, response);
+                    if (fields.watermark !== '0') {// 默认开启水印
+                        watermark(filepath, response);
+                    } else {
+                        response();
+                    }
                 }, (err) => {
                     res.send({
                         status: 200,
@@ -1753,7 +1764,7 @@ module.exports = {
             };
             res.type('application/json');
 
-            if (fields.uploadCloud === '1') {
+            if (fields.uploadCloud === '1') {// 不带水印
                 uploader.init({
                     appKey: credentials.appKey,
                     appSecret: credentials.appSecret,

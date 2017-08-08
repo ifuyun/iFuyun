@@ -15,3 +15,4 @@ node_modules
 /**/*.css.map
 ifuyun
 package-lock.json
+/**/*.ttc
