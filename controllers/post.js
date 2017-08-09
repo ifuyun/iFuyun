@@ -216,6 +216,12 @@ function checkPostFields({data, type, postCategory, postTag}) {
     return true;
 }
 
+/**
+ * 水印处理
+ * @param {String} imgPath 图片路径
+ * @param {Function} cb 回调函数
+ * @return {*} null
+ */
 function watermark(imgPath, cb) {
     const fontSize = 18;
     const lineMargin = 2;
@@ -460,6 +466,19 @@ module.exports = {
                         taxonomyId: categories[0].taxonomyId
                     }));
                 }],
+            postViewCount: (cb) => {
+                const viewCount = models.sequelize.literal('post_view_count + 1');
+                Post.update({
+                    postViewCount: viewCount
+                }, {
+                    where: {
+                        postId
+                    },
+                    silent: true
+                }).then((post) => {
+                    cb(null, post);
+                });
+            },
             prevPost: (cb) => common.getPrevPost(postId, cb),
             nextPost: (cb) => common.getNextPost(postId, cb)
         }, function (err, result) {
@@ -568,7 +587,20 @@ module.exports = {
                     cb(null, post);
                 });
             },
-            comments: ['post', (result, cb) => common.getCommentsByPostId(result.post.postId, cb)]
+            comments: ['post', (result, cb) => common.getCommentsByPostId(result.post.postId, cb)],
+            postViewCount: ['post', (result, cb) => {
+                const viewCount = models.sequelize.literal('post_view_count + 1');
+                Post.update({
+                    postViewCount: viewCount
+                }, {
+                    where: {
+                        postId: result.post.postId
+                    },
+                    silent: true
+                }).then((post) => {
+                    cb(null, post);
+                });
+            }]
         }, function (err, result) {
             if (err) {
                 logger.error(formatOpLog({
