@@ -36,7 +36,7 @@ module.exports = {
         data.commentAuthorEmail = util.trim(xss.sanitize(param.commentEmail)) || user.userEmail || '';
         data.commentAuthorLink = util.trim(xss.sanitize(param.commentLink));
         data.commentStatus = isAdmin ? 'normal' : 'pending';
-        data.commentIp = req.ip || req._remoteAddress;// TODO:nginx代理前的IP
+        data.commentIp = util.getRemoteIp(req);
         data.commentAgent = req.headers['user-agent'];
         data.userId = user.userId || '';
 
@@ -134,8 +134,8 @@ module.exports = {
                 }));
                 return next(err);
             }
-            const referer = req.session.referer;
-            delete req.session.referrer;
+            const referer = req.session.commentReferer;
+            delete req.session.commentReferer;
             let postGuid;
             let commentFlag;
             if (result.post.postGuid) {
@@ -174,7 +174,7 @@ module.exports = {
             user = req.session.user;
         }
 
-        data.userIp = req.ip || req._remoteAddress;
+        data.userIp = util.getRemoteIp(req);
         data.userAgent = req.headers['user-agent'];
         data.userId = user.userId || '';
 
@@ -372,7 +372,6 @@ module.exports = {
                 message: 'Comment Not Found'
             }, next);
         }
-        req.session.referer = req.headers.referer;
         async.parallel({
             options: common.getInitOptions,
             comment: function (cb) {
@@ -411,6 +410,7 @@ module.exports = {
                 action
             };
             resData.meta.title = util.getTitle([result.comment.commentContent, title, '管理后台', result.options.site_name.optionValue]);
+            req.session.commentReferer = util.getReferrer(req);
             res.render(`${appConfig.pathViews}/admin/pages/commentForm`, resData);
         });
     },
@@ -452,16 +452,13 @@ module.exports = {
                 commentId
             }
         }).then((comment) => {
-            const referer = req.session.referer;
-            delete req.session.referer;
-
             res.type('application/json');
             res.send({
                 status: 200,
                 code: 0,
                 message: null,
                 data: {
-                    url: referer || '/admin/comment'
+                    url: util.getReferrer(req) || '/admin/comment'
                 }
             });
         });

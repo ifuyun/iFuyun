@@ -1241,6 +1241,7 @@ module.exports = {
                 });
                 resData.postTags = tagArr.join(',');
             }
+            req.session.postReferer = util.getReferrer(req);
             res.render(`${appConfig.pathViews}/admin/pages/postForm`, resData);
         });
     },
@@ -1434,8 +1435,8 @@ module.exports = {
                 });
             });
         }).then(() => {
-            const referer = req.session.referer;
-            delete req.session.referer;
+            const referer = req.session.postReferer;
+            delete req.session.postReferer;
             res.type('application/json');
             res.send({
                 status: 200,
@@ -1623,6 +1624,7 @@ module.exports = {
                 token: req.csrfToken(),
                 options
             };
+            req.session.uploadReferer = util.getReferrer(req);
             res.render(`${appConfig.pathViews}/admin/pages/mediaForm`, resData);
         });
     },
@@ -1750,7 +1752,6 @@ module.exports = {
                         });
                     });
                 }).then(() => {
-                    delete req.session.referer;
                     const response = function (err) {
                         if (err) {
                             logger.error(formatOpLog({
@@ -1771,12 +1772,14 @@ module.exports = {
                                 token: req.csrfToken()
                             });
                         }
+                        const referer = req.session.uploadReferer;
+                        delete req.session.uploadReferer;
                         res.send({
                             status: 200,
                             code: 0,
                             message: null,
                             data: {
-                                url: '/admin/media'
+                                url: referer || '/admin/media'
                             }
                         });
                     };

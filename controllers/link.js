@@ -92,7 +92,6 @@ module.exports = {
                 message: 'Link Not Found'
             }, next);
         }
-        req.session.referer = req.headers.referer;
         let tasks = {
             options: common.getInitOptions,
             categories: (cb) => {
@@ -147,6 +146,7 @@ module.exports = {
             };
             Object.assign(resData, result);
             resData.meta.title = util.getTitle(titleArr);
+            req.session.linkReferer = util.getReferrer(req);
             res.render(`${appConfig.pathViews}/admin/pages/linkForm`, resData);
         });
     },
@@ -255,8 +255,8 @@ module.exports = {
                 });
             });
         }).then(() => {
-            const referer = req.session.referer;
-            delete req.session.referer;
+            const referer = req.session.linkReferer;
+            delete req.session.linkReferer;
             res.type('application/json');
             res.send({
                 code: 0,
@@ -343,14 +343,12 @@ module.exports = {
                 });
             });
         }).then(() => {
-            const referer = req.session.referer;
-            delete req.session.referer;
             res.type('application/json');
             res.send({
                 code: 0,
                 message: null,
                 data: {
-                    url: referer || '/admin/link'
+                    url: util.getReferrer(req) || '/admin/link'
                 }
             });
         }, (err) => {

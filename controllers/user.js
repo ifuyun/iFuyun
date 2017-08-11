@@ -13,11 +13,11 @@ const {User, Usermeta} = models;
 
 module.exports = {
     showLogin: function (req, res, next) {
-        req.session.loginReferer = req.headers.referer;
-
         if (req.session.user) {
-            return res.redirect('/');
+            return res.redirect(util.getReferrer(req) || '/');
         }
+        req.session.loginReferer = util.getReferrer(req);
+
         common.getInitOptions((err, result) => {
             if (err) {
                 logger.error(formatOpLog({
@@ -78,7 +78,7 @@ module.exports = {
             delete user.Usermeta;
             user.usermeta = metaObj;
 
-            const referer = req.session.referrer;
+            const referer = req.session.loginReferer;
             delete req.session.loginReferer;
             req.session.regenerate((err) => {
                 if (err) {
@@ -127,7 +127,7 @@ module.exports = {
                 }));
                 return next(err);
             }
-            res.redirect('/');
+            res.redirect(util.getReferrer(req) || '/');
         });
     }
 };

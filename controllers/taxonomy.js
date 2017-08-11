@@ -168,7 +168,6 @@ module.exports = {
                 message: 'Taxonomy Not Found'
             }, next);
         }
-        req.session.referer = req.headers.referer;
         let tasks = {
             options: common.getInitOptions
         };
@@ -225,6 +224,7 @@ module.exports = {
             };
             Object.assign(resData, result);
             resData.meta.title = util.getTitle(titleArr);
+            req.session.taxonomyReferer = util.getReferrer(req);
             res.render(`${appConfig.pathViews}/admin/pages/taxonomyForm`, resData);
         });
     },
@@ -320,8 +320,8 @@ module.exports = {
                 }));
                 return next(err);
             }
-            const referer = req.session.referer;
-            delete req.session.referer;
+            const referer = req.session.taxonomyReferer;
+            delete req.session.taxonomyReferer;
 
             res.type('application/json');
             res.send({
@@ -441,14 +441,12 @@ module.exports = {
                 });
             });
         }).then(() => {
-            const referer = req.session.referer;
-            delete req.session.referer;
             res.type('application/json');
             res.send({
                 code: 0,
                 message: null,
                 data: {
-                    url: referer || '/admin/taxonomy?type=' + type
+                    url: util.getReferrer(req) || '/admin/taxonomy?type=' + type
                 }
             });
         }, (err) => {
