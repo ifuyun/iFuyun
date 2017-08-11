@@ -878,7 +878,7 @@ module.exports = {
                 return next(err);
             }
             let resData = {
-                curNav: 'index',
+                curNav: 'archive',
                 showCrumb: true,
                 meta: {}
             };

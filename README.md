@@ -9,32 +9,41 @@ iFuyun是基于Node.js和MySQL开发的博客系统。在线体验，请访问�
 1. Node.js
 2. MySQL
 3. Redis
+4. Gulp、Webpack
+5. ImageMagick、gm
+6. supervisor（开发）、pm2（生产）
+7. yuidocjs（文档）
 
 ### 配置
 1. 执行npm i
 2. 新增/config/credentials.js文件，并设置相关密码信息
 3. 修改/config/core.js、/config/database.js和/config/redis.js等相关配置信息
 
+## 运行、服务启动
+### 开发模式
+```js
+npm run start
+```
+
+### 模拟生产环境
+```js
+npm run server
+```
+
 ## 构建
-### 开发模式
+### 前端构建+监听
 ```js
-gulp --env development
-````
-
-### 生产模式
-```js
-gulp build
+npm run dev
 ```
 
-## 运行
-### 开发模式
+### 前端构建（不进行监听，仅用于开发模式的打包）
 ```js
-ENV=development node index
+npm run develop
 ```
 
-### 开发模式
+### 生产构建
 ```js
-ENV=production node index
+npm run build
 ```
 
 ## 文档生成
@@ -50,13 +59,12 @@ ENV=production node index
 
 ## TODO
 1. 文章访问权限控制
-2. 日志系统完善
-3. RSS订阅
-4. 相册
-5. 表情支持
-6. 监控、报警支持
-7. 消息通信
-8. ……
+2. RSS订阅
+3. 相册
+4. 表情支持
+5. 监控、报警支持
+6. 消息通信
+7. ……
 
 ## License
 GPL
