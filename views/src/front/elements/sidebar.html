@@ -4,12 +4,15 @@
             <input type="text" class="u-input u-input-search" name="keyword" placeholder="Search..." /><input type="submit" class="u-btn u-btn-submit" value="搜索" />
         </form>
     </div>
+    <? if(curNav !== 'archive') { ?>
     <div class="m-widget">
         <h3 class="m-widget-title"><span class="glyphicon glyphicons-blog"></span><span>文章归档</span></h3>
         <ul>
-            <? archiveDates.forEach(function(archive){ archive = archive.get(); ?><li><a title="<?= archive.displayDate ?>" href="/archive/<?= archive.linkDate ?>"><?= archive.displayDate ?></a></li><? }) ?>
+            <? archiveDates.slice(0, 20).forEach(function(archive, rowIdx){ archive = archive.get(); ?><li><a href="/archive/<?= archive.linkDate ?>" title="<?= archive.displayDate ?>"><?= archive.displayDate ?></a></li><? }) ?>
+            <? if(archiveDates.length > 20) { ?><li><a href="/archive" title="查看全部归档">……</a></li><? } ?>
         </ul>
     </div>
+    <? } ?>
     <div class="m-widget">
         <h3 class="m-widget-title"><span class="glyphicon glyphicons-random"></span><span>手气不错</span></h3>
         <ul>

@@ -846,7 +846,6 @@ module.exports = {
         async.auto({
             commonData: (cb) => {
                 getCommonData({
-                    page,
                     from: 'archive'
                 }, cb);
             },
@@ -889,7 +888,7 @@ module.exports = {
             let crumbData = [{
                 'title': '文章归档',
                 'tooltip': '文章归档',
-                'url': '',
+                'url': '/archive',
                 'headerFlag': false
             }, {
                 'title': `${year}年`,
@@ -927,6 +926,52 @@ module.exports = {
             resData.util = util;
             resData.moment = moment;
             res.render(`${appConfig.pathViews}/front/pages/postList`, resData);
+        });
+    },
+    listArchiveDate: function (req, res, next) {
+        async.auto({
+            commonData: (cb) => {
+                getCommonData({
+                    from: 'archive'
+                }, cb);
+            }
+        }, (err, result) => {
+            if (err) {
+                logger.error(formatOpLog({
+                    fn: 'listArchiveDate',
+                    msg: err,
+                    req
+                }));
+                return next(err);
+            }
+            let resData = {
+                curNav: 'archive',
+                showCrumb: true,
+                meta: {}
+            };
+            const options = result.commonData.options;
+            Object.assign(resData, result.commonData);
+
+            let crumbData = [{
+                'title': '文章归档',
+                'tooltip': '文章归档',
+                'url': '/archive',
+                'headerFlag': false
+            }, {
+                'title': '归档历史',
+                'tooltip': '归档历史',
+                'url': '',
+                'headerFlag': true
+            }];
+            resData.curPos = util.createCrumb(crumbData);
+
+            resData.meta.title = util.getTitle(['文章归档', options.site_name.optionValue]);
+            resData.meta.description = '[文章归档]' + options.site_description.optionValue;
+            resData.meta.keywords = options.site_keywords.optionValue;
+            resData.meta.author = options.site_author.optionValue;
+
+            resData.util = util;
+            res.render(`${appConfig.pathViews}/front/pages/archiveList`, resData);
         });
     },
     listEdit: function (req, res, next) {

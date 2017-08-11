@@ -32,6 +32,7 @@ module.exports = function (app, express) {
     app.get('/post/:postId', post.showPost);
     app.get('/category/:category', post.listByCategory);
     app.get('/category/:category/page-:page', post.listByCategory);
+    app.get('/archive', post.listArchiveDate);
     app.get('/archive/:year', post.listByDate);
     app.get('/archive/:year/page-:page', post.listByDate);
     app.get('/archive/:year/:month', post.listByDate);

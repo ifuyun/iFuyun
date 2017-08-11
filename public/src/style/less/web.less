@@ -326,7 +326,7 @@ html {
 }
 .m-pagination > ul > li {
     margin: 0 8px 0 0;
-   display: inline;
+    display: inline;
 }
 .m-pagination > ul > li a, .m-pagination > ul > li span {
     padding: 4px 9px;
@@ -617,20 +617,19 @@ html {
     float: left;
     margin-right: 10px;
 }
-.m-article-content {
+.m-article-content, .m-archive {
     text-indent: 2em;
     padding: 15px 25px;
     line-height: 200%;
-    /*word-break: break-all;*/
     word-wrap: break-word;
 }
-.m-article-content a, .m-article-link a {
+.m-article-content a, .m-article-link a, .m-archive a {
     color: #1abc9c;/*20aa8f*/
 }
 .m-article-content a {
     border-bottom: solid 1px;
 }
-.m-article-content a:hover, .m-article-link a:hover {
+.m-article-content a:hover, .m-article-link a:hover, .m-archive a:hover {
     /*color: #1abc9c;*/
     color: #fe0065;
 }
@@ -812,6 +811,21 @@ html {
 }
 .m-article-link .m-article-link-next {
     float: right;
+}
+.m-archive-list {
+    margin-left: 0;
+    > li {
+        padding: 3px 20px;
+        line-height: 200%;
+        list-style: none;
+        border-bottom: 1px dashed #eaeaea;
+        text-indent: 0;
+
+        > a {
+            display: inline-block;
+            width: 100%;
+        }
+    }
 }
 .m-page .m-article-header {
     padding: 20px 25px 5px 25px;
