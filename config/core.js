@@ -16,7 +16,7 @@ module.exports = {
     cookieExpires: 1000 * 60 * 60 * 24 * 7,
     host: '127.0.0.1',
     port: 2016,
-    domain: 'ifuyun.com',
+    domain: 'www.ifuyun.com',
     pathViews: process.env.ENV && process.env.ENV.trim() === 'production' ? 'dist' : 'src',
     logLevel: process.env.ENV && process.env.ENV.trim() === 'production' ? 'INFO' : 'TRACE'
 };
