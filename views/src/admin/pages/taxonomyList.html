@@ -16,7 +16,7 @@
             <div class="clear-right">
                 <div class="table-nav">
                     <span><a class="button button-spacing" href="javascript:;">删除</a></span>
-                    <span><a class="button" href="/admin/taxonomy/detail?action=create&type=<?= type ?>"><?= type === 'tag' ? '新增标签' : '新增一级分类' ?></a></span>
+                    <span><a class="button" href="/admin/taxonomy/item?action=create&type=<?= type ?>"><?= type === 'tag' ? '新增标签' : '新增一级分类' ?></a></span>
                 </div>
                 <div>
                     <table class="list-table">
@@ -53,7 +53,7 @@
                                 <td><?= cat.termOrder ?></td>
                                 <td class="column-count"><?= cat.count ?></td>
                                 <td>
-                                    <? if(type !== 'tag') { ?><a class="button button-not-last" href="/admin/taxonomy/detail?action=create&type=<?= type ?>&parent=<?= cat.taxonomyId ?>">新增子类</a><? } ?><a class="button button-not-last btn-edit" href="/admin/taxonomy/detail?action=edit&type=<?= type ?>&taxonomyId=<?= cat.taxonomyId ?>">编辑</a><a class="button button-not-last btn-delete" href="javascript:;" data-type="<?= type ?>" data-taxonomy="<?= cat.taxonomyId ?>">删除</a><? if(type !== 'link') { ?><a class="button btn-view" href="/admin/post?<?- type === 'post' ? 'category' : 'tag' ?>=<?- cat.slug ?>">查看</a><? } ?>
+                                    <? if(type !== 'tag') { ?><a class="button button-not-last" href="/admin/taxonomy/item?action=create&type=<?= type ?>&parent=<?= cat.taxonomyId ?>">新增子类</a><? } ?><a class="button button-not-last btn-edit" href="/admin/taxonomy/item?action=edit&type=<?= type ?>&taxonomyId=<?= cat.taxonomyId ?>">编辑</a><a class="button button-not-last btn-delete" href="javascript:;" data-type="<?= type ?>" data-taxonomy="<?= cat.taxonomyId ?>">删除</a><? if(type !== 'link') { ?><a class="button btn-view" href="/admin/post?<?- type === 'post' ? 'category' : 'tag' ?>=<?- cat.slug ?>">查看</a><? } ?>
                                 </td>
                             </tr>
                             <? }) ?>

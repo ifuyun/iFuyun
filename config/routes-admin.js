@@ -22,8 +22,8 @@ module.exports = function (app, router) {
 
     router.get('/post', post.listEdit);
     router.get('/post/page-:page', post.listEdit);
-    router.get('/post/new', post.editPost);
-    router.get('/post/:postId', post.editPost);
+    router.get('/post/item', post.editPost);
+    // router.get('/post/:postId', post.editPost);
     router.post('/post/save', post.savePost);
     // router.post('/post/batch', post.batchSave);
     // router.post('/post/remove', post.removePost);//避免误删，采用post
@@ -42,13 +42,13 @@ module.exports = function (app, router) {
 
     router.get('/taxonomy', taxonomy.listTaxonomy);
     router.get('/taxonomy/page-:page', taxonomy.listTaxonomy);
-    router.get('/taxonomy/detail', taxonomy.editTaxonomy);
+    router.get('/taxonomy/item', taxonomy.editTaxonomy);
     router.post('/taxonomy/save', taxonomy.saveTaxonomy);
     router.post('/taxonomy/remove', taxonomy.removeTaxonomy);
 
     router.get('/link', link.listLink);
     router.get('/link/page-:page', link.listLink);
-    router.get('/link/detail', link.editLink);
+    router.get('/link/item', link.editLink);
     router.post('/link/save', link.saveLink);
     router.post('/link/remove', link.removeLink);
 

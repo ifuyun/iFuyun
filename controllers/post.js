@@ -1185,11 +1185,24 @@ module.exports = {
         });
     },
     editPost: function (req, res, next) {
-        const postId = req.params.postId;
+        const postId = req.query.postId;
+        const action = (req.query.action || 'create').toLowerCase();
         let tasks = {
             categories: common.getCategoryTree.bind(common),
             options: common.getInitOptions
         };
+        if (!['create', 'edit'].includes(action)) {
+            logger.error(formatOpLog({
+                fn: 'editPost',
+                msg: `Operate: ${action} is not allowed.`,
+                req
+            }));
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: '不支持该操作'
+            }, next);
+        }
         if (postId) {
             if (!idReg.test(postId)) {
                 return util.catchError({

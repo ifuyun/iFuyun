@@ -6,9 +6,9 @@
         <div id="control-panel">
             <div id="control-body">
                 <? if(type === 'post') { ?>
-                <h2>文章<a class="button button-add-h2" href="/admin/post/new">写文章</a></h2>
+                <h2>文章<a class="button button-add-h2" href="/admin/post/item?action=create">写文章</a></h2>
                 <? } else { ?>
-                <h2>页面<a class="button button-add-h2" href="/admin/post/new?type=page">撰写新页面</a></h2>
+                <h2>页面<a class="button button-add-h2" href="/admin/post/item?action=create&type=page">撰写新页面</a></h2>
                 <? } ?>
                 <div class="split-line"><div class="split-corner">&nbsp;</div></div>
                 <div id="status-type">
@@ -103,7 +103,7 @@
                                 <td><a href="/admin/post?status=<?= post.postStatus ?>"><?= formatter.postStatus(post.postStatus) ?></a></td>
                                 <td>
                                     <!-- <input type="button" class="button button-not-last btn-edit" value="编辑" /><input type="button" class="button btn-delete" value="删除" /> -->
-                                    <a class="button button-not-last btn-edit" href="/admin/post/<?= post.postId + '?type=' + type ?>">编辑</a><a class="button btn-delete" href="javascript:;">删除</a>
+                                    <a class="button button-not-last btn-edit" href="/admin/post/item?action=edit&type=<?= type ?>&postId=<?= post.postId ?>">编辑</a><a class="button btn-delete" href="javascript:;">删除</a>
                                 </td>
                             </tr>
                             <? }) ?>
