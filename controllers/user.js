@@ -43,10 +43,6 @@ module.exports = {
         const params = req.body;
         const username = xss.sanitize(params.username);
 
-        res.cookie('username', username, {
-            path: '/',
-            maxAge: appConfig.cookieExpires
-        });
         User.findOne({
             attributes: ['userId', 'userLogin', 'userNicename', 'userEmail', 'userLink', 'userRegistered', 'userStatus', 'userDisplayName'],
             include: [{
@@ -89,7 +85,11 @@ module.exports = {
                     }));
                     return next(err);
                 }
-                res.type('application/json');
+                res.cookie('username', username, {
+                    path: '/',
+                    domain: 'ifuyun.com',
+                    maxAge: appConfig.cookieExpires
+                });
                 if (params.rememberMe && params.rememberMe === '1') {
                     res.cookie('rememberMe', 1, {
                         path: '/',
@@ -106,6 +106,7 @@ module.exports = {
                 }
                 req.session.user = user;
                 req.session.save();
+                res.type('application/json');
                 res.send({
                     status: 200,
                     code: 0,

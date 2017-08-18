@@ -72,9 +72,12 @@ if (cluster.isMaster) {
         }),
         secret: config.sessionSecret,
         resave: false,
-        saveUninitialized: false
+        saveUninitialized: false,
+        cookie: {
+            maxAge: config.cookieExpires,
+            domain: 'ifuyun.com'
+        }
         // expires: new Date(Date.now() + config.cookieExpires),
-        // maxAge: config.cookieExpires
     }));
     app.use(bodyParser.json({
         limit: '20mb'

@@ -56,8 +56,8 @@
     "yargs": "^8.0.2"
   },
   "scripts": {
-    "start": "ENV=development supervisor index",
-    "server": "ENV=production supervisor index",
+    "start": "ENV=development supervisor -i public index",
+    "server": "ENV=production supervisor -i public index",
     "dev": "gulp dev --env development",
     "develop": "gulp develop --env development",
     "build": "gulp build"
