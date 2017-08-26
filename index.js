@@ -106,7 +106,7 @@ if (cluster.isMaster) {
     routes(app, express);
 
     if (require.main === module) {
-        http.createServer(app).listen(config.port, config.host, () => sysLog.info(formatOpLog({
+        http.Server(app).listen(config.port, config.host, () => sysLog.info(formatOpLog({
             msg: `Server listening on: ${config.host}:${config.port}`
         })));
     }
