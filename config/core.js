@@ -7,6 +7,8 @@
  */
 const pkgCfg = require('../package.json');
 const credentials = require('./credentials');
+const isDev = process.env.ENV && process.env.ENV.trim() !== 'production';
+
 module.exports = {
     name: '爱生活，爱抚云',
     version: pkgCfg.version,
@@ -17,6 +19,7 @@ module.exports = {
     host: '127.0.0.1',
     port: 2016,
     domain: 'www.ifuyun.com',
-    pathViews: process.env.ENV && process.env.ENV.trim() === 'production' ? 'dist' : 'src',
-    logLevel: process.env.ENV && process.env.ENV.trim() === 'production' ? 'INFO' : 'TRACE'
+    pathViews: isDev ? 'src' : 'dist',
+    logLevel: isDev ? 'TRACE' : 'INFO',
+    isDev
 };
