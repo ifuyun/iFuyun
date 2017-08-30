@@ -63,6 +63,9 @@ service = {
             dataType: 'json',
             success: function (d) {
                 if (d.code !== 0) {
+                    if (d.token) {
+                        $('#csrfToken').val(d.token);
+                    }
                     service.doShake($userPass, d.message, offset);
                 } else {
                     // location.assign
@@ -79,6 +82,9 @@ service = {
                         'code': 1,
                         'message': '登录失败，请重新登录'
                     };
+                }
+                if (d.token) {
+                    $('#csrfToken').val(d.token);
                 }
                 service.doShake($userPass, d.message || '登录失败，请重新登录', offset);
             }
