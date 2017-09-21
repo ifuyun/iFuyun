@@ -83,6 +83,7 @@ const service = {
             'Wingdings=wingdings,zapf dingbats'
         ];
         tinymce.suffix = '.min';
+        tinymce.baseURL = '/js/admin';
         // init_instance_callback
         tinymce.init({
             selector: '#post-content',
