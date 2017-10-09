@@ -788,7 +788,7 @@ module.exports = {
                 return next(err);
             }
             let resData = {
-                curNav: 'index',
+                curNav: 'tag',
                 showCrumb: true,
                 user: {},
                 meta: {}
@@ -945,7 +945,7 @@ module.exports = {
                 return next(err);
             }
             let resData = {
-                curNav: 'archive',
+                curNav: 'archiveDate',
                 showCrumb: true,
                 meta: {}
             };
