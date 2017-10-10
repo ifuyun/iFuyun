@@ -14,7 +14,7 @@
                 <div id="status-type">
                     <ul>
                         <li><a href="/admin/post"<? if(curStatus === 'all'){ ?> class="font-bold"<? } ?>>全部 (<?= count.all ?>)</a> | </li>
-                        <li><a href="/admin/post?status=publish"<? if(curStatus === 'publish'){ ?> class="font-bold"<? } ?>>已发布 (<?= count.publish ?>)</a> | </li>
+                        <li><a href="/admin/post?status=publish"<? if(curStatus === 'publish'){ ?> class="font-bold"<? } ?>>公开 (<?= count.publish ?>)</a> | </li>
                         <li><a href="/admin/post?status=private"<? if(curStatus === 'private'){ ?> class="font-bold"<? } ?>>私密 (<?= count.private ?>)</a> | </li>
                         <li><a href="/admin/post?status=draft"<? if(curStatus === 'draft'){ ?> class="font-bold"<? } ?>>草稿 (<?= count.draft ?>)</a> | </li>
                         <li><a href="/admin/post?status=trash"<? if(curStatus === 'trash'){ ?> class="font-bold"<? } ?>>回收站 (<?= count.trash ?>)</a></li>
