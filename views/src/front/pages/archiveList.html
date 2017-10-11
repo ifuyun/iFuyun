@@ -11,7 +11,7 @@
                 </header>
                 <div class="m-archive">
                     <ul class="m-archive-list">
-                        <? archiveDates.forEach(function(archive, rowIdx){ archive = archive.get(); ?><li><a href="/archive/<?= archive.linkDate ?>" title="<?= archive.displayDate ?>"><?= archive.displayDate ?></a></li><? }) ?>
+                        <? archiveDates.forEach(function(archive, rowIdx){ archive = archive.get(); ?><li><a href="/archive/<?= archive.linkDate ?>" title="<?= archive.displayDate ?>"><?= archive.displayDate ?>(<?= archive.count ?>)</a></li><? }) ?>
                     </ul>
                 </div>
             </div>

@@ -4,9 +4,9 @@
         <? if(posts.paginator.curPage > 1){ ?><li class="m-pagination-prev"><a title="上一页" href="<?= posts.linkUrl + posts.paginator.prevPage + posts.linkParam ?>">&lt;&nbsp;Prev</a></li><? } ?>
         <? for(var page = posts.paginator.startPage; page <= posts.paginator.endPage; page += 1){ ?>
             <? if(page === posts.paginator.curPage){ ?>
-                <li class="m-pagination-page active"><span><?= page ?></span></li>
+            <li class="m-pagination-page active"><span><?= page ?></span></li>
             <? } else { ?>
-                <li class="m-pagination-page"><a title="第<?= page ?>页" href="<?= posts.linkUrl + page + posts.linkParam ?>"><?= page ?></a></li>
+            <li class="m-pagination-page"><a title="第<?= page ?>页" href="<?= posts.linkUrl + page + posts.linkParam ?>"><?= page ?></a></li>
             <? } ?>
         <? } ?>
         <? if(posts.paginator.curPage < posts.paginator.endPage){ ?><li class="m-pagination-next"><a title="下一页" href="<?= posts.linkUrl + posts.paginator.nextPage + posts.linkParam ?>">Next&nbsp;&gt;</a></li><? } ?>
