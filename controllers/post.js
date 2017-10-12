@@ -158,18 +158,19 @@ function queryPosts(param, cb) {
         offset: 10 * (param.page - 1),
         subQuery: false
     };
-    switch (param.from) {
-        case 'category':
-            queryOpt.include = queryOpt.include.concat(param.includeOpt);
-            queryOpt.group = ['postId'];
-            break;
-        // case 'tag':
-        //     queryOpt.include = queryOpt.include.concat(param.includeOpt);
-        //     break;
-        default:
-            if (param.includeOpt) {
-                queryOpt.include = queryOpt.include.concat(param.includeOpt);
-            }
+    // switch (param.from) {
+    //     case 'category':
+    //         queryOpt.include = queryOpt.include.concat(param.includeOpt);
+    //         queryOpt.group = ['postId'];
+    //         break;
+    //     case 'tag':
+    //         queryOpt.include = queryOpt.include.concat(param.includeOpt);
+    //         break;
+    //     default:
+    // }
+    if (param.includeOpt) {
+        queryOpt.include = queryOpt.include.concat(param.includeOpt);
+        queryOpt.group = ['postId'];
     }
     Post.findAll(queryOpt).then((posts) => {
         let postIds = [];
@@ -337,7 +338,8 @@ module.exports = {
             postsCount: (cb) => {
                 Post.count({
                     where,
-                    include: includeOpt
+                    include: includeOpt,
+                    distinct: true
                 }).then((result) => cb(null, result));
             },
             posts: ['postsCount', (result, cb) => {
@@ -822,7 +824,8 @@ module.exports = {
             postsCount: (cb) => {
                 Post.count({
                     where,
-                    include: includeOpt
+                    include: includeOpt,
+                    distinct: true
                 }).then((count) => cb(null, count));
             },
             posts: ['postsCount', (result, cb) => {
@@ -922,7 +925,8 @@ module.exports = {
             postsCount: (cb) => {
                 Post.count({
                     where,
-                    include: includeOpt
+                    include: includeOpt,
+                    distinct: true
                 }).then((data) => cb(null, data));
             },
             posts: ['postsCount', (result, cb) => {
@@ -1155,7 +1159,8 @@ module.exports = {
             postsCount: ['subCategories', (result, cb) => {
                 Post.count({
                     where,
-                    include: includeOpt
+                    include: includeOpt,
+                    distinct: true
                 }).then((data) => cb(null, data));
             }],
             posts: ['postsCount', (result, cb) => {
