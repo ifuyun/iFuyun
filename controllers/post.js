@@ -158,16 +158,6 @@ function queryPosts(param, cb) {
         offset: 10 * (param.page - 1),
         subQuery: false
     };
-    // switch (param.from) {
-    //     case 'category':
-    //         queryOpt.include = queryOpt.include.concat(param.includeOpt);
-    //         queryOpt.group = ['postId'];
-    //         break;
-    //     case 'tag':
-    //         queryOpt.include = queryOpt.include.concat(param.includeOpt);
-    //         break;
-    //     default:
-    // }
     if (param.includeOpt) {
         queryOpt.include = queryOpt.include.concat(param.includeOpt);
         queryOpt.group = ['postId'];
@@ -585,6 +575,7 @@ module.exports = {
             resData.prevPost = result.prevPost;
             resData.nextPost = result.nextPost;
             resData.comments = result.comments;
+            resData.urlShare = util.setUrlRef(options.site_url.optionValue + result.post.postGuid, 'qrcode');
             resData.util = util;
             resData.moment = moment;
             res.render(`${appConfig.pathViews}/front/pages/post`, resData);

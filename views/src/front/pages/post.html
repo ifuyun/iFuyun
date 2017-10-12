@@ -41,7 +41,7 @@
                     <span title="更新于: <?= moment(post.postModified || post.postCreated).format('YYYY-MM-DD HH:mm') ?>">最后更新：<?= moment(post.postModified || post.postCreated).format('YYYY-MM-DD HH:mm') ?></span>
                 </div>
                 <div class="m-article-qrcode f-clearfix">
-                    <div class="m-article-qrcode-img m-article-qrcode-share" id="qrcodeShare" data-url="<?= options.site_url.optionValue + post.postGuid ?>">&nbsp;</div>
+                    <div class="m-article-qrcode-img m-article-qrcode-share" id="qrcodeShare" data-url="<?= urlShare ?>">&nbsp;</div>
                     <div class="m-article-qrcode-img m-article-qrcode-reward" id="qrcodeReward">&nbsp;</div>
                     <div class="m-article-qrcode-item m-article-share" id="btnShare">分享</div>
                     <div class="m-article-qrcode-item m-article-reward" id="btnReward">打赏</div>

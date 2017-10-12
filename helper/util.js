@@ -529,5 +529,20 @@ module.exports = {
     isAdminUser: function (req) {
         const curUser = req.session.user;
         return this.isLogin(req) && curUser.usermeta && curUser.usermeta.role === 'admin';
+    },
+    /**
+     * URL添加来源参数
+     * @method setUrlRef
+     * @static
+     * @param url URL
+     * @param from 来源
+     * @return {string} 新的URL
+     * @author Fuyun
+     * @version 2.0.0
+     * @since 2.0.0
+     */
+    setUrlRef: function (url, from) {
+        const split = url.indexOf('?') >= 0 ? '&' : '?';
+        return url + split + 'ref=' + from;
     }
 };
