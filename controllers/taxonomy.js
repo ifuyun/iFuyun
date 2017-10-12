@@ -174,13 +174,13 @@ module.exports = {
         if (action === 'edit') {
             tasks.taxonomy = (cb) => {
                 TermTaxonomy.findById(taxonomyId, {
-                    attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'created']
+                    attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'visible', 'created']
                 }).then((taxonomy) => cb(null, taxonomy));
             };
         }
         if (type !== 'tag') {
             tasks.categories = (cb) => {
-                common.getCategoryTree(cb, type);
+                common.getCategoryTree(cb, {type});
             };
         }
         async.auto(tasks, function (err, result) {
@@ -251,6 +251,7 @@ module.exports = {
         data.parent = (type === 'post' || type === 'link') ? util.trim(xss.sanitize(param.parent)) : '';
         data.termOrder = xss.sanitize(param.termOrder);
         data.taxonomy = type;
+        data.visible = param.visible ? 1 : 0;
 
         if (!idReg.test(taxonomyId)) {
             taxonomyId = '';

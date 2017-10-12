@@ -52,7 +52,7 @@ module.exports = function (sequelize, DataTypes) {
             field: 'comment_flag'
         },
         postOriginal: {
-            type: DataTypes.INTEGER(1),
+            type: DataTypes.INTEGER(1).UNSIGNED,
             allowNull: false,
             defaultValue: '1',
             field: 'post_original'

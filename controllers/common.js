@@ -146,7 +146,8 @@ module.exports = {
                             count: curNode.count,
                             taxonomyId: curNode.taxonomyId,
                             parentId: curNode.parent,
-                            level: level,
+                            visible: curNode.visible,
+                            level,
                             children: {}
                         };
                         treeNodes.push(curNode.taxonomyId);
@@ -174,12 +175,16 @@ module.exports = {
         });
         return outArr;
     },
-    getCategoryTree: function (cb, type) {
+    getCategoryTree: function (cb, param = {}) {
+        let where = {
+            taxonomy: param.type || 'post'
+        };
+        if (param.visible !== undefined) {
+            where.visible = param.visible;
+        }
         TermTaxonomy.findAll({
-            attributes: ['name', 'description', 'slug', 'count', 'taxonomyId', 'parent'],
-            where: {
-                taxonomy: type || 'post'
-            },
+            attributes: ['name', 'description', 'slug', 'count', 'taxonomyId', 'parent', 'visible'],
+            where,
             order: [
                 ['termOrder', 'asc']
             ]
@@ -195,9 +200,7 @@ module.exports = {
                 logger.error(formatOpLog({
                     fn: 'getCategoryTree',
                     msg: '分类不存在',
-                    data: {
-                        type
-                    }
+                    data: param
                 }));
                 cb('分类不存在');
             }
@@ -278,7 +281,7 @@ module.exports = {
                 break;
             }
         }
-        if (subCatIds.length > 0) {
+        if (rootNode && rootNode.visible && subCatIds.length > 0) {// 分类可见，并且子分类（含）存在
             cb(null, {
                 subCatIds,
                 catPath: this.getCategoryPath({
@@ -293,7 +296,8 @@ module.exports = {
                 msg: '分类不存在',
                 data: {
                     catData,
-                    slug
+                    slug,
+                    visible: rootNode && rootNode.visible
                 }
             }));
             cb('分类不存在');

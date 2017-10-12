@@ -36,6 +36,11 @@
                                 <label class="form-label-left" for="cat-description">排序</label>
                                 <input type="text" class="input form-input" id="cat-order" name="termOrder" value="<?= taxonomy.termOrder ?>" />
                             </div>
+                            <div class="form-field">
+                                <label class="form-label-left">&nbsp;</label>
+                                <input type="checkbox" id="cat-visible" name="visible" value="1"<? if(taxonomy.visible){ ?> checked="checked"<? } ?> />
+                                <label for="cat-visible">是否可见</label>
+                            </div>
                             <? } ?>
                             <div class="form-field">
                                 <label class="form-label-left">&nbsp;</label>

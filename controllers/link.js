@@ -95,7 +95,9 @@ module.exports = {
         let tasks = {
             options: common.getInitOptions,
             categories: (cb) => {
-                common.getCategoryTree(cb, 'link');
+                common.getCategoryTree(cb, {
+                    type: 'link'
+                });
             }
         };
         if (action === 'edit') {

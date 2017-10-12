@@ -21,7 +21,7 @@ const credentials = require('../config/credentials');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const idReg = /^[0-9a-fA-F]{16}$/i;
 const pagesOut = 9;
-const {Post, User, Postmeta} = models;
+const {Post, User, Postmeta, TermTaxonomy} = models;
 
 /**
  * 查询公共数据
@@ -40,7 +40,11 @@ function getCommonData(param, cb) {
         hotPosts: common.hotPosts,
         friendLinks: (cb) => common.getLinks('friendlink', param.from !== 'list' || param.page > 1 ? 'site' : ['homepage', 'site'], cb),
         quickLinks: (cb) => common.getLinks('quicklink', ['homepage', 'site'], cb),
-        categories: common.getCategoryTree.bind(common),
+        categories: (cb) => {
+            common.getCategoryTree(cb, {
+                visible: 1
+            });
+        },
         mainNavs: common.mainNavs,
         options: common.getInitOptions
     }, function (err, result) {
@@ -59,12 +63,15 @@ function getCommonData(param, cb) {
 
 /**
  * 根据IDs查询post
- * @param {Object} posts post对象数组
- * @param {Array} postIds post id数组
+ * @param {Object} param 参数对象
+ *     {Array}[posts] post对象数组,
+ *     {Array}[postIds] post id数组,
+ *     {Boolean}[filterCategory] 是否过滤隐藏分类下的文章
  * @param {Function} cb 回调函数
  * @return {*} null
  */
-function queryPostsByIds(posts, postIds, cb) {
+function queryPostsByIds(param, cb) {
+    const {posts, postIds, filterCategory} = param;
     // 执行时间在10-20ms
     /**
      * 根据group方式去重（distinct需要使用子查询，sequelize不支持include时的distinct）
@@ -73,8 +80,14 @@ function queryPostsByIds(posts, postIds, cb) {
      *
      * sequelize有一个Bug：
      * 关联查询去重时，通过group by方式无法获取关联表的多行数据（如：此例的文章分类，只能返回第一条，并没有返回所有的分类）*/
+    let where = {
+        taxonomy: ['post', 'tag']
+    };
+    if (filterCategory) {
+        where.visible = 1;
+    }
     models.TermTaxonomy.findAll({
-        attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'count'],
+        attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'visible', 'count'],
         include: [{
             model: models.TermRelationship,
             attributes: ['objectId', 'termTaxonomyId'],
@@ -82,9 +95,7 @@ function queryPostsByIds(posts, postIds, cb) {
                 objectId: postIds
             }
         }],
-        where: {
-            taxonomy: ['post', 'tag']
-        },
+        where,
         order: [['termOrder', 'asc']]
     }).then((data) => {
         let result = [];
@@ -152,15 +163,22 @@ function queryPosts(param, cb) {
             queryOpt.include = queryOpt.include.concat(param.includeOpt);
             queryOpt.group = ['postId'];
             break;
-        case 'tag':
-            queryOpt.include = queryOpt.include.concat(param.includeOpt);
-            break;
+        // case 'tag':
+        //     queryOpt.include = queryOpt.include.concat(param.includeOpt);
+        //     break;
         default:
+            if (param.includeOpt) {
+                queryOpt.include = queryOpt.include.concat(param.includeOpt);
+            }
     }
     Post.findAll(queryOpt).then((posts) => {
         let postIds = [];
         posts.forEach((v) => postIds.push(v.postId));
-        queryPostsByIds(posts, postIds, cb);
+        queryPostsByIds({
+            posts,
+            postIds,
+            filterCategory: param.filterCategory
+        }, cb);
     });
 }
 
@@ -302,6 +320,13 @@ module.exports = {
                 }
             }];
         }
+        let includeOpt = [{
+            model: TermTaxonomy,
+            attributes: ['taxonomyId', 'visible'],
+            where: {
+                visible: 1
+            }
+        }];
         async.auto({
             commonData: (cb) => {
                 getCommonData({
@@ -311,7 +336,8 @@ module.exports = {
             },
             postsCount: (cb) => {
                 Post.count({
-                    where
+                    where,
+                    include: includeOpt
                 }).then((result) => cb(null, result));
             },
             posts: ['postsCount', (result, cb) => {
@@ -319,6 +345,8 @@ module.exports = {
                 queryPosts({
                     page,
                     where,
+                    includeOpt,
+                    filterCategory: true,
                     from: 'index'
                 }, cb);
             }],
@@ -401,9 +429,10 @@ module.exports = {
                         attributes: ['userDisplayName']
                     }, {
                         model: models.TermTaxonomy,
-                        attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'count'],
+                        attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'visible', 'count'],
                         where: {
-                            taxonomy: ['post', 'tag']
+                            taxonomy: ['post', 'tag'],
+                            visible: 1
                         }
                     }]
                 }).then(function (post) {
@@ -461,9 +490,33 @@ module.exports = {
                             message: 'Page Not Found.'
                         }));
                     }
+                    let crumbCatId;
+                    for (let i = 0; i < categories.length; i += 1) {
+                        const curCat = categories[i];
+                        if (curCat.visible) {
+                            crumbCatId = curCat.taxonomyId;
+                            break;
+                        }
+                    }
+                    if (!crumbCatId) {
+                        logger.error(formatOpLog({
+                            fn: 'showPost',
+                            msg: 'Category is Invisible.',
+                            data: {
+                                postId: post.postId,
+                                postTitle: post.postTitle
+                            },
+                            req
+                        }));
+                        return cb(util.catchError({
+                            status: 404,
+                            code: 500,
+                            message: 'Page Not Found.'
+                        }));
+                    }
                     cb(null, common.getCategoryPath({
                         catData: result.commonData.categories.catData,
-                        taxonomyId: categories[0].taxonomyId
+                        taxonomyId: crumbCatId
                     }));
                 }],
             postViewCount: (cb) => {
@@ -646,7 +699,13 @@ module.exports = {
             postStatus: 'publish',
             postType: 'post'
         };
-        let includeOpt;
+        let includeOpt = [{
+            model: TermTaxonomy,
+            attributes: ['taxonomyId', 'visible'],
+            where: {
+                visible: 1
+            }
+        }];
         async.auto({
             commonData: (cb) => {
                 getCommonData({
@@ -654,20 +713,21 @@ module.exports = {
                     from: 'category'
                 }, cb);
             },
-            subCategories: ['commonData', (result, cb) => {
+            categories: common.getCategoryTree.bind(common),
+            subCategories: ['categories', (result, cb) => {
                 common.getSubCategoriesBySlug({
-                    catData: result.commonData.categories.catData,
+                    catData: result.categories.catData,
                     slug: category
                 }, cb);
             }],
             setRelationshipWhere: ['subCategories', (result, cb) => {
-                includeOpt = [{
+                includeOpt.push({
                     model: models.TermRelationship,
                     attributes: ['objectId'],
                     where: {
                         termTaxonomyId: result.subCategories.subCatIds
                     }
-                }];
+                });
                 cb(null);
             }],
             postsCount: ['setRelationshipWhere', (result, cb) => {
@@ -684,6 +744,7 @@ module.exports = {
                     page,
                     where,
                     includeOpt,
+                    filterCategory: true,
                     from: 'category'
                 }, cb);
             }],
@@ -743,11 +804,12 @@ module.exports = {
             postType: 'post'
         };
         let includeOpt = [{
-            model: models.TermTaxonomy,
-            attributes: ['taxonomyId'],
+            model: TermTaxonomy,
+            attributes: ['taxonomyId', 'visible'],
             where: {
                 taxonomy: ['tag'],
-                slug: tag
+                slug: tag,
+                visible: 1
             }
         }];
         async.auto({
@@ -769,6 +831,7 @@ module.exports = {
                     page,
                     where,
                     includeOpt,
+                    filterCategory: true,
                     from: 'tag'
                 }, cb);
             }],
@@ -842,6 +905,13 @@ module.exports = {
             postType: 'post',
             $and: [models.sequelize.where(models.sequelize.fn('date_format', models.sequelize.col('post_date'), month ? '%Y%m' : '%Y'), month ? year + month : year)]
         };
+        let includeOpt = [{
+            model: TermTaxonomy,
+            attributes: ['taxonomyId', 'visible'],
+            where: {
+                visible: 1
+            }
+        }];
 
         async.auto({
             commonData: (cb) => {
@@ -851,7 +921,8 @@ module.exports = {
             },
             postsCount: (cb) => {
                 Post.count({
-                    where
+                    where,
+                    include: includeOpt
                 }).then((data) => cb(null, data));
             },
             posts: ['postsCount', (result, cb) => {
@@ -859,6 +930,8 @@ module.exports = {
                 queryPosts({
                     page,
                     where,
+                    includeOpt,
+                    filterCategory: true,
                     from: 'archive'
                 }, cb);
             }],
