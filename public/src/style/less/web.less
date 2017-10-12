@@ -785,6 +785,7 @@ html {
     height: 150px;
     padding: 10px;
     border: 1px solid #d0d0d0;
+    border-radius: 3px;
     bottom: 0;
     margin-bottom: 60px;
     background: #fff;
@@ -800,6 +801,37 @@ html {
     /*margin-top: -20px;*/
     position: absolute;
     left: 10px;
+}
+.m-article-qrcode .m-article-qrcode-arrow {
+    //border-left: 8px solid transparent;
+    //border-right: 8px solid transparent;
+    //border-top: 8px solid #d0d0d0;
+    //font-size: 0;
+    //line-height: 0;
+    bottom: 0;
+    position: absolute;
+    margin-bottom: -8px;
+    left: 50%;
+    margin-left: -8px;
+    width: 16px;
+    height: 8px;
+
+    i {
+        width: 0;
+        height: 0;
+        display: block;
+        position: absolute;
+        border-bottom: 8px solid transparent;
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-top: 8px solid #fff;
+        overflow: hidden;
+
+        &:first-child {
+            top: 1px;
+            border-top: 8px solid #d0d0d0;
+        }
+    }
 }
 .m-article-link {
     margin-top: 30px;
