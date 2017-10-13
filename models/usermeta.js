@@ -1,5 +1,3 @@
-/* jshint indent: 4 */
-
 module.exports = function (sequelize, DataTypes) {
     const Usermeta = sequelize.define('Usermeta', {
         metaId: {

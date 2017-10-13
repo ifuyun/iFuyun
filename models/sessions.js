@@ -1,5 +1,3 @@
-/* jshint indent: 4 */
-
 module.exports = function (sequelize, DataTypes) {
     const Session = sequelize.define('Session', {
         sessionId: {

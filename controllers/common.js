@@ -29,29 +29,6 @@ module.exports = {
     archiveDates: function (cb, param) {
         // 模型定义之外（别名）的属性需要通过.get()方式访问
         // 查询count时根据link_date、visible分组，其他情况只查询唯一的link_date
-        // let queryOpt = {
-        //     attributes: [
-        //         'postDate',
-        //         [models.sequelize.fn('date_format', models.sequelize.col('post_date'), '%Y/%m'), 'linkDate'],
-        //         [models.sequelize.fn('date_format', models.sequelize.col('post_date'), '%Y年%m月'), 'displayDate'],
-        //         [models.sequelize.fn('count', 'linkDate'), 'count']
-        //     ],
-        //     where: {
-        //         postStatus: 'publish',
-        //         postType: param.postType || 'post'
-        //     },
-        //     group: [models.sequelize.fn('date_format', models.sequelize.col('postDate'), '%Y-%m')],
-        //     order: [[models.sequelize.col('linkDate'), 'desc']]
-        // };
-        // if (typeof param.filterCategory === 'boolean') {
-        //     queryOpt.include = [{
-        //         model: TermTaxonomy,
-        //         attributes: ['taxonomyId', 'visible'],
-        //         where: {
-        //             visible: param.filterCategory + 0
-        //         }
-        //     }];
-        // }
         let queryOpt = {
             attributes: ['postDate', 'linkDate', 'displayDate'],
             where: {

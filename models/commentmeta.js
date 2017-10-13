@@ -1,5 +1,3 @@
-/* jshint indent: 4 */
-
 module.exports = function (sequelize, DataTypes) {
     const Commentmeta = sequelize.define('Commentmeta', {
         metaId: {
