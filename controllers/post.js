@@ -33,7 +33,10 @@ function getCommonData(param, cb) {
     // 执行时间在30-60ms，间歇60-80ms
     async.parallel({
         archiveDates: (cb) => {
-            common.archiveDates(cb, param.postType || 'post');
+            common.archiveDates(cb, {
+                postType: param.postType || 'post',
+                filterCategory: param.filterCategory
+            });
         },
         recentPosts: common.recentPosts,
         randPosts: common.randPosts,
@@ -41,9 +44,9 @@ function getCommonData(param, cb) {
         friendLinks: (cb) => common.getLinks('friendlink', param.from !== 'list' || param.page > 1 ? 'site' : ['homepage', 'site'], cb),
         quickLinks: (cb) => common.getLinks('quicklink', ['homepage', 'site'], cb),
         categories: (cb) => {
-            common.getCategoryTree(cb, {
-                visible: 1
-            });
+            common.getCategoryTree(cb, typeof param.filterCategory === 'boolean' ? {
+                visible: param.filterCategory + 0
+            } : {});
         },
         mainNavs: common.mainNavs,
         options: common.getInitOptions
@@ -322,7 +325,8 @@ module.exports = {
             commonData: (cb) => {
                 getCommonData({
                     page,
-                    from: 'list'
+                    from: 'list',
+                    filterCategory: true
                 }, cb);
             },
             postsCount: (cb) => {
@@ -406,7 +410,8 @@ module.exports = {
         async.auto({
             commonData: (cb) => {
                 getCommonData({
-                    from: 'post'
+                    from: 'post',
+                    filterCategory: true
                 }, cb);
             },
             post: function (cb) {
@@ -588,7 +593,8 @@ module.exports = {
             commonData: (cb) => {
                 getCommonData({
                     from: 'page',
-                    postType: 'page'
+                    postType: 'page',
+                    filterCategory: true
                 }, cb);
             },
             post: function (cb) {
@@ -703,14 +709,16 @@ module.exports = {
             commonData: (cb) => {
                 getCommonData({
                     page: page,
-                    from: 'category'
+                    from: 'category',
+                    filterCategory: true
                 }, cb);
             },
             categories: common.getCategoryTree.bind(common),
             subCategories: ['categories', (result, cb) => {
                 common.getSubCategoriesBySlug({
                     catData: result.categories.catData,
-                    slug: category
+                    slug: category,
+                    filterCategory: true
                 }, cb);
             }],
             setRelationshipWhere: ['subCategories', (result, cb) => {
@@ -809,7 +817,8 @@ module.exports = {
             commonData: (cb) => {
                 getCommonData({
                     page: page,
-                    from: 'tag'
+                    from: 'tag',
+                    filterCategory: true
                 }, cb);
             },
             postsCount: (cb) => {
@@ -910,7 +919,8 @@ module.exports = {
         async.auto({
             commonData: (cb) => {
                 getCommonData({
-                    from: 'archive'
+                    from: 'archive',
+                    filterCategory: true
                 }, cb);
             },
             postsCount: (cb) => {
@@ -1000,7 +1010,8 @@ module.exports = {
         async.auto({
             commonData: (cb) => {
                 getCommonData({
-                    from: 'archive'
+                    from: 'archive',
+                    filterCategory: true
                 }, cb);
             }
         }, (err, result) => {
@@ -1109,7 +1120,9 @@ module.exports = {
         async.auto({
             options: common.getInitOptions,
             archiveDates: (cb) => {
-                common.archiveDates(cb, where.postType);
+                common.archiveDates(cb, {
+                    postType: where.postType
+                });
             },
             categories: common.getCategoryTree.bind(common),
             subCategories: ['categories', (result, cb) => {
@@ -1632,7 +1645,9 @@ module.exports = {
         async.auto({
             options: common.getInitOptions,
             archiveDates: (cb) => {
-                common.archiveDates(cb, where.postType);
+                common.archiveDates(cb, {
+                    postType: where.postType
+                });
             },
             postsCount: (cb) => {
                 Post.count({

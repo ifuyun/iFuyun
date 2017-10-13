@@ -6,7 +6,7 @@
 const models = require('../models/index');
 const util = require('../helper/util');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
-const {Link, Post, TermTaxonomy, Comment, Option} = models;
+const {Link, Post, TermTaxonomy, Comment, Option, VPostDateArchive} = models;
 
 module.exports = {
     getInitOptions: function (cb) {
@@ -26,22 +26,49 @@ module.exports = {
             cb(null, tmpObj);
         });
     },
-    archiveDates: function (cb, type) {
+    archiveDates: function (cb, param) {
         // 模型定义之外（别名）的属性需要通过.get()方式访问
-        Post.findAll({
-            attributes: [
-                'postDate',
-                [models.sequelize.fn('date_format', models.sequelize.col('post_date'), '%Y/%m'), 'linkDate'],
-                [models.sequelize.fn('date_format', models.sequelize.col('post_date'), '%Y年%m月'), 'displayDate'],
-                ['count(1)', 'count']
-            ],
+        // 查询count时根据link_date、visible分组，其他情况只查询唯一的link_date
+        // let queryOpt = {
+        //     attributes: [
+        //         'postDate',
+        //         [models.sequelize.fn('date_format', models.sequelize.col('post_date'), '%Y/%m'), 'linkDate'],
+        //         [models.sequelize.fn('date_format', models.sequelize.col('post_date'), '%Y年%m月'), 'displayDate'],
+        //         [models.sequelize.fn('count', 'linkDate'), 'count']
+        //     ],
+        //     where: {
+        //         postStatus: 'publish',
+        //         postType: param.postType || 'post'
+        //     },
+        //     group: [models.sequelize.fn('date_format', models.sequelize.col('postDate'), '%Y-%m')],
+        //     order: [[models.sequelize.col('linkDate'), 'desc']]
+        // };
+        // if (typeof param.filterCategory === 'boolean') {
+        //     queryOpt.include = [{
+        //         model: TermTaxonomy,
+        //         attributes: ['taxonomyId', 'visible'],
+        //         where: {
+        //             visible: param.filterCategory + 0
+        //         }
+        //     }];
+        // }
+        let queryOpt = {
+            attributes: ['postDate', 'linkDate', 'displayDate'],
             where: {
                 postStatus: 'publish',
-                postType: type || 'post'
+                postType: param.postType || 'post'
             },
-            group: [models.sequelize.fn('date_format', models.sequelize.col('postDate'), '%Y-%m')],
-            order: [[models.sequelize.col('linkDate'), 'desc']]
-        }).then(function (data) {
+            group: ['linkDate'],
+            order: [['linkDate', 'desc']]
+        };
+        if (typeof param.filterCategory === 'boolean') {
+            queryOpt.attributes.push([models.sequelize.fn('count', 1), 'count']);
+            queryOpt.group = ['linkDate', 'visible'];
+            queryOpt.having = {
+                visible: param.filterCategory + 0
+            };
+        }
+        VPostDateArchive.findAll(queryOpt).then(function (data) {
             cb(null, data);
         });
     },
@@ -239,7 +266,7 @@ module.exports = {
         }
         return catPath;
     },
-    getSubCategoriesBySlug: function ({catData, slug}, cb) {
+    getSubCategoriesBySlug: function ({catData, slug, filterCategory}, cb) {
         const catTree = this.createCategoryTree(catData);
         let subCatIds = [];
         // 循环获取子分类ID：父->子
@@ -281,7 +308,7 @@ module.exports = {
                 break;
             }
         }
-        if (rootNode && rootNode.visible && subCatIds.length > 0) {// 分类可见，并且子分类（含）存在
+        if ((!filterCategory || rootNode && rootNode.visible) && subCatIds.length > 0) {// 分类可见，并且子分类（含）存在
             cb(null, {
                 subCatIds,
                 catPath: this.getCategoryPath({
