@@ -14,6 +14,7 @@ const formatter = require('../helper/formatter');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const idReg = /^[0-9a-fA-F]{16}$/i;
 const {Link, TermTaxonomy, TermRelationship} = models;
+const Op = models.Sequelize.Op;
 
 module.exports = {
     listLink: function (req, res, next) {
@@ -108,7 +109,9 @@ module.exports = {
                         model: TermTaxonomy,
                         attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'count'],
                         where: {
-                            taxonomy: ['link']
+                            taxonomy: {
+                                [Op.eq]: 'link'
+                            }
                         }
                     }]
                 }).then((link) => cb(null, link));
@@ -206,7 +209,9 @@ module.exports = {
                     } else {
                         Link.update(data, {
                             where: {
-                                linkId
+                                linkId: {
+                                    [Op.eq]: linkId
+                                }
                             },
                             transaction: t
                         }).then((link) => {
@@ -227,7 +232,9 @@ module.exports = {
                             termTaxonomyId: taxonomyId
                         }, {
                             where: {
-                                objectId: linkId
+                                objectId: {
+                                    [Op.eq]: linkId
+                                }
                             },
                             transaction: t
                         }).then((termRel) => cb(null, termRel));
@@ -307,7 +314,9 @@ module.exports = {
                 links: function (cb) {
                     Link.destroy({
                         where: {
-                            linkId: linkIds
+                            linkId: {
+                                [Op.in]: linkIds
+                            }
                         },
                         transaction: t
                     }).then((link) => cb(null, link));
@@ -315,7 +324,9 @@ module.exports = {
                 termRels: function (cb) {
                     TermRelationship.destroy({
                         where: {
-                            objectId: linkIds
+                            objectId: {
+                                [Op.in]: linkIds
+                            }
                         },
                         transaction: t
                     }).then((termRel) => cb(null, termRel));

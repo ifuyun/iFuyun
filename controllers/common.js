@@ -7,13 +7,16 @@ const models = require('../models/index');
 const util = require('../helper/util');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const {Link, Post, TermTaxonomy, Comment, Option, VPostDateArchive} = models;
+const Op = models.Sequelize.Op;
 
 module.exports = {
     getInitOptions: function (cb) {
         Option.findAll({
             attributes: ['blogId', 'optionName', 'optionValue', 'autoload'],
             where: {
-                autoload: 1
+                autoload: {
+                    [Op.eq]: 1
+                }
             }
         }).then(function (data) {
             let tmpObj = {};
@@ -29,20 +32,30 @@ module.exports = {
     archiveDates: function (cb, param) {
         // 模型定义之外（别名）的属性需要通过.get()方式访问
         // 查询count时根据link_date、visible分组，其他情况只查询唯一的link_date
+        const postType = param.postType || 'post';
         let queryOpt = {
-            attributes: ['postDate', 'linkDate', 'displayDate'],
+            attributes: ['postType', 'postDate', 'linkDate', 'displayDate'],
             where: {
-                postStatus: 'publish',
-                postType: param.postType || 'post'
+                postStatus: {
+                    [Op.eq]: 'publish'
+                },
+                postType: {
+                    [Op.eq]: postType
+                }
             },
-            group: ['linkDate'],
+            group: ['postType', 'linkDate'],
+            having: {
+                postType: {
+                    [Op.eq]: postType
+                }
+            },
             order: [['linkDate', 'desc']]
         };
         if (typeof param.filterCategory === 'boolean') {
             queryOpt.attributes.push([models.sequelize.fn('count', 1), 'count']);
             queryOpt.group = ['linkDate', 'visible'];
-            queryOpt.having = {
-                visible: param.filterCategory + 0
+            queryOpt.having.visible = {
+                [Op.eq]: param.filterCategory + 0
             };
         }
         VPostDateArchive.findAll(queryOpt).then(function (data) {
@@ -53,8 +66,12 @@ module.exports = {
         Post.findAll({
             attributes: ['postId', 'postTitle', 'postGuid'],
             where: {
-                postStatus: 'publish',
-                postType: 'post'
+                postStatus: {
+                    [Op.eq]: 'publish'
+                },
+                postType: {
+                    [Op.eq]: 'post'
+                }
             },
             order: [
                 ['postModified', 'desc'],
@@ -70,8 +87,12 @@ module.exports = {
         Post.findAll({
             attributes: ['postId', 'postTitle', 'postGuid'],
             where: {
-                postStatus: 'publish',
-                postType: 'post'
+                postStatus: {
+                    [Op.eq]: 'publish'
+                },
+                postType: {
+                    [Op.eq]: 'post'
+                }
             },
             order: [
                 [models.sequelize.fn('rand'), 'asc']
@@ -86,8 +107,12 @@ module.exports = {
         Post.findAll({
             attributes: ['postId', 'postTitle', 'postGuid'],
             where: {
-                postStatus: 'publish',
-                postType: 'post'
+                postStatus: {
+                    [Op.eq]: 'publish'
+                },
+                postType: {
+                    [Op.eq]: 'post'
+                }
             },
             order: [
                 ['postViewCount', 'desc']
@@ -105,8 +130,12 @@ module.exports = {
                 model: TermTaxonomy,
                 attributes: ['created', 'modified'],
                 where: {
-                    slug: slug,
-                    taxonomy: 'link'
+                    slug: {
+                        [Op.eq]: slug
+                    },
+                    taxonomy: {
+                        [Op.eq]: 'link'
+                    }
                 }
             }],
             where: {
@@ -181,10 +210,14 @@ module.exports = {
     },
     getCategoryTree: function (cb, param = {}) {
         let where = {
-            taxonomy: param.type || 'post'
+            taxonomy: {
+                [Op.eq]: param.type || 'post'
+            }
         };
         if (param.visible !== undefined) {
-            where.visible = param.visible;
+            where.visible = {
+                [Op.eq]: param.visible
+            };
         }
         TermTaxonomy.findAll({
             attributes: ['name', 'description', 'slug', 'count', 'taxonomyId', 'parent', 'visible'],
@@ -311,8 +344,12 @@ module.exports = {
         TermTaxonomy.findAll({
             attributes: ['name', 'description', 'slug', 'count', 'taxonomyId'],
             where: {
-                taxonomy: 'post',
-                parent: ''
+                taxonomy: {
+                    [Op.eq]: 'post'
+                },
+                parent: {
+                    [Op.eq]: ''
+                }
             },
             order: [
                 ['termOrder', 'asc']
@@ -329,8 +366,12 @@ module.exports = {
         Comment.findAll({
             attributes: ['postId', [models.sequelize.fn('count', 1), 'count']],
             where: {
-                postId: postIds,
-                commentStatus: 'normal'
+                postId: {
+                    [Op.in]: postIds
+                },
+                commentStatus: {
+                    [Op.eq]: 'normal'
+                }
             },
             group: ['postId']
         }).then((data) => {
@@ -345,8 +386,12 @@ module.exports = {
         Comment.findAll({
             attributes: ['commentId', 'commentContent', 'commentAuthor', 'commentVote', 'commentCreated'],
             where: {
-                postId,
-                commentStatus: 'normal'
+                postId: {
+                    [Op.eq]: postId
+                },
+                commentStatus: {
+                    [Op.eq]: 'normal'
+                }
             },
             order: [
                 ['commentCreated', 'desc']
@@ -359,10 +404,14 @@ module.exports = {
         Post.findOne({
             attributes: ['postId', 'postGuid', 'postTitle'],
             where: {
-                postStatus: 'publish',
-                postType: 'post',
+                postStatus: {
+                    [Op.eq]: 'publish'
+                },
+                postType: {
+                    [Op.eq]: 'post'
+                },
                 postCreated: {
-                    $gt: models.sequelize.literal(`(select post_created from posts where post_id = '${postId}')`)
+                    [Op.gt]: models.sequelize.literal(`(select post_created from posts where post_id = '${postId}')`)
                 }
             },
             order: [
@@ -376,10 +425,14 @@ module.exports = {
         Post.findOne({
             attributes: ['postId', 'postGuid', 'postTitle'],
             where: {
-                postStatus: 'publish',
-                postType: 'post',
+                postStatus: {
+                    [Op.eq]: 'publish'
+                },
+                postType: {
+                    [Op.eq]: 'post'
+                },
                 postCreated: {
-                    $lt: models.sequelize.literal(`(select post_created from posts where post_id = '${postId}')`)
+                    [Op.lt]: models.sequelize.literal(`(select post_created from posts where post_id = '${postId}')`)
                 }
             },
             order: [

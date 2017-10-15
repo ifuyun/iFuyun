@@ -15,6 +15,7 @@ const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const idReg = /^[0-9a-fA-F]{16}$/i;
 const pagesOut = 9;
 const {Comment, Vote} = models;
+const Op = models.Sequelize.Op;
 
 module.exports = {
     saveComment: function (req, res, next) {
@@ -120,7 +121,9 @@ module.exports = {
                 } else {
                     Comment.update(data, {
                         where: {
-                            commentId
+                            commentId: {
+                                [Op.eq]: commentId
+                            }
                         }
                     }).then((comment) => cb(null, comment));
                 }
@@ -217,7 +220,9 @@ module.exports = {
                     commentVote
                 }, {
                     where: {
-                        commentId: data.objectId
+                        commentId: {
+                            [Op.eq]: data.objectId
+                        }
                     },
                     silent: true
                 }).then((comment) => {
@@ -266,15 +271,19 @@ module.exports = {
         let paramArr = [];
 
         if (req.query.status) {
-            where.commentStatus = req.query.status;
+            where.commentStatus = {
+                [Op.eq]: req.query.status
+            };
             paramArr.push(`status=${req.query.status}`);
             titleArr.push(req.query.status, '状态');
         } else {
-            where.commentStatus = ['normal', 'pending', 'spam', 'trash', 'reject'];
+            where.commentStatus = {
+                [Op.in]: ['normal', 'pending', 'spam', 'trash', 'reject']
+            };
         }
         if (req.query.keyword) {
             where.commentContent = {
-                $like: `%${req.query.keyword}%`
+                [Op.like]: `%${req.query.keyword}%`
             };
             paramArr.push(`keyword=${req.query.keyword}`);
             titleArr.push(req.query.keyword, '搜索');
@@ -449,7 +458,9 @@ module.exports = {
 
         Comment.update(data, {
             where: {
-                commentId
+                commentId: {
+                    [Op.eq]: commentId
+                }
             }
         }).then((comment) => {
             res.type('application/json');

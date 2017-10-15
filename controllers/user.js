@@ -10,6 +10,7 @@ const common = require('./common');
 const appConfig = require('../config/core');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const {User, Usermeta} = models;
+const Op = models.Sequelize.Op;
 
 module.exports = {
     showLogin: function (req, res, next) {
@@ -50,8 +51,12 @@ module.exports = {
                 attributes: ['metaId', 'userId', 'metaKey', 'metaValue']
             }],
             where: {
-                userLogin: username,
-                userPass: models.sequelize.fn('md5', models.sequelize.fn('concat', models.sequelize.col('user_pass_salt'), params.password))
+                userLogin: {
+                    [Op.eq]: username
+                },
+                userPass: {
+                    [Op.eq]: models.sequelize.fn('md5', models.sequelize.fn('concat', models.sequelize.col('user_pass_salt'), params.password))
+                }
             }
         }).then(function (result) {
             if (!result) {

@@ -10,6 +10,7 @@ const models = require('../models/index');
 const common = require('./common');
 const appConfig = require('../config/core');
 const {Option} = models;
+const Op = models.Sequelize.Op;
 
 module.exports = {
     welcome: function (req, res) {
@@ -122,7 +123,9 @@ module.exports = {
                         optionValue: settings[i].value
                     }, {
                         where: {
-                            optionName: settings[i].name
+                            optionName: {
+                                [Op.eq]: settings[i].name
+                            }
                         },
                         transaction: t
                     }).then((option) => nextFn(null, option));

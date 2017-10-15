@@ -431,7 +431,7 @@ a.button:hover {
   background-color: #ff80b0;
 }
 #menu-media .menu-color,
-#menu-link.menu-active .menu-icon-bg {
+#menu-media.menu-active .menu-icon-bg {
   background-color: #86bf0f;
 }
 .split-line {

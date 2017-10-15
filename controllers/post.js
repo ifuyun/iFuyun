@@ -22,6 +22,7 @@ const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const idReg = /^[0-9a-fA-F]{16}$/i;
 const pagesOut = 9;
 const {Post, User, Postmeta, TermTaxonomy} = models;
+const Op = models.Sequelize.Op;
 
 /**
  * 查询公共数据
@@ -84,10 +85,14 @@ function queryPostsByIds(param, cb) {
      * sequelize有一个Bug：
      * 关联查询去重时，通过group by方式无法获取关联表的多行数据（如：此例的文章分类，只能返回第一条，并没有返回所有的分类）*/
     let where = {
-        taxonomy: ['post', 'tag']
+        taxonomy: {
+            [Op.in]: ['post', 'tag']
+        }
     };
     if (filterCategory) {
-        where.visible = 1;
+        where.visible = {
+            [Op.eq]: 1
+        };
     }
     models.TermTaxonomy.findAll({
         attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'visible', 'count'],
@@ -95,7 +100,9 @@ function queryPostsByIds(param, cb) {
             model: models.TermRelationship,
             attributes: ['objectId', 'termTaxonomyId'],
             where: {
-                objectId: postIds
+                objectId: {
+                    [Op.in]: postIds
+                }
             }
         }],
         where,
@@ -296,21 +303,25 @@ module.exports = {
     listPosts: function (req, res, next) {
         let page = parseInt(req.params.page, 10) || 1;
         let where = {
-            postStatus: 'publish',
-            postType: 'post'
+            postStatus: {
+                [Op.eq]: 'publish'
+            },
+            postType: {
+                [Op.eq]: 'post'
+            }
         };
         if (req.query.keyword) {
-            where.$or = [{
+            where[Op.or] = [{
                 postTitle: {
-                    $like: `%${req.query.keyword}%`
+                    [Op.like]: `%${req.query.keyword}%`
                 }
             }, {
                 postContent: {
-                    $like: `%${req.query.keyword}%`
+                    [Op.like]: `%${req.query.keyword}%`
                 }
             }, {
                 postExcerpt: {
-                    $like: `%${req.query.keyword}%`
+                    [Op.like]: `%${req.query.keyword}%`
                 }
             }];
         }
@@ -318,7 +329,9 @@ module.exports = {
             model: TermTaxonomy,
             attributes: ['taxonomyId', 'visible'],
             where: {
-                visible: 1
+                visible: {
+                    [Op.eq]: 1
+                }
             }
         }];
         async.auto({
@@ -428,8 +441,12 @@ module.exports = {
                         model: models.TermTaxonomy,
                         attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'visible', 'count'],
                         where: {
-                            taxonomy: ['post', 'tag'],
-                            visible: 1
+                            taxonomy: {
+                                [Op.in]: ['post', 'tag']
+                            },
+                            visible: {
+                                [Op.eq]: 1
+                            }
                         }
                     }]
                 }).then(function (post) {
@@ -522,7 +539,9 @@ module.exports = {
                     postViewCount: viewCount
                 }, {
                     where: {
-                        postId
+                        postId: {
+                            [Op.eq]: postId
+                        }
                     },
                     silent: true
                 }).then((post) => {
@@ -608,7 +627,9 @@ module.exports = {
                         attributes: ['userDisplayName']
                     }],
                     where: {
-                        postGuid: decodeURIComponent(reqPath)
+                        postGuid: {
+                            [Op.eq]: decodeURIComponent(reqPath)
+                        }
                     }
                 }).then(function (post) {
                     if (!post || !post.postId) {
@@ -646,7 +667,9 @@ module.exports = {
                     postViewCount: viewCount
                 }, {
                     where: {
-                        postId: result.post.postId
+                        postId: {
+                            [Op.eq]: result.post.postId
+                        }
                     },
                     silent: true
                 }).then((post) => {
@@ -695,14 +718,20 @@ module.exports = {
         let page = parseInt(req.params.page, 10) || 1;
         const category = req.params.category;
         let where = {
-            postStatus: 'publish',
-            postType: 'post'
+            postStatus: {
+                [Op.eq]: 'publish'
+            },
+            postType: {
+                [Op.eq]: 'post'
+            }
         };
         let includeOpt = [{
             model: TermTaxonomy,
             attributes: ['taxonomyId', 'visible'],
             where: {
-                visible: 1
+                visible: {
+                    [Op.eq]: 1
+                }
             }
         }];
         async.auto({
@@ -726,7 +755,9 @@ module.exports = {
                     model: models.TermRelationship,
                     attributes: ['objectId'],
                     where: {
-                        termTaxonomyId: result.subCategories.subCatIds
+                        termTaxonomyId: {
+                            [Op.in]: result.subCategories.subCatIds
+                        }
                     }
                 });
                 cb(null);
@@ -801,16 +832,26 @@ module.exports = {
         let page = parseInt(req.params.page, 10) || 1;
         const tag = req.params.tag;
         let where = {
-            postStatus: 'publish',
-            postType: 'post'
+            postStatus: {
+                [Op.eq]: 'publish'
+            },
+            postType: {
+                [Op.eq]: 'post'
+            }
         };
         let includeOpt = [{
             model: TermTaxonomy,
             attributes: ['taxonomyId', 'visible'],
             where: {
-                taxonomy: ['tag'],
-                slug: tag,
-                visible: 1
+                taxonomy: {
+                    [Op.eq]: 'tag'
+                },
+                slug: {
+                    [Op.eq]: tag
+                },
+                visible: {
+                    [Op.eq]: 1
+                }
             }
         }];
         async.auto({
@@ -904,15 +945,21 @@ module.exports = {
         year = year.toString();
         month = month ? month < 10 ? '0' + month : month.toString() : '';
         const where = {
-            postStatus: 'publish',
-            postType: 'post',
-            $and: [models.sequelize.where(models.sequelize.fn('date_format', models.sequelize.col('post_date'), month ? '%Y%m' : '%Y'), month ? year + month : year)]
+            postStatus: {
+                [Op.eq]: 'publish'
+            },
+            postType: {
+                [Op.eq]: 'post'
+            },
+            [Op.and]: [models.sequelize.where(models.sequelize.fn('date_format', models.sequelize.col('post_date'), month ? '%Y%m' : '%Y'), month ? year + month : year)]
         };
         let includeOpt = [{
             model: TermTaxonomy,
             attributes: ['taxonomyId', 'visible'],
             where: {
-                visible: 1
+                visible: {
+                    [Op.eq]: 1
+                }
             }
         }];
 
@@ -1062,37 +1109,45 @@ module.exports = {
 
         if (req.query.status) {
             if (req.query.status === 'draft') {
-                where.postStatus = ['draft', 'auto-draft'];
+                where.postStatus = {
+                    [Op.in]: ['draft', 'auto-draft']
+                };
             } else {
-                where.postStatus = req.query.status;
+                where.postStatus = {
+                    [Op.eq]: req.query.status
+                };
             }
             paramArr.push(`status=${req.query.status}`);
             titleArr.push(formatter.postStatus(req.query.status) || req.query.status, '状态');
         } else {
-            where.postStatus = ['publish', 'private', 'draft', 'auto-draft', 'trash'];
+            where.postStatus = {
+                [Op.in]: ['publish', 'private', 'draft', 'auto-draft', 'trash']
+            };
         }
         if (req.query.author) {
-            where.postAuthor = req.query.author;
+            where.postAuthor = {
+                [Op.eq]: req.query.author
+            };
             paramArr.push(`author=${req.query.author}`);
             titleArr.push('作者');
         }
         if (req.query.date) {
-            where.$and = [models.sequelize.where(models.sequelize.fn('date_format', models.sequelize.col('post_date'), '%Y/%m'), '=', req.query.date)];
+            where[Op.and] = [models.sequelize.where(models.sequelize.fn('date_format', models.sequelize.col('post_date'), '%Y/%m'), '=', req.query.date)];
             paramArr.push(`date=${req.query.date}`);
             titleArr.push(req.query.date, '日期');
         }
         if (req.query.keyword) {
-            where.$or = [{
+            where[Op.or] = [{
                 postTitle: {
-                    $like: `%${req.query.keyword}%`
+                    [Op.like]: `%${req.query.keyword}%`
                 }
             }, {
                 postContent: {
-                    $like: `%${req.query.keyword}%`
+                    [Op.like]: `%${req.query.keyword}%`
                 }
             }, {
                 postExcerpt: {
-                    $like: `%${req.query.keyword}%`
+                    [Op.like]: `%${req.query.keyword}%`
                 }
             }];
             paramArr.push(`keyword=${req.query.keyword}`);
@@ -1103,8 +1158,12 @@ module.exports = {
         if (req.query.tag) {
             from = 'tag';
             tagWhere = {
-                taxonomy: ['tag'],
-                slug: req.query.tag
+                taxonomy: {
+                    [Op.eq]: 'tag'
+                },
+                slug: {
+                    [Op.eq]: req.query.tag
+                }
             };
             includeOpt.push({
                 model: models.TermTaxonomy,
@@ -1150,7 +1209,9 @@ module.exports = {
                             model: models.TermRelationship,
                             attributes: ['objectId'],
                             where: {
-                                termTaxonomyId: data.subCatIds
+                                termTaxonomyId: {
+                                    [Op.in]: data.subCatIds
+                                }
                             }
                         });
                         titleArr.push(data.catRoot.name, '分类');
@@ -1185,8 +1246,12 @@ module.exports = {
                         ['count(1)', 'count']
                     ],
                     where: {
-                        postType: where.postType,
-                        postStatus: ['publish', 'private', 'draft', 'auto-draft', 'trash']
+                        postType: {
+                            [Op.eq]: where.postType
+                        },
+                        postStatus: {
+                            [Op.in]: ['publish', 'private', 'draft', 'auto-draft', 'trash']
+                        }
                     },
                     group: ['postStatus']
                 }).then((data) => cb(null, data));
@@ -1302,7 +1367,9 @@ module.exports = {
                     model: models.TermTaxonomy,
                     attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'count'],
                     where: {
-                        taxonomy: ['post', 'tag']
+                        taxonomy: {
+                            [Op.in]: ['post', 'tag']
+                        }
                     }
                 });
             }
@@ -1442,18 +1509,22 @@ module.exports = {
                     }
                     models.TermRelationship.destroy({
                         where: {
-                            objectId: postId
+                            objectId: {
+                                [Op.eq]: postId
+                            }
                         },
                         transaction: t
                     }).then((data) => cb(null, data));
                 },
                 checkGuid: function (cb) {
                     let where = {
-                        postGuid: data.postGuid
+                        postGuid: {
+                            [Op.eq]: data.postGuid
+                        }
                     };
                     if (postId) {
                         where.postId = {
-                            $ne: postId
+                            [Op.ne]: postId
                         };
                     }
                     Post.count({
@@ -1474,7 +1545,9 @@ module.exports = {
                     } else {
                         Post.update(data, {
                             where: {
-                                postId
+                                postId: {
+                                    [Op.eq]: postId
+                                }
                             },
                             transaction: t
                         }).then((post) => cb(null, post));
@@ -1508,7 +1581,9 @@ module.exports = {
                                     models.TermTaxonomy.findAll({
                                         attributes: ['taxonomyId'],
                                         where: {
-                                            slug: tag
+                                            slug: {
+                                                [Op.eq]: tag
+                                            }
                                         }
                                     }).then((tags) => {
                                         if (tags.length > 0) {// 已存在标签
@@ -1603,37 +1678,45 @@ module.exports = {
 
         if (req.query.status) {
             if (req.query.status === 'draft') {
-                where.postStatus = ['draft', 'auto-draft'];
+                where.postStatus = {
+                    [Op.in]: ['draft', 'auto-draft']
+                };
             } else {
-                where.postStatus = req.query.status;
+                where.postStatus = {
+                    [Op.eq]: req.query.status
+                };
             }
             paramArr.push(`status=${req.query.status}`);
             titleArr.push(formatter.postStatus(req.query.status) || req.query.status, '状态');
         } else {
-            where.postStatus = ['publish', 'private', 'draft', 'auto-draft', 'trash'];
+            where.postStatus = {
+                [Op.in]: ['publish', 'private', 'draft', 'auto-draft', 'trash']
+            };
         }
         if (req.query.author) {
-            where.postAuthor = req.query.author;
+            where.postAuthor = {
+                [Op.eq]: req.query.author
+            };
             paramArr.push(`author=${req.query.author}`);
             titleArr.push('作者');
         }
         if (req.query.date) {
-            where.$and = [models.sequelize.where(models.sequelize.fn('date_format', models.sequelize.col('post_date'), '%Y/%m'), '=', req.query.date)];
+            where[Op.and] = [models.sequelize.where(models.sequelize.fn('date_format', models.sequelize.col('post_date'), '%Y/%m'), '=', req.query.date)];
             paramArr.push(`date=${req.query.date}`);
             titleArr.push(req.query.date, '日期');
         }
         if (req.query.keyword) {
-            where.$or = [{
+            where[Op.or] = [{
                 postTitle: {
-                    $like: `%${req.query.keyword}%`
+                    [Op.like]: `%${req.query.keyword}%`
                 }
             }, {
                 postContent: {
-                    $like: `%${req.query.keyword}%`
+                    [Op.like]: `%${req.query.keyword}%`
                 }
             }, {
                 postExcerpt: {
-                    $like: `%${req.query.keyword}%`
+                    [Op.like]: `%${req.query.keyword}%`
                 }
             }];
             paramArr.push(`keyword=${req.query.keyword}`);
@@ -1670,8 +1753,12 @@ module.exports = {
                         ['count(1)', 'count']
                     ],
                     where: {
-                        postType: where.postType,
-                        postStatus: ['publish', 'private', 'draft', 'auto-draft', 'trash']
+                        postType: {
+                            [Op.eq]: where.postType
+                        },
+                        postStatus: {
+                            [Op.in]: ['publish', 'private', 'draft', 'auto-draft', 'trash']
+                        }
                     },
                     group: ['postStatus']
                 }).then((data) => cb(null, data));
@@ -1692,7 +1779,7 @@ module.exports = {
             let resData = {
                 meta: {},
                 type: where.postType,
-                page: where.postType,
+                page: 'media',
                 archiveDates: result.archiveDates,
                 options: result.options,
                 count: {
@@ -1839,7 +1926,9 @@ module.exports = {
                     let tasks = {
                         checkGuid: function (cb) {
                             const where = {
-                                postGuid: fileData.postGuid
+                                postGuid: {
+                                    [Op.eq]: fileData.postGuid
+                                }
                             };
                             Post.count({
                                 where

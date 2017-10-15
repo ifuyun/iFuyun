@@ -14,6 +14,7 @@ const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const idReg = /^[0-9a-fA-F]{16}$/i;
 const pagesOut = 9;
 const {TermTaxonomy, TermRelationship} = models;
+const Op = models.Sequelize.Op;
 
 module.exports = {
     listTaxonomy: function (req, res, next) {
@@ -49,20 +50,22 @@ module.exports = {
         let titleArr = [];
         let paramArr = [`type=${type}`];
         let where = {
-            taxonomy: type
+            taxonomy: {
+                [Op.eq]: type
+            }
         };
         if (req.query.keyword) {
-            where.$or = [{
+            where[Op.or] = [{
                 name: {
-                    $like: `%${req.query.keyword}%`
+                    [Op.like]: `%${req.query.keyword}%`
                 }
             }, {
                 slug: {
-                    $like: `%${req.query.keyword}%`
+                    [Op.like]: `%${req.query.keyword}%`
                 }
             }, {
                 description: {
-                    $like: `%${req.query.keyword}%`
+                    [Op.like]: `%${req.query.keyword}%`
                 }
             }];
             paramArr.push(`keyword=${req.query.keyword}`);
@@ -281,11 +284,13 @@ module.exports = {
         async.auto({
             checkSlug: function (cb) {
                 let where = {
-                    slug: data.slug
+                    slug: {
+                        [Op.eq]: data.slug
+                    }
                 };
                 if (taxonomyId) {
                     where.taxonomyId = {
-                        $ne: taxonomyId
+                        [Op.ne]: taxonomyId
                     };
                 }
                 TermTaxonomy.count({
@@ -301,7 +306,9 @@ module.exports = {
                     data.modified = nowTime;
                     TermTaxonomy.update(data, {
                         where: {
-                            taxonomyId
+                            taxonomyId: {
+                                [Op.eq]: taxonomyId
+                            }
                         }
                     }).then((taxonomy) => cb(null, taxonomy));
                 } else {
@@ -381,7 +388,9 @@ module.exports = {
                 taxonomy: function (cb) {
                     TermTaxonomy.destroy({
                         where: {
-                            taxonomyId: taxonomyIds
+                            taxonomyId: {
+                                [Op.in]: taxonomyIds
+                            }
                         },
                         transaction: t
                     }).then((taxonomy) => cb(null, taxonomy));
@@ -390,7 +399,9 @@ module.exports = {
                     if (type === 'tag') {
                         TermRelationship.destroy({
                             where: {
-                                termTaxonomyId: taxonomyIds
+                                termTaxonomyId: {
+                                    [Op.in]: taxonomyIds
+                                }
                             },
                             transaction: t
                         }).then((termRel) => cb(null, termRel));
@@ -399,7 +410,9 @@ module.exports = {
                             termTaxonomyId: type === 'post' ? '0000000000000000' : '0000000000000001'
                         }, {
                             where: {
-                                termTaxonomyId: taxonomyIds
+                                termTaxonomyId: {
+                                    [Op.in]: taxonomyIds
+                                }
                             },
                             transaction: t
                         }).then((termRel) => cb(null, termRel)).catch((e) => cb(e));
@@ -412,7 +425,9 @@ module.exports = {
                         parent: type === 'post' ? '0000000000000000' : '0000000000000001'
                     }, {
                         where: {
-                            parent: taxonomyIds
+                            parent: {
+                                [Op.in]: taxonomyIds
+                            }
                         },
                         transaction: t
                     }).then((taxonomy) => cb(null, taxonomy));
