@@ -34,7 +34,7 @@ module.exports = {
         // 查询count时根据link_date、visible分组，其他情况只查询唯一的link_date
         const postType = param.postType || 'post';
         let queryOpt = {
-            attributes: ['postType', 'postDate', 'linkDate', 'displayDate'],
+            attributes: ['postDate', 'linkDate', 'displayDate'],
             where: {
                 postStatus: {
                     [Op.eq]: 'publish'
@@ -43,19 +43,16 @@ module.exports = {
                     [Op.eq]: postType
                 }
             },
-            group: ['postType', 'linkDate'],
-            having: {
-                postType: {
-                    [Op.eq]: postType
-                }
-            },
+            group: ['linkDate'],
             order: [['linkDate', 'desc']]
         };
         if (typeof param.filterCategory === 'boolean') {
             queryOpt.attributes.push([models.sequelize.fn('count', 1), 'count']);
             queryOpt.group = ['linkDate', 'visible'];
-            queryOpt.having.visible = {
-                [Op.eq]: param.filterCategory + 0
+            queryOpt.having = {
+                visible: {
+                    [Op.eq]: param.filterCategory + 0
+                }
             };
         }
         VPostDateArchive.findAll(queryOpt).then(function (data) {
