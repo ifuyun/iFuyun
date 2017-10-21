@@ -629,6 +629,9 @@ module.exports = {
                     where: {
                         postGuid: {
                             [Op.eq]: decodeURIComponent(reqPath)
+                        },
+                        postType: {
+                            [Op.in]: ['post', 'page']
                         }
                     }
                 }).then(function (post) {
