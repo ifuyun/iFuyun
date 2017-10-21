@@ -72,5 +72,6 @@
     "email": "ifuyun@outlook.com",
     "url": "http://www.ifuyun.com/"
   },
-  "license": "GPL"
+  "license": "GPL",
+  "readmeFilename": "README.md"
 }

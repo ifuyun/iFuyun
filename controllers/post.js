@@ -1918,12 +1918,13 @@ module.exports = {
             fileData.postStatus = 'publish';
             fileData.postType = 'attachment';
             fileData.postId = util.getUuid();
-            fileData.postGuid = '/static/' + curYear + '/' + curMonth + '/' + filename;
+            fileData.postGuid = '/' + curYear + '/' + curMonth + '/' + filename;
             fileData.postModifiedGmt = fileData.postDateGmt = fileData.postDate = nowTime;
 
             const saveDb = function (cloudPath) {
                 models.sequelize.transaction(function (t) {
                     let tasks = {
+                        options: common.getInitOptions,
                         checkGuid: function (cb) {
                             const where = {
                                 postGuid: {
@@ -1934,10 +1935,11 @@ module.exports = {
                                 where
                             }).then((count) => cb(null, count));
                         },
-                        post: ['checkGuid', function (result, cb) {
+                        post: ['options', 'checkGuid', function (result, cb) {
                             if (result.checkGuid > 0) {
                                 return cb('URL已存在');
                             }
+                            fileData.postGuid = result.options.upload_path.optionValue + fileData.postGuid;
                             Post.create(fileData, {
                                 transaction: t
                             }).then((post) => cb(null, post));

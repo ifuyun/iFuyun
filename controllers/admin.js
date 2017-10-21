@@ -105,6 +105,11 @@ module.exports = {
             value: util.trim(xss.sanitize(param.copyNotice)),
             required: true,
             message: '版权信息'
+        }, {
+            name: 'upload_path',
+            value: util.trim(xss.sanitize(param.uploadPath)),
+            required: true,
+            message: '上传路径'
         }];
         for (let i = 0; i < settings.length; i += 1) {
             if (settings[i].required && !settings[i].value) {

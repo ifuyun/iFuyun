@@ -21,7 +21,7 @@ service = {
                     if (d.code === 0) {
                         if (d.data.commentFlag === 'verify') {
                             popup.alert({
-                                content: '评论成功，正在审核中……',
+                                content: '评论成功，请等待回复……',
                                 callback: function () {
                                     location.href = d.data.url;
                                 }
