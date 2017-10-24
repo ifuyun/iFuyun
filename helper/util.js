@@ -21,7 +21,7 @@ module.exports = {
      * @param {Number} pagesOut 每页显示页数
      * @return {Object} 分页数据对象
      * @author Fuyun
-     * @version 1.0.0
+     * @version 2.0.0
      * @since 1.0.0
      */
     formatPages: function (page, pages, pagesOut) {
@@ -29,15 +29,13 @@ module.exports = {
             start: 1,
             end: 1
         };
-        let floorPage;
-        let ceilPage;
         // page = page || 1;
         // pages = pages || 1;
         // pagesOut = pagesOut || 9;
         // 中间页
-        floorPage = Math.floor((pagesOut + 1) / 2);
+        const floorPage = Math.floor((pagesOut + 1) / 2);
         // 中间页到两边的间距页数，偶数情况距离低页再减一，距离高页不变
-        ceilPage = Math.ceil((pagesOut - 1) / 2);
+        const ceilPage = Math.ceil((pagesOut - 1) / 2);
 
         if (pages <= pagesOut) {// 总页数小于一屏输出页数
             pageData.start = 1;
@@ -64,34 +62,28 @@ module.exports = {
      * @param {Number} [pagesOut=9] 每页显示页数
      * @return {Object} 分页对象
      * @author Fuyun
-     * @version 1.0.0
+     * @version 2.0.0
      * @since 1.0.0
      */
     paginator: function (page, pages, pagesOut) {
-        let pageData;
-        let data;
-
         if (typeof page === 'string') {// page是字符串
             page = parseInt(page, 10);
         }
         page = page || 1;
         pages = pages || 1;
         pagesOut = pagesOut || 9;
+        page = page > pages ? pages : page;
 
-        if (page > pages) {
-            page = pages;
-        }
+        const pageData = this.formatPages(page, pages, pagesOut);
 
-        pageData = this.formatPages(page, pages, pagesOut);
-
-        data = {
+        return {
             startPage: pageData.start,
             endPage: pageData.end,
             prevPage: page <= 1 ? 0 : (page - 1),
             nextPage: page >= pages ? 0 : (page + 1),
-            curPage: page
+            curPage: page,
+            totalPage: pages
         };
-        return data;
     },
     createCrumb: function (crumbData, separator) {
         let crumbArr = [];
@@ -534,8 +526,8 @@ module.exports = {
      * URL添加来源参数
      * @method setUrlRef
      * @static
-     * @param url URL
-     * @param from 来源
+     * @param {String} url URL
+     * @param {String} from 来源
      * @return {string} 新的URL
      * @author Fuyun
      * @version 2.0.0

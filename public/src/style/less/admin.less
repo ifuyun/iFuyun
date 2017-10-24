@@ -182,10 +182,11 @@ a.button:hover { text-decoration: none; }
 /*+++++++ Pagebar +++++++*/
 .pageBar .pageList { list-style:none; line-height:24px; height:22px; }
 .pageBar .pageList li { margin:1px 5px 0 0; float:left; /*text-align:center;*/ }
-.pageBar .pageList li a, .pageBar .pageList li span { padding:2px 5px; border:solid 1px #ccc; }
+.pageBar .pageList li a, .pageBar .pageList li > span { padding:4px 5px; border:solid 1px #ccc; }
 .pageBar .pageList li span.curPage { background-color:#fff; color:#666; font-weight:bold; }
 .pageBar .pageList li a { background-color:#EFF2E9; color:#444; }
 .pageBar .pageList li a:hover { border:solid 1px #bbb; color:#FE0065; background-color:#d0efff; text-decoration:none; }
+.pageBar .pageList li.pageSplit > span { border: none; }
 
 #footer { left: 0; right: 0; bottom: 0; padding: 10px 20px; position: absolute; }
 #copyright { float: right; }

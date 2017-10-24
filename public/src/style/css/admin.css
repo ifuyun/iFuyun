@@ -660,8 +660,8 @@ a.button:hover {
   /*text-align:center;*/
 }
 .pageBar .pageList li a,
-.pageBar .pageList li span {
-  padding: 2px 5px;
+.pageBar .pageList li > span {
+  padding: 4px 5px;
   border: solid 1px #ccc;
 }
 .pageBar .pageList li span.curPage {
@@ -678,6 +678,9 @@ a.button:hover {
   color: #FE0065;
   background-color: #d0efff;
   text-decoration: none;
+}
+.pageBar .pageList li.pageSplit > span {
+  border: none;
 }
 #footer {
   left: 0;
