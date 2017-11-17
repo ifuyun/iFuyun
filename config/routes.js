@@ -15,6 +15,7 @@ const base = require('./routes-base');
 const post = require('../controllers/post');
 const user = require('../controllers/user');
 const comment = require('../controllers/comment');
+const captcha = require('../controllers/captcha');
 const routesAdmin = require('./routes-admin');
 
 module.exports = function (app, express) {
@@ -39,6 +40,7 @@ module.exports = function (app, express) {
     app.get('/archive/:year/:month/page-:page', post.listByDate);
     app.get('/tag/:tag', post.listByTag);
     app.get('/tag/:tag/page-:page', post.listByTag);
+    app.get('/captcha', captcha.create);
 
     app.post('/post/comment/save', comment.saveComment);
     app.post('/post/comment/vote', comment.saveVote);

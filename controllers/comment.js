@@ -25,6 +25,20 @@ module.exports = {
         const isAdmin = util.isAdminUser(req);
         let commentId = util.trim(xss.sanitize(param.commentId));
 
+        if (!param.captchaCode || !req.session.captcha) {
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: '请输入验证码'
+            }, next);
+        }
+        if (req.session.captcha.toLowerCase() !== param.captchaCode.toLowerCase()) {
+            return util.catchError({
+                status: 200,
+                code: 400,
+                message: '验证码输入有误，请重新输入'
+            }, next);
+        }
         if (req.session.user) {
             user = req.session.user;
         }
@@ -35,7 +49,7 @@ module.exports = {
         data.postId = util.trim(xss.sanitize(param.postId));
         data.commentAuthor = util.trim(xss.sanitize(param.commentUser)) || user.userDisplayName || '';
         data.commentAuthorEmail = util.trim(xss.sanitize(param.commentEmail)) || user.userEmail || '';
-        data.commentAuthorLink = util.trim(xss.sanitize(param.commentLink));
+        // data.commentAuthorLink = util.trim(xss.sanitize(param.commentLink));
         data.commentStatus = isAdmin ? 'normal' : 'pending';
         data.commentIp = util.getRemoteIp(req);
         data.commentAgent = req.headers['user-agent'];

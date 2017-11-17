@@ -1,5 +1,7 @@
 /*global $,hljs*/
 /* jslint nomen:true */
+import http from '../../lib/http';
+
 require('../../vendor/jquery.poshytip.min');
 require('../../vendor/jquery.qrcode.min');
 
@@ -8,6 +10,17 @@ const popup = require('../../lib/dialog');
 const $qrcodeShare = $('#qrcodeShare');
 const $qrcodeReward = $('#qrcodeReward');
 
+function showCaptcha() {
+    http.ajax({
+        url: '/captcha',
+        cache: true,
+        data: {
+            r: Math.random()
+        }
+    }).then((imgData) => {
+        $('#captcha').attr('src', imgData);
+    });
+}
 service = {
     initEvent: function () {
         $('body').on('submit', '.j-form-comment', function () {
@@ -31,6 +44,7 @@ service = {
                         }
                     } else {
                         $('.csrfToken').val(d.token);
+                        showCaptcha();
                         popup.alert(d.message);
                     }
                 },
@@ -96,6 +110,7 @@ service = {
 $(function () {
     service.initEvent();
     hljs.initHighlightingOnLoad();
+
     $qrcodeShare.qrcode({
         width: 150,
         height: 150,
@@ -108,4 +123,6 @@ $(function () {
         foreground: '#5f5f5f',
         text: 'https://wx.tenpay.com/f2f?t=AQAAAHJba4G%2FaqEgOMVB%2FbNG3ac%3D'
     });
+
+    showCaptcha();
 });
