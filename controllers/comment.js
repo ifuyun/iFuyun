@@ -35,7 +35,7 @@ module.exports = {
         if (req.session.captcha.toLowerCase() !== param.captchaCode.toLowerCase()) {
             return util.catchError({
                 status: 200,
-                code: 400,
+                code: 480,
                 message: '验证码输入有误，请重新输入'
             }, next);
         }

@@ -21,6 +21,7 @@ function showCaptcha() {
         $('#captcha').attr('src', imgData);
     });
 }
+
 service = {
     initEvent: function () {
         $('body').on('submit', '.j-form-comment', function () {
@@ -44,7 +45,9 @@ service = {
                         }
                     } else {
                         $('.csrfToken').val(d.token);
-                        showCaptcha();
+                        if (d.code === 480) {
+                            showCaptcha();
+                        }
                         popup.alert(d.message);
                     }
                 },

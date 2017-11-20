@@ -1,5 +1,5 @@
 /**
- *
+ * 验证码
  * @author fuyun
  * @since 2017/11/16
  */
@@ -32,7 +32,7 @@ module.exports = {
         let gmImg = gm(imgWidth, blankHeight, '#ddd');
 
         gmImg.background('#ddd')
-            .fill('#000000')
+            .fill('#000')
             .fontSize(Math.round(Math.random() * (fontSizeRange[1] - fontSizeRange[0]) * 10) / 10 + fontSizeRange[0])
             .gravity('Center')
             // .implode('0.1')
@@ -49,11 +49,5 @@ module.exports = {
                 req.session.captcha = captchaText;
                 res.send('data:image/png;base64,' + buffers.toString('base64'));
             });
-        // .write('./captcha.png', (err) => {
-        //     if (err) {
-        //         return next(err);
-        //     }
-        //     res.download('./captcha.png');
-        // });
     }
 };
