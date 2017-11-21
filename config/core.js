@@ -18,7 +18,7 @@ module.exports = {
     cookieExpires: 1000 * 60 * 60 * 24 * 7,
     host: '127.0.0.1',
     port: 2016,
-    domain: 'www.ifuyun.com',
+    domain: isDev ? 'i.ifuyun.com' : 'www.ifuyun.com',
     pathViews: isDev ? 'src' : 'dist',
     logLevel: isDev ? 'TRACE' : 'INFO',
     isDev

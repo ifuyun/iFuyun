@@ -75,7 +75,7 @@ if (cluster.isMaster) {
         saveUninitialized: false,
         cookie: {
             maxAge: config.cookieExpires,
-            domain: 'ifuyun.com'
+            domain: config.domain
         }
         // expires: new Date(Date.now() + config.cookieExpires),
     }));
