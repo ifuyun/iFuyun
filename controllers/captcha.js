@@ -5,28 +5,38 @@
  */
 const gm = require('gm').subClass({imageMagick: true});
 
+/**
+ * 生成验证码随机字符串
+ * @return {string} 验证码
+ */
 function getRandomText() {
     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    const charsLen = chars.length;
-    let text = '';
-    for (let i = 0; i < 4; i += 1) {
-        text += chars[Math.floor(Math.random() * charsLen)];
+    const charsLength = chars.length;
+    const captchaLength = 4;
+    let captchaStr = '';
+    for (let i = 0; i < captchaLength; i += 1) {
+        captchaStr += chars[Math.floor(Math.random() * charsLength)];
     }
 
-    return text;
+    return captchaStr;
 }
 
 module.exports = {
     create: function (req, res, next) {
+        const maxFontSize = 22;
+        const maxLineY = 28;
+        const maxMarginLeft = 15;
+        const minWaveLength = 36;
+
         const imgHeight = 32;
         const imgWidth = 80;
-        const fontSizeRange = [16, 22];
+        const fontSizeRange = [16, maxFontSize];
         const blankHeightRange = [16, 24];
         const blankHeight = Math.round(Math.random() * (blankHeightRange[1] - blankHeightRange[0]) * 10) / 10 + blankHeightRange[0];
-        const lineYRange = [2, 28];
-        const marginLeftRange = [0, 15];
+        const lineYRange = [2, maxLineY];
+        const marginLeftRange = [0, maxMarginLeft];
         const waveAmplitude = (imgHeight - blankHeight) / 2;
-        const waveLengthRange = [36, 60];
+        const waveLengthRange = [minWaveLength, 60];
         const captchaText = getRandomText();
         const textGravity = ['West', 'East'];
         let gmImg = gm(imgWidth, blankHeight, '#ddd');
