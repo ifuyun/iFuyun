@@ -98,6 +98,7 @@ module.exports = {
                 if (params.rememberMe && params.rememberMe === '1') {
                     res.cookie('rememberMe', 1, {
                         path: '/',
+                        domain: 'ifuyun.com',
                         maxAge: appConfig.cookieExpires
                     });
                     req.session.cookie.expires = new Date(Date.now() + appConfig.cookieExpires);
@@ -105,6 +106,7 @@ module.exports = {
                 } else {
                     res.cookie('rememberMe', 0, {
                         path: '/',
+                        domain: 'ifuyun.com',
                         maxAge: appConfig.cookieExpires
                     });
                     req.session.cookie.expires = false;

@@ -74,10 +74,9 @@ if (cluster.isMaster) {
         resave: false,
         saveUninitialized: false,
         cookie: {
-            maxAge: config.cookieExpires,
-            domain: config.domain
+            // 默认domain：当前登录域www.ifuyun.com，设置后为.www.ifuyun.com或.ifuyun.com
+            maxAge: config.cookieExpires // 默认7天
         }
-        // expires: new Date(Date.now() + config.cookieExpires),
     }));
     app.use(bodyParser.json({
         limit: '20mb'
