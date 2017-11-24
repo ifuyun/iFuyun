@@ -51,8 +51,8 @@ npm run build
 2. 执行yuidoc -c yuidoc.json
 
 ## 注意事项
-1. 百度、谷歌等帐号验证和静态文件存放在/public/page目录下
-2. favicon.ico存放在/public目录
+1. 百度、谷歌等帐号验证和静态文件存放在/public/static目录下
+2. favicon.ico存放在/public/static目录
 3. API文档在/views/doc目录
 4. 日志信息在/logs
 5. 其他静态资源路由参照Nginx配置
