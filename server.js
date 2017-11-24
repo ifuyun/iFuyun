@@ -1,18 +1,17 @@
 /* jslint nomen:true es5:true */
 /* global console,process,__dirname */
 /**
- * 网站总入口（默认）
- * @module index
- * @main index
- * @requires redis, core, routes
+ * 非集群模式入口
+ * @module server
+ * @main server
+ * @requires redis, core, routes, logger
  * @author Fuyun
  * @version 2.0.0
- * @since 1.0.0
+ * @since 2.0.0
  */
 const express = require('express');
 const cluster = require('cluster');
 const app = express();
-const numCPUs = require('os').cpus().length;
 const path = require('path');
 const favicon = require('serve-favicon');
 const cookieParser = require('cookie-parser');
@@ -31,27 +30,11 @@ const config = require('./config/core');
 const routes = require('./config/routes');
 const {sysLog, threadLog, accessLog, formatOpLog, updateContext} = require('./helper/logger');
 
-if (cluster.isMaster) {
-    for (let cpuIdx = 0; cpuIdx < numCPUs; cpuIdx += 1) {
-        cluster.fork();
-    }
-
-    cluster.on('exit', function (worker, code, signal) {
-        threadLog.warn(formatOpLog({
-            msg: `Worker ${worker.process.pid} exit.`,
-            data: {
-                code,
-                signal
-            }
-        }));
-        process.nextTick(function () {
-            threadLog.info(formatOpLog({
-                msg: 'New process is forking...'
-            }));
-            cluster.fork();
-        });
-    });
-} else {// cluster.isWorker
+/**
+ * worker服务，启动服务器
+ * @return {void} null
+ */
+function startServer() {
     app.set('views', path.join(__dirname, 'views'));
     app.set('view engine', 'html');
     ejs.delimiter = '?';
@@ -97,7 +80,7 @@ if (cluster.isMaster) {
     app.use(function (req, res, next) {
         updateContext();
         threadLog.trace(formatOpLog({
-            msg: `Request [${req.url}] is processed by Worker: ${cluster.worker.id}`
+            msg: `Request [${req.url}] is processed by ${cluster.isWorker ? 'Worker: ' + (cluster.worker && cluster.worker.id) : 'Master'}`
         }));
         next();
     });
@@ -107,4 +90,10 @@ if (cluster.isMaster) {
     http.Server(app).listen(config.port, config.host, () => sysLog.info(formatOpLog({
         msg: `Server listening on: ${config.host}:${config.port}`
     })));
+}
+
+if (require.main === module) {
+    startServer();
+} else {
+    module.exports = startServer;
 }

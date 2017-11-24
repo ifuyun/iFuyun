@@ -7,7 +7,8 @@
  */
 const pkgCfg = require('../package.json');
 const credentials = require('./credentials');
-const isDev = process.env.ENV && process.env.ENV.trim() !== 'production';
+const env = (process.env.ENV && process.env.ENV.trim()) || 'development';
+const isDev = env !== 'production';
 
 module.exports = {
     name: '爱生活，爱抚云',

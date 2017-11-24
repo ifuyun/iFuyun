@@ -17,14 +17,14 @@ const user = require('../controllers/user');
 const comment = require('../controllers/comment');
 const captcha = require('../controllers/captcha');
 const routesAdmin = require('./routes-admin');
+const config = require('./core');
 
 module.exports = function (app, express) {
     const router = express.Router();
     const admin = routesAdmin(app, router);
-    const {ENV: env} = process.env;
     // 静态文件(若先路由后静态文件，将导致session丢失)
     app.use(express.static(path.join(__dirname, '..', 'public', 'static')));
-    app.use(express.static(path.join(__dirname, '..', 'public', env && env.trim() === 'production' ? 'dist' : 'dev')));
+    app.use(express.static(path.join(__dirname, '..', 'public', config.isDev ? 'dev' : 'dist')));
 
     app.use(base.init);
     app.get('/', post.listPosts);

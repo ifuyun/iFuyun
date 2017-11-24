@@ -9,7 +9,6 @@
 const credentials = require('./credentials');
 const {dbLog: logger} = require('../helper/logger');
 module.exports = {
-    'use_env_variable': (process.env.ENV && process.env.ENV.trim()) || 'development',
     development: {
         username: credentials.db.development.username,
         password: credentials.db.development.password,
