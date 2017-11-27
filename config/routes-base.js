@@ -74,7 +74,7 @@ module.exports = {
      * @since 1.0.0
      */
     error: function (err, req, res, next) {// TODO: IE can not custom page
-        if (err.stack) {// 对未捕获的错误记录堆栈信息
+        if (err.stack && err.output !== false) {// 对未捕获的错误记录堆栈信息
             logger.error(formatOpLog({
                 msg: err.stack,
                 req
@@ -117,7 +117,7 @@ module.exports = {
             d.add(res);
             d.on('error', function (err) {
                 logger.error(formatOpLog({
-                    msg: `Domain Error: \n${err.stack}`,
+                    msg: `Domain Error Caught: \n${err.stack}`,
                     req
                 }));
                 setTimeout(() => {
@@ -144,6 +144,7 @@ module.exports = {
                 try {
                     err.status = codeError;
                     err.code = codeError;
+                    err.output = false;
                     next(err);
                 } catch (nextErr) {
                     logger.error(formatOpLog({

@@ -33,7 +33,8 @@ const routesBase = require('./config/routes-base');
 const {sysLog, threadLog, accessLog, formatOpLog, updateContext} = require('./helper/logger');
 
 if (cluster.isMaster) {
-    for (let cpuIdx = 0; cpuIdx < numCPUs; cpuIdx += 1) {
+    const workerSize = Math.max(numCPUs, 2);
+    for (let cpuIdx = 0; cpuIdx < workerSize; cpuIdx += 1) {
         cluster.fork();
     }
 
@@ -53,7 +54,7 @@ if (cluster.isMaster) {
         });
     });
 } else {// cluster.isWorker
-    let server;
+    let server = http.Server();
     app.set('views', path.join(__dirname, 'views'));
     app.set('view engine', 'html');
     ejs.delimiter = '?';
@@ -107,7 +108,8 @@ if (cluster.isMaster) {
 
     routes(app, express);
 
-    server = http.Server(app).listen(config.port, config.host, () => sysLog.info(formatOpLog({
+    server.on('request', app);
+    server.listen(config.port, config.host, () => sysLog.info(formatOpLog({
         msg: `Server listening on: ${config.host}:${config.port}`
     })));
 }
