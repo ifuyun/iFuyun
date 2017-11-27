@@ -7,6 +7,8 @@
  * @version 2.0.0
  * @since 1.0.0
  */
+const domain = require('domain');
+const cluster = require('cluster');
 const appConfig = require('./core');
 const util = require('../helper/util');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
@@ -95,5 +97,62 @@ module.exports = {
                 message
             });
         }
+    },
+    /**
+     * 全局错误捕捉、处理
+     * @method globalError
+     * @static
+     * @param {Server} server, we need to close it and stop taking new requests.
+     * @return {Function} middleware fn.
+     * @author Fuyun
+     * @version 2.0.0
+     * @since 2.0.0
+     */
+    globalError: function (server) {
+        return function (req, res, next) {
+            const d = domain.create();
+            const killTimeout = 5000;
+
+            d.add(req);
+            d.add(res);
+            d.on('error', function (err) {
+                logger.error(formatOpLog({
+                    msg: `Domain Error: \n${err.stack}`,
+                    req
+                }));
+                setTimeout(() => {
+                    logger.error(formatOpLog({
+                        msg: 'Failsafe shutdown.',
+                        req
+                    }));
+                    process.exit(1);
+                }, killTimeout);
+
+                const curWorker = cluster.worker;
+                try {// because server could already closed, need try catch the error: `Error: Not running`
+                    if (curWorker) {
+                        curWorker.disconnect();
+                    }
+                    server.close();
+                } catch (serverErr) {
+                    logger.error(formatOpLog({
+                        msg: `Error on server: [pid: ${process.pid}] close or worker: [id: ${(curWorker && curWorker.id) || '-'}] disconnect. \n${serverErr.stack}`,
+                        req
+                    }));
+                }
+
+                try {
+                    err.status = codeError;
+                    err.code = codeError;
+                    next(err);
+                } catch (nextErr) {
+                    logger.error(formatOpLog({
+                        msg: `Express error mechanism failed. \n${nextErr.stack}`,
+                        req
+                    }));
+                }
+            });
+            d.run(next);
+        };
     }
 };

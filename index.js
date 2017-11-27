@@ -29,6 +29,7 @@ const redisCfg = require('./config/redis');
 const redisClient = redis.createClient(redisCfg.port, redisCfg.host, {'auth_pass': redisCfg.passwd});
 const config = require('./config/core');
 const routes = require('./config/routes');
+const routesBase = require('./config/routes-base');
 const {sysLog, threadLog, accessLog, formatOpLog, updateContext} = require('./helper/logger');
 
 if (cluster.isMaster) {
@@ -52,10 +53,12 @@ if (cluster.isMaster) {
         });
     });
 } else {// cluster.isWorker
+    let server;
     app.set('views', path.join(__dirname, 'views'));
     app.set('view engine', 'html');
     ejs.delimiter = '?';
     app.engine('.html', ejs.__express);
+    app.use(routesBase.globalError(server));
     app.use(log4js.connectLogger(accessLog, {
         level: log4js.levels.INFO,
         format: ':remote-addr - :method :status HTTP/:http-version :url - [:response-time ms/:content-length B] ":referrer" ":user-agent"'
@@ -104,7 +107,7 @@ if (cluster.isMaster) {
 
     routes(app, express);
 
-    http.Server(app).listen(config.port, config.host, () => sysLog.info(formatOpLog({
+    server = http.Server(app).listen(config.port, config.host, () => sysLog.info(formatOpLog({
         msg: `Server listening on: ${config.host}:${config.port}`
     })));
 }
