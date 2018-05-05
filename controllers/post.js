@@ -583,7 +583,6 @@ module.exports = {
             const options = result.commonData.options;
             Object.assign(resData, result.commonData);
 
-            console.log(result.crumb);
             resData.curNav = result.crumb[0].slug;
             resData.curPos = util.createCrumb(result.crumb);
             resData.postCats = [];
