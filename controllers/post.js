@@ -45,8 +45,8 @@ function getCommonData(param, cb) {
         friendLinks: (cb) => common.getLinks('friendlink', param.from !== 'list' || param.page > 1 ? 'site' : ['homepage', 'site'], cb),
         quickLinks: (cb) => common.getLinks('quicklink', ['homepage', 'site'], cb),
         categories: (cb) => {
-            common.getCategoryTree(cb, typeof param.filterCategory === 'boolean' ? {
-                visible: param.filterCategory + 0
+            common.getCategoryTree(cb, typeof param.filterCategory === true ? {
+                visible: 1
             } : {});
         },
         mainNavs: common.mainNavs,
@@ -301,6 +301,7 @@ function watermark(imgPath, cb) {
 
 module.exports = {
     listPosts: function (req, res, next) {
+        const isAdmin = util.isAdminUser(req);
         let page = parseInt(req.params.page, 10) || 1;
         let where = {
             postStatus: {
@@ -330,7 +331,10 @@ module.exports = {
             attributes: ['taxonomyId', 'visible'],
             where: {
                 visible: {
-                    [Op.eq]: 1
+                    [Op.in]: isAdmin ? [0, 1] : [1]
+                },
+                taxonomy: {
+                    [Op.eq]: 'post'
                 }
             }
         }];
@@ -339,7 +343,7 @@ module.exports = {
                 getCommonData({
                     page,
                     from: 'list',
-                    filterCategory: true
+                    filterCategory: !isAdmin
                 }, cb);
             },
             postsCount: (cb) => {
@@ -411,6 +415,7 @@ module.exports = {
         });
     },
     showPost: function (req, res, next) {
+        const isAdmin = util.isAdminUser(req);
         const postId = req.params.postId;
         if (!postId || !/^[0-9a-fA-F]{16}$/i.test(postId)) {// 不能抛出错误，有可能是/page
             logger.warn(formatOpLog({
@@ -424,10 +429,20 @@ module.exports = {
             commonData: (cb) => {
                 getCommonData({
                     from: 'post',
-                    filterCategory: true
+                    filterCategory: !isAdmin
                 }, cb);
             },
             post: function (cb) {
+                let where = {
+                    taxonomy: {
+                        [Op.in]: ['post', 'tag']
+                    }
+                };
+                if(!isAdmin) {
+                    where.visible = {
+                        [Op.eq]: 1
+                    };
+                }
                 Post.findById(postId, {
                     attributes: [
                         'postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus',
@@ -440,14 +455,7 @@ module.exports = {
                     }, {
                         model: models.TermTaxonomy,
                         attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'visible', 'count'],
-                        where: {
-                            taxonomy: {
-                                [Op.in]: ['post', 'tag']
-                            },
-                            visible: {
-                                [Op.eq]: 1
-                            }
-                        }
+                        where
                     }]
                 }).then(function (post) {
                     if (!post || !post.postId) {
@@ -463,7 +471,7 @@ module.exports = {
                         }));
                     }
                     // 无管理员权限不允许访问非公开文章(包括草稿)
-                    if (!util.isAdminUser(req) && post.postStatus !== 'publish') {
+                    if (!isAdmin && post.postStatus !== 'publish') {
                         logger.warn(formatOpLog({
                             fn: 'showPost',
                             msg: `[Unauthorized]${post.postId}:${post.postTitle} is ${post.postStatus}`,
@@ -507,12 +515,12 @@ module.exports = {
                     let crumbCatId;
                     for (let i = 0; i < categories.length; i += 1) {
                         const curCat = categories[i];
-                        if (curCat.visible) {
+                        if (curCat.visible || isAdmin) {
                             crumbCatId = curCat.taxonomyId;
                             break;
                         }
                     }
-                    if (!crumbCatId) {
+                    if (!isAdmin && !crumbCatId) {
                         logger.error(formatOpLog({
                             fn: 'showPost',
                             msg: 'Category is Invisible.',
@@ -575,6 +583,7 @@ module.exports = {
             const options = result.commonData.options;
             Object.assign(resData, result.commonData);
 
+            console.log(result.crumb);
             resData.curNav = result.crumb[0].slug;
             resData.curPos = util.createCrumb(result.crumb);
             resData.postCats = [];
