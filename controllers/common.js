@@ -49,11 +49,13 @@ module.exports = {
         if (typeof param.filterCategory === 'boolean') {
             queryOpt.attributes.push([models.sequelize.fn('count', 1), 'count']);
             queryOpt.group = ['linkDate', 'visible'];
-            queryOpt.having = {
-                visible: {
-                    [Op.eq]: param.filterCategory + 0
-                }
-            };
+            if (param.filterCategory === true) {
+                queryOpt.having = {
+                    visible: {
+                        [Op.eq]: 1
+                    }
+                };
+            }
         }
         VPostDateArchive.findAll(queryOpt).then(function (data) {
             cb(null, data);

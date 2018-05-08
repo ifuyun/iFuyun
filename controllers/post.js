@@ -21,7 +21,7 @@ const credentials = require('../config/credentials');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const idReg = /^[0-9a-fA-F]{16}$/i;
 const pagesOut = 9;
-const {Post, User, Postmeta, TermTaxonomy} = models;
+const {Post, User, Postmeta, TermTaxonomy, VTagVisibleTaxonomy} = models;
 const Op = models.Sequelize.Op;
 
 /**
@@ -359,7 +359,7 @@ module.exports = {
                     page,
                     where,
                     includeOpt,
-                    filterCategory: true,
+                    filterCategory: !isAdmin,
                     from: 'index'
                 }, cb);
             }],
@@ -614,6 +614,7 @@ module.exports = {
         });
     },
     showPage: function (req, res, next) {
+        const isAdmin = util.isAdminUser(req);
         const reqUrl = url.parse(req.url);
         const reqPath = reqUrl.pathname;
         async.auto({
@@ -621,7 +622,7 @@ module.exports = {
                 getCommonData({
                     from: 'page',
                     postType: 'page',
-                    filterCategory: true
+                    filterCategory: !isAdmin
                 }, cb);
             },
             post: function (cb) {
@@ -726,6 +727,7 @@ module.exports = {
         });
     },
     listByCategory: function (req, res, next) {
+        const isAdmin = util.isAdminUser(req);
         let page = parseInt(req.params.page, 10) || 1;
         const category = req.params.category;
         let where = {
@@ -750,7 +752,7 @@ module.exports = {
                 getCommonData({
                     page: page,
                     from: 'category',
-                    filterCategory: true
+                    filterCategory: !isAdmin
                 }, cb);
             },
             categories: common.getCategoryTree.bind(common),
@@ -758,7 +760,7 @@ module.exports = {
                 common.getSubCategoriesBySlug({
                     catData: result.categories.catData,
                     slug: category,
-                    filterCategory: true
+                    filterCategory: !isAdmin
                 }, cb);
             }],
             setRelationshipWhere: ['subCategories', (result, cb) => {
@@ -787,7 +789,7 @@ module.exports = {
                     page,
                     where,
                     includeOpt,
-                    filterCategory: true,
+                    filterCategory: !isAdmin,
                     from: 'category'
                 }, cb);
             }],
@@ -840,6 +842,7 @@ module.exports = {
         });
     },
     listByTag: function (req, res, next) {
+        const isAdmin = util.isAdminUser(req);
         let page = parseInt(req.params.page, 10) || 1;
         const tag = req.params.tag;
         let where = {
@@ -851,17 +854,14 @@ module.exports = {
             }
         };
         let includeOpt = [{
-            model: TermTaxonomy,
-            attributes: ['taxonomyId', 'visible'],
+            model: isAdmin ? TermTaxonomy : VTagVisibleTaxonomy,
+            attributes: ['taxonomyId'],
             where: {
                 taxonomy: {
                     [Op.eq]: 'tag'
                 },
                 slug: {
                     [Op.eq]: tag
-                },
-                visible: {
-                    [Op.eq]: 1
                 }
             }
         }];
@@ -870,7 +870,7 @@ module.exports = {
                 getCommonData({
                     page: page,
                     from: 'tag',
-                    filterCategory: true
+                    filterCategory: !isAdmin
                 }, cb);
             },
             postsCount: (cb) => {
@@ -886,7 +886,7 @@ module.exports = {
                     page,
                     where,
                     includeOpt,
-                    filterCategory: true,
+                    filterCategory: !isAdmin,
                     from: 'tag'
                 }, cb);
             }],
@@ -949,6 +949,7 @@ module.exports = {
         });
     },
     listByDate: function (req, res, next) {
+        const isAdmin = util.isAdminUser(req);
         let page = parseInt(req.params.page, 10) || 1;
         let year = parseInt(req.params.year, 10) || new Date().getFullYear();
         let month = parseInt(req.params.month, 10);
@@ -969,7 +970,10 @@ module.exports = {
             attributes: ['taxonomyId', 'visible'],
             where: {
                 visible: {
-                    [Op.eq]: 1
+                    [Op.in]: isAdmin ? [0, 1] : [1]
+                },
+                taxonomy: {
+                    [Op.eq]: 'post'
                 }
             }
         }];
@@ -978,7 +982,7 @@ module.exports = {
             commonData: (cb) => {
                 getCommonData({
                     from: 'archive',
-                    filterCategory: true
+                    filterCategory: !isAdmin
                 }, cb);
             },
             postsCount: (cb) => {
@@ -994,7 +998,7 @@ module.exports = {
                     page,
                     where,
                     includeOpt,
-                    filterCategory: true,
+                    filterCategory: !isAdmin,
                     from: 'archive'
                 }, cb);
             }],
@@ -1065,11 +1069,12 @@ module.exports = {
         });
     },
     listArchiveDate: function (req, res, next) {
+        const isAdmin = util.isAdminUser(req);
         async.auto({
             commonData: (cb) => {
                 getCommonData({
                     from: 'archive',
-                    filterCategory: true
+                    filterCategory: !isAdmin
                 }, cb);
             }
         }, (err, result) => {
