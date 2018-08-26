@@ -45,7 +45,7 @@ function getCommonData(param, cb) {
         friendLinks: (cb) => common.getLinks('friendlink', param.from !== 'list' || param.page > 1 ? 'site' : ['homepage', 'site'], cb),
         quickLinks: (cb) => common.getLinks('quicklink', ['homepage', 'site'], cb),
         categories: (cb) => {
-            common.getCategoryTree(cb, typeof param.filterCategory === true ? {
+            common.getCategoryTree(cb, param.filterCategory === true ? {
                 visible: 1
             } : {});
         },
