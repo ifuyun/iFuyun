@@ -69,7 +69,7 @@ function getCheckSum(appSecret, nonce, curTime) {
  */
 function getNosToken(filename) {
     const str = JSON.stringify({
-        Bucket: config.bucket,
+        Bucket: config.upload.bucket,
         Object: filename,
         Expires: 4102329600
     });
@@ -81,7 +81,7 @@ function getNosToken(filename) {
 
     return {
         ret: {
-            'bucket': config.bucket,
+            'bucket': config.upload.bucket,
             'object': filename,
             'xNosToken': str3
         }
@@ -94,7 +94,7 @@ function getNosToken(filename) {
  * @return {Undefined} null
  */
 function getInitData(filename) {
-    if (config.bucket) {
+    if (config.upload.bucket) {
         new Promise((resolve) => {
             resolve(getNosToken(filename));
         }).then((nosToken) => {
@@ -103,7 +103,7 @@ function getInitData(filename) {
     } else {
         request({
             method: 'post',
-            uri: 'http://vcloud.163.com/app/vod/upload/init',
+            uri: config.upload.initUrl,
             headers: {
                 AppKey: config.appKey,
                 Nonce: config.nonce,
@@ -132,7 +132,7 @@ function getInitData(filename) {
 function getIPData(bucketName) {
     request({
         method: 'get',
-        uri: 'http://wanproxy.127.net/lbs?version=1.0&bucketname=' + bucketName
+        uri: config.upload.targetUrl + bucketName
     }, (err, res, body) => {
         if (typeof body === 'string') {
             body = JSON.parse(body);
