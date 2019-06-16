@@ -57,13 +57,13 @@ module.exports = function (sequelize, DataTypes) {
         linkCreated: {
             type: DataTypes.DATE,
             allowNull: false,
-            defaultValue: 'sequelize.literal(\'CURRENT_TIMESTAMP\')',
+            defaultValue: sequelize.literal('CURRENT_TIMESTAMP'),
             field: 'link_created'
         },
         linkModified: {
             type: DataTypes.DATE,
             allowNull: false,
-            defaultValue: 'sequelize.literal(\'CURRENT_TIMESTAMP\')',
+            defaultValue: sequelize.literal('CURRENT_TIMESTAMP'),
             field: 'link_modified'
         },
         linkRss: {

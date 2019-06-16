@@ -1,5 +1,10 @@
 module.exports = function (sequelize, DataTypes) {
     return sequelize.define('VPostDateArchive', {
+        postId: {
+            type: DataTypes.CHAR(16),
+            allowNull: false,
+            field: 'post_id'
+        },
         postDate: {
             type: DataTypes.DATE,
             allowNull: false,
@@ -30,7 +35,7 @@ module.exports = function (sequelize, DataTypes) {
         },
         visible: {
             type: DataTypes.INTEGER(1).UNSIGNED,
-            allowNull: false,
+            allowNull: true,
             defaultValue: '1',
             field: 'visible'
         }

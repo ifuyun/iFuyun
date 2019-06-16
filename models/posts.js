@@ -15,13 +15,13 @@ module.exports = function (sequelize, DataTypes) {
         postDate: {
             type: DataTypes.DATE,
             allowNull: false,
-            defaultValue: 'sequelize.literal(\'CURRENT_TIMESTAMP\')',
+            defaultValue: sequelize.literal('CURRENT_TIMESTAMP'),
             field: 'post_date'
         },
         postDateGmt: {
             type: DataTypes.DATE,
             allowNull: true,
-            defaultValue: 'sequelize.literal(\'CURRENT_TIMESTAMP\')',
+            defaultValue: sequelize.literal('CURRENT_TIMESTAMP'),
             field: 'post_date_gmt'
         },
         postContent: {
@@ -72,19 +72,19 @@ module.exports = function (sequelize, DataTypes) {
         postModified: {
             type: DataTypes.DATE,
             allowNull: false,
-            defaultValue: 'sequelize.literal(\'CURRENT_TIMESTAMP\')',
+            defaultValue: sequelize.literal('CURRENT_TIMESTAMP'),
             field: 'post_modified'
         },
         postModifiedGmt: {
             type: DataTypes.DATE,
             allowNull: true,
-            defaultValue: 'sequelize.literal(\'CURRENT_TIMESTAMP\')',
+            defaultValue: sequelize.literal('CURRENT_TIMESTAMP'),
             field: 'post_modified_gmt'
         },
         postCreated: {
             type: DataTypes.DATE,
             allowNull: false,
-            defaultValue: 'sequelize.literal(\'CURRENT_TIMESTAMP\')',
+            defaultValue: sequelize.literal('CURRENT_TIMESTAMP'),
             field: 'post_created'
         },
         postParent: {

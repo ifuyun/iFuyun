@@ -45,7 +45,7 @@ module.exports = function (sequelize, DataTypes) {
         userRegistered: {
             type: DataTypes.DATE,
             allowNull: false,
-            defaultValue: 'sequelize.literal(\'CURRENT_TIMESTAMP\')',
+            defaultValue: sequelize.literal('CURRENT_TIMESTAMP'),
             field: 'user_registered'
         },
         userActivationKey: {

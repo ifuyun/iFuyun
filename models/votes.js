@@ -20,7 +20,7 @@ module.exports = function (sequelize, DataTypes) {
         voteCreated: {
             type: DataTypes.DATE,
             allowNull: false,
-            defaultValue: 'sequelize.literal(\'CURRENT_TIMESTAMP\')',
+            defaultValue: sequelize.literal('CURRENT_TIMESTAMP'),
             field: 'vote_created'
         },
         userId: {

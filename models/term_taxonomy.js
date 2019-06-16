@@ -65,13 +65,13 @@ module.exports = function (sequelize, DataTypes) {
         created: {
             type: DataTypes.DATE,
             allowNull: false,
-            defaultValue: 'sequelize.literal(\'CURRENT_TIMESTAMP\')',
+            defaultValue: sequelize.literal('CURRENT_TIMESTAMP'),
             field: 'created'
         },
         modified: {
             type: DataTypes.DATE,
             allowNull: false,
-            defaultValue: 'sequelize.literal(\'CURRENT_TIMESTAMP\')',
+            defaultValue: sequelize.literal('CURRENT_TIMESTAMP'),
             field: 'modified'
         }
     }, {

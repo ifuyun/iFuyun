@@ -138,7 +138,9 @@ module.exports = {
                 }
             }],
             where: {
-                linkVisible: visible
+                linkVisible: {
+                    [Op.eq]: visible
+                }
             },
             order: [
                 ['linkRating', 'desc']

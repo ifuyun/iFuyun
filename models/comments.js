@@ -38,7 +38,7 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.STRING(200),
             allowNull: false,
             defaultValue: '',
-            field: 'comment_author_Link'
+            field: 'comment_author_link'
         },
         commentIp: {
             type: DataTypes.STRING(100),
@@ -49,25 +49,25 @@ module.exports = function (sequelize, DataTypes) {
         commentCreated: {
             type: DataTypes.DATE,
             allowNull: false,
-            defaultValue: 'sequelize.literal(\'CURRENT_TIMESTAMP\')',
+            defaultValue: sequelize.literal('CURRENT_TIMESTAMP'),
             field: 'comment_created'
         },
         commentCreatedGmt: {
             type: DataTypes.DATE,
             allowNull: false,
-            defaultValue: 'sequelize.literal(\'CURRENT_TIMESTAMP\')',
+            defaultValue: sequelize.literal('CURRENT_TIMESTAMP'),
             field: 'comment_created_gmt'
         },
         commentModified: {
             type: DataTypes.DATE,
             allowNull: false,
-            defaultValue: 'sequelize.literal(\'CURRENT_TIMESTAMP\')',
+            defaultValue: sequelize.literal('CURRENT_TIMESTAMP'),
             field: 'comment_modified'
         },
         commentModifiedGmt: {
             type: DataTypes.DATE,
             allowNull: false,
-            defaultValue: 'sequelize.literal(\'CURRENT_TIMESTAMP\')',
+            defaultValue: sequelize.literal('CURRENT_TIMESTAMP'),
             field: 'comment_modified_gmt'
         },
         commentVote: {
