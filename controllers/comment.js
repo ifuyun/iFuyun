@@ -328,7 +328,7 @@ module.exports = {
                 Comment.findAll({
                     attributes: [
                         'commentStatus',
-                        ['count(1)', 'count']
+                        [models.sequelize.fn('count', 1), 'count']
                     ],
                     group: ['commentStatus']
                 }).then((data) => cb(null, data));

@@ -1259,7 +1259,7 @@ module.exports = {
                     attributes: [
                         'postStatus',
                         'postType',
-                        ['count(1)', 'count']
+                        [models.sequelize.fn('count', 1), 'count']
                     ],
                     where: {
                         postType: {
@@ -1766,7 +1766,7 @@ module.exports = {
                     attributes: [
                         'postStatus',
                         'postType',
-                        ['count(1)', 'count']
+                        [models.sequelize.fn('count', 1), 'count']
                     ],
                     where: {
                         postType: {
