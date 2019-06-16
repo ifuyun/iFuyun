@@ -139,7 +139,7 @@ module.exports = {
             }],
             where: {
                 linkVisible: {
-                    [Op.eq]: visible
+                    [Op.in]: visible
                 }
             },
             order: [
