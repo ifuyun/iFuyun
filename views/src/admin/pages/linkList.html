@@ -15,7 +15,7 @@
             <!-- </div> -->
             <div class="clear-right">
                 <div class="table-nav">
-                    <span><a class="button button-spacing" href="javascript:;">删除</a></span>
+                    <span><a class="button button-spacing" href="javascript:">删除</a></span>
                     <span><a class="button button-spacing" href="/admin/link/item?action=create">新增链接</a></span>
                     <span><a class="button" href="/admin/taxonomy?type=link">链接分类</a></span>
                 </div>
@@ -60,7 +60,7 @@
                                 <td><?= link.linkRating ?></td>
                                 <td><?= moment(link.linkCreated).format('YYYY-MM-DD') ?></td>
                                 <td>
-                                    <a class="button button-not-last btn-edit" href="/admin/link/item?action=edit&linkId=<?= link.linkId ?>">编辑</a><a class="button button-not-last btn-delete" href="javascript:;" data-id="<?= link.linkId ?>">删除</a>
+                                    <a class="button button-not-last btn-edit" href="/admin/link/item?action=edit&linkId=<?= link.linkId ?>">编辑</a><a class="button button-not-last btn-delete" href="javascript:" data-id="<?= link.linkId ?>">删除</a>
                                 </td>
                             </tr>
                             <? }) ?>
@@ -73,7 +73,7 @@
                     </table>
                 </div>
                 <div class="table-nav">
-                    <span><a class="button" href="javascript:;">删除</a></span>
+                    <span><a class="button" href="javascript:">删除</a></span>
                 </div>
                 <? include ../elements/pageBar.html ?>
             </div>
