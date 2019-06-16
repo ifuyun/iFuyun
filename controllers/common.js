@@ -150,7 +150,7 @@ module.exports = {
         });
     },
     getUserById: function (userId, cb) {
-        models.User.findById(userId, {
+        models.User.findByPk(userId, {
             attributes: ['userId', 'userLogin', 'userNicename', 'userEmail', 'userUrl', 'userDisplayName']
         }).then((result) => {
             cb(null, result);

@@ -176,7 +176,7 @@ module.exports = {
         };
         if (action === 'edit') {
             tasks.taxonomy = (cb) => {
-                TermTaxonomy.findById(taxonomyId, {
+                TermTaxonomy.findByPk(taxonomyId, {
                     attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'visible', 'created']
                 }).then((taxonomy) => cb(null, taxonomy));
             };

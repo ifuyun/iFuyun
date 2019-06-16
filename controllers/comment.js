@@ -94,7 +94,7 @@ module.exports = {
         async.auto({
             post: (cb) => {
                 // 权限校验
-                models.Post.findById(data.postId, {
+                models.Post.findByPk(data.postId, {
                     attributes: ['postId', 'postTitle', 'postGuid', 'postStatus', 'commentFlag']
                 }).then(function (post) {
                     if (!post || !post.postId) {
@@ -250,7 +250,7 @@ module.exports = {
                 });
             },
             commentVote: ['comment', function (result, cb) {
-                Comment.findById(data.objectId, {
+                Comment.findByPk(data.objectId, {
                     attributes: ['commentId', 'commentVote']
                 }).then(function (comment) {
                     cb(null, comment);
@@ -398,7 +398,7 @@ module.exports = {
         async.parallel({
             options: common.getInitOptions,
             comment: function (cb) {
-                Comment.findById(commentId, {
+                Comment.findByPk(commentId, {
                     attributes: ['commentId', 'postId', 'commentContent', 'commentStatus', 'commentAuthor', 'commentAuthorEmail', 'commentIp', 'commentCreated', 'commentModified'],
                     include: [{
                         model: models.Post,

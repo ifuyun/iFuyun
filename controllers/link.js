@@ -103,7 +103,7 @@ module.exports = {
         };
         if (action === 'edit') {
             tasks.link = (cb) => {
-                Link.findById(linkId, {
+                Link.findByPk(linkId, {
                     attributes: ['linkId', 'linkUrl', 'linkName', 'linkTarget', 'linkDescription', 'linkVisible', 'linkRating'],
                     include: [{
                         model: TermTaxonomy,

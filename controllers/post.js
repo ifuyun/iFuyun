@@ -443,7 +443,7 @@ module.exports = {
                         [Op.eq]: 1
                     };
                 }
-                Post.findById(postId, {
+                Post.findByPk(postId, {
                     attributes: [
                         'postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus',
                         'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated',
@@ -1390,7 +1390,7 @@ module.exports = {
                 });
             }
             tasks.post = (cb) => {
-                Post.findById(postId, {
+                Post.findByPk(postId, {
                     attributes: [
                         'postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus', 'postType', 'postPassword',
                         'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'],
