@@ -9,7 +9,8 @@ const config = require(__dirname + '/../config/database.js')[env];
 let db = {};
 let sequelize;
 
-config.operatorsAliases = {};
+// warning: uncomment this will cause a warning: String based operators are deprecated.
+// config.operatorsAliases = {};
 
 if (config.use_env_constiable) {
     sequelize = new Sequelize(process.env[config.use_env_constiable]);
