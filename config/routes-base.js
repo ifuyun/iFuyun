@@ -68,6 +68,7 @@ module.exports = {
      * @param {Error} err 错误对象
      * @param {Object} req 请求对象
      * @param {Object} res 响应对象
+     * @param {Function} next 路由对象
      * @return {void}
      * @author Fuyun
      * @version 2.0.0

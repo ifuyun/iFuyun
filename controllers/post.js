@@ -438,7 +438,7 @@ module.exports = {
                         [Op.in]: ['post', 'tag']
                     }
                 };
-                if(!isAdmin) {
+                if (!isAdmin) {
                     where.visible = {
                         [Op.eq]: 1
                     };

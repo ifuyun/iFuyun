@@ -4,6 +4,13 @@
   "private": true,
   "description": "for ifuyun.com",
   "main": "index.js",
+  "scripts": {
+    "start": "ENV=development supervisor -i public index",
+    "server": "ENV=production supervisor -i public index",
+    "dev": "gulp dev --env development",
+    "develop": "gulp develop --env development",
+    "build": "gulp build"
+  },
   "dependencies": {
     "art-dialog": "^7.0.0",
     "async": "^3.0.1",
@@ -54,13 +61,6 @@
     "webpack": "^4.34.0",
     "webpack-md5-hash": "0.0.6",
     "yargs": "^13.2.4"
-  },
-  "scripts": {
-    "start": "ENV=development supervisor -i public index",
-    "server": "ENV=production supervisor -i public index",
-    "dev": "gulp dev --env development",
-    "develop": "gulp develop --env development",
-    "build": "gulp build"
   },
   "keywords": [
     "Fuyun",
