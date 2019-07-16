@@ -15,9 +15,10 @@ iFuyun是基于Node.js和MySQL开发的博客系统。在线体验，请访问�
 7. yuidocjs（文档）
 
 ### 配置
-1. 执行npm i
-2. 新增/config/credentials.js文件，并设置相关密码信息
-3. 修改/config/core.js、/config/database.js和/config/redis.js等相关配置信息
+1. source ./config/ifuyun.sql，默认帐号/密码：admin/Admin520
+2. 执行npm i
+3. 新增/config/credentials.js文件，并设置相关密码信息
+4. 修改/config/core.js、/config/database.js和/config/redis.js等相关配置信息
 
 ## 运行、服务启动
 ### 开发模式
@@ -51,11 +52,10 @@ npm run build
 2. 执行yuidoc -c yuidoc.json
 
 ## 注意事项
-1. 百度、谷歌等帐号验证和静态文件存放在/public/static目录下
-2. favicon.ico存放在/public/static目录
-3. API文档在/views/doc目录
-4. 日志信息在/logs
-5. 其他静态资源路由参照Nginx配置
+1. /public/static: 百度、谷歌等帐号验证和静态文件目录
+2. /views/doc: API文档
+3. /logs: 日志文件
+4. 其他静态资源路由参照Nginx配置
 
 ## TODO
 1. 文章访问权限控制
