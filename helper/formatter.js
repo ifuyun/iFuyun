@@ -11,7 +11,7 @@ module.exports = {
             reject: '驳回',
             spam: '垃圾评论',
             trash: '删除'
-        }
+        };
         return statusMap[status];
     },
     postStatus: function (status) {
@@ -22,7 +22,7 @@ module.exports = {
             draft: '草稿',
             'auto-draft': '草稿',
             trash: '删除'
-        }
+        };
         return statusMap[status];
     },
     linkVisible: function (visible) {
