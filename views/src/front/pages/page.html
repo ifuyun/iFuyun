@@ -1,5 +1,5 @@
-<? include ../common/header.html ?>
-<? include ../elements/pageHeader.html ?>
+<?- include('../common/header.html') -?>
+<?- include('../elements/pageHeader.html') -?>
 <section class="g-container f-clearfix">
     <div class="m-content-wrap">
         <div class="m-content m-page">
@@ -18,15 +18,15 @@
                     <span title="更新于: <?= moment(post.postModified || post.postCreated).format('YYYY-MM-DD HH:mm') ?>">最后更新：<?= moment(post.postModified || post.postCreated).format('YYYY-MM-DD HH:mm') ?></span>
                 </div>
             </footer>
-            <? include ../elements/comment.html ?>
+            <?- include('../elements/comment.html') -?>
         </div>
     </div>
-    <? include ../elements/sidebar.html ?>
+    <?- include('../elements/sidebar.html') -?>
 </section>
-<? include ../elements/pageFooter.html ?>
+<?- include('../elements/pageFooter.html') -?>
 <!-- build:js /js/web/vendor.min.js -->
 <script type="text/javascript" src="/js/web/highlight.min.js"></script>
 <!-- endbuild -->
 <script type="text/javascript" src="/js/common.js"></script>
 <script type="text/javascript" src="/js/web/post.js"></script>
-<? include ../common/footer.html ?>
+<?- include('../common/footer.html') -?>

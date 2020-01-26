@@ -1,9 +1,9 @@
-<? include ../common/header.html ?>
-<? include ../elements/pageHeader.html ?>
+<?- include('../common/header.html') -?>
+<?- include('../elements/pageHeader.html') -?>
 <section class="g-container f-clearfix">
     <div class="m-content-wrap">
         <div class="m-content">
-            <? include ../elements/crumb.html ?>
+            <?- include('../elements/crumb.html') -?>
             <header class="m-article-header">
                 <h1 class="m-article-title">
                     <a rel="bookmark" title="<?- post.postTitle ?>" href="<?= post.postGuid ?>"><?- post.postTitle ?></a>
@@ -59,15 +59,15 @@
                     <? } ?>
                 </div>
             </footer>
-            <? include ../elements/comment.html ?>
+            <?- include('../elements/comment.html') -?>
         </div>
     </div>
-    <? include ../elements/sidebar.html ?>
+    <?- include('../elements/sidebar.html') -?>
 </section>
-<? include ../elements/pageFooter.html ?>
+<?- include('../elements/pageFooter.html') -?>
 <!-- build:js /js/web/vendor.min.js -->
 <script type="text/javascript" src="/js/web/highlight.min.js"></script>
 <!-- endbuild -->
 <script type="text/javascript" src="/js/common.js"></script>
 <script type="text/javascript" src="/js/web/post.js"></script>
-<? include ../common/footer.html ?>
+<?- include('../common/footer.html') -?>

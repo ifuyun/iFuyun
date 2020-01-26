@@ -621,7 +621,7 @@ module.exports = {
             commonData: (cb) => {
                 getCommonData({
                     from: 'page',
-                    postType: 'page',
+                    postType: 'post',
                     filterCategory: !isAdmin
                 }, cb);
             },

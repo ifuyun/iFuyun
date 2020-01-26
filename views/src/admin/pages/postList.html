@@ -1,8 +1,8 @@
-<? include ../common/header.html ?>
+<?- include('../common/header.html') -?>
 <div id="body-wrapper">
-    <? include ../elements/leftNav.html ?>
+    <?- include('../elements/leftNav.html') -?>
     <div id="content">
-        <? include ../elements/topBar.html ?>
+        <?- include('../elements/topBar.html') -?>
         <div id="control-panel">
             <div id="control-body">
                 <? if(type === 'post') { ?>
@@ -119,15 +119,15 @@
                     <span><input type="button" class="button" value="编辑" /></span>
                     <span><input type="button" class="button" value="删除" /></span>
                 </div>
-                <? include ../elements/pageBar.html ?>
+                <?- include('../elements/pageBar.html') -?>
             </div>
         </div>
     </div>
-    <? include ../elements/pageFooter.html ?>
+    <?- include('../elements/pageFooter.html') -?>
 </div>
 <!-- build:js /js/admin/vendor.min.js -->
 <script type="text/javascript" src="/js/admin/tinymce.min.js"></script>
 <!-- endbuild -->
 <script type="text/javascript" src="/js/common.js"></script>
 <script type="text/javascript" src="/js/admin/post.js"></script>
-<? include ../common/footer.html ?>
+<?- include('../common/footer.html') -?>
