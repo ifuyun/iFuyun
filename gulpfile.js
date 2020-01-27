@@ -4,7 +4,6 @@
  */
 const gulp = require('gulp');
 const path = require('path');
-const runSequence = require('run-sequence');
 const clean = require('gulp-clean');
 const gulpif = require('gulp-if');
 const useref = require('gulp-useref');
@@ -53,7 +52,7 @@ gulp.task('useref-html', function () {
         .pipe(gulpif('*.css', cleanCss()))
         .pipe(gulp.dest(config.pathTmp1));
 });
-gulp.task('useref', ['useref-html']);
+gulp.task('useref', gulp.series('useref-html', (cb) => cb()));
 
 gulp.task('imagemin', function () {
     if (argv.imgMin && argv.imgMin === 'on') {
@@ -145,11 +144,9 @@ gulp.task('copy-build-fonts', () => gulp.src(path.join(config.pathSrc, config.pa
 gulp.task('copy-build-views', () => gulp.src(path.join(config.pathTmp2, config.pathViews, '**')).pipe(gulp.dest(path.join(config.pathViews, config.pathViewsDist))));
 gulp.task('copy-js-plugin', () => gulp.src(path.join(config.pathSrc, config.pathJsPluginSrc, '**')).pipe(gulp.dest(path.join(config.pathDist, config.pathJsPluginDist))));
 
-gulp.task('copy-build', ['copy-build-css', 'copy-build-js', 'copy-build-image', 'copy-build-fonts', 'copy-js-plugin', 'copy-build-views']);
+gulp.task('copy-build', gulp.series('copy-build-css', 'copy-build-js', 'copy-build-image', 'copy-build-fonts', 'copy-js-plugin', 'copy-build-views', (cb) => cb()));
 
-gulp.task('build', (cb) => {
-    runSequence('clean', 'less', 'useref', 'imagemin', 'rev-image', 'revreplace-css', 'rev-css', 'rev-js', 'revreplace-ejs', 'webpack', 'copy-build', cb);
-});
+gulp.task('build', gulp.series('clean', 'less', 'useref', 'imagemin', 'rev-image', 'revreplace-css', 'rev-css', 'rev-js', 'revreplace-ejs', 'webpack', 'copy-build', (cb) => cb()));
 
 gulp.task('clean-dev', function () {
     return gulp.src([config.pathDev, config.pathTmp], {
@@ -177,12 +174,10 @@ gulp.task('copy-dev-js-web', function () {
         .pipe(gulp.dest(path.join(config.pathDev, config.pathJsDevWeb)));
 });
 
-gulp.task('develop', (cb) => {
-    runSequence('clean-dev', 'less', 'copy-dev-style', 'webpack', 'copy-dev-js-plugin', 'copy-dev-js-admin', 'copy-dev-js-web', cb);
-});
+gulp.task('develop', gulp.series('clean-dev', 'less', 'copy-dev-style', 'webpack', 'copy-dev-js-plugin', 'copy-dev-js-admin', 'copy-dev-js-web', (cb) => cb()));
 
-gulp.task('dev', function () {
-    runSequence('clean-dev', 'less', 'copy-dev-style', 'copy-dev-js-plugin', 'copy-dev-js-admin', 'copy-dev-js-web');
+gulp.task('dev', (cb) => {
+    gulp.series('clean-dev', 'less', 'copy-dev-style', 'copy-dev-js-plugin', 'copy-dev-js-admin', 'copy-dev-js-web');
 
     compiler.watch({
         aggregateTimeout: 300
@@ -195,10 +190,11 @@ gulp.task('dev', function () {
         }));
     });
     gulp.watch(['./public/src/js/plugins/**', './public/src/js/admin', './public/src/js/web'], function (event) {
-        runSequence('copy-dev-js-plugin', 'copy-dev-js-admin', 'copy-dev-js-web');
+        gulp.series('copy-dev-js-plugin', 'copy-dev-js-admin', 'copy-dev-js-web');
     });
     gulp.watch(['./public/src/style/**/*.less'], function (event) {
-        runSequence('less', 'copy-dev-style');
+        gulp.series('less', 'copy-dev-style');
     });
+    cb();
 });
-gulp.task('default', ['dev']);
+gulp.task('default', gulp.series('dev', (cb) => cb()));

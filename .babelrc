@@ -1,11 +1,10 @@
 {
   "presets": [
     [
-      "es2015",
+      "@babel/preset-env",
       {
-        "modules": false
+        "modules": "amd"
       }
-    ],
-    "stage-0"
+    ]
   ]
 }

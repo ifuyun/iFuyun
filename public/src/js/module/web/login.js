@@ -123,3 +123,6 @@ $(function () {
         });
     }
 });
+
+module.exports = () => {
+};

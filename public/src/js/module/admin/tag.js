@@ -61,3 +61,6 @@ $(function () {
         return false;
     });
 });
+
+module.exports = () => {
+};

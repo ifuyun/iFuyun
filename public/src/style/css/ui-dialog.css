@@ -18,7 +18,7 @@
   background-clip: padding-box;
   font-family: "Microsoft YaHei", "SimHei", Helvetica, arial, sans-serif;
   font-size: 14px;
-  line-height: 1.428571429;
+  line-height: 1.42857143;
   color: #333;
   opacity: 0;
   -webkit-transform: scale(0);
@@ -74,7 +74,7 @@
   line-height: 1;
   color: #000;
   text-shadow: 0 1px 0 #FFF;
-  opacity: .2;
+  opacity: 0.2;
   filter: alpha(opacity=20);
   cursor: pointer;
   background: transparent;
@@ -93,8 +93,8 @@
 }
 .ui-dialog-title {
   margin: 0;
-  line-height: 1.428571429;
-  min-height: 16.428571429px;
+  line-height: 1.42857143;
+  min-height: 16.42857143px;
   /*padding: 15px;*/
   padding: 10px;
   overflow: hidden;
@@ -139,7 +139,7 @@
   float: left;
   margin-right: 20px;
   padding: 6px 0;
-  line-height: 1.428571429;
+  line-height: 1.42857143;
   font-size: 14px;
   color: #888;
   white-space: nowrap;
@@ -168,7 +168,7 @@
   margin-bottom: 0;
   font-size: 14px;
   font-weight: normal;
-  line-height: 1.428571429;
+  line-height: 1.42857143;
   text-align: center;
   /*white-space: nowrap;*/
   /*vertical-align: middle;*/

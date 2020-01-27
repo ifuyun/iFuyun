@@ -57,3 +57,6 @@ const service = {
 $(function () {
     service.initEvent();
 });
+
+module.exports = () => {
+};

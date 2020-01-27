@@ -110,3 +110,6 @@ $(function () {
     service.initEvent();
     $('#post-title').focus();
 });
+
+module.exports = () => {
+};

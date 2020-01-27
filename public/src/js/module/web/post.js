@@ -129,3 +129,6 @@ $(function () {
 
     showCaptcha();
 });
+
+module.exports = () => {
+};
