@@ -174,9 +174,9 @@ gulp.task('copy-dev-js-web', function () {
         .pipe(gulp.dest(path.join(config.pathDev, config.pathJsDevWeb)));
 });
 
-gulp.task('develop', gulp.series('clean-dev', 'less', 'copy-dev-style', 'webpack', 'copy-dev-js-plugin', 'copy-dev-js-admin', 'copy-dev-js-web', (cb) => cb()));
+gulp.task('dev-build', gulp.series('clean-dev', 'less', 'copy-dev-style', 'webpack', 'copy-dev-js-plugin', 'copy-dev-js-admin', 'copy-dev-js-web', (cb) => cb()));
 
-gulp.task('dev', (cb) => {
+gulp.task('dev-watch', (cb) => {
     gulp.series('clean-dev', 'less', 'copy-dev-style', 'copy-dev-js-plugin', 'copy-dev-js-admin', 'copy-dev-js-web');
 
     compiler.watch({
@@ -197,4 +197,4 @@ gulp.task('dev', (cb) => {
     });
     cb();
 });
-gulp.task('default', gulp.series('dev', (cb) => cb()));
+gulp.task('default', gulp.series('dev-watch', (cb) => cb()));

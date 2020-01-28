@@ -1,14 +1,14 @@
 {
   "name": "ifuyun",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "private": true,
   "description": "for ifuyun.com",
   "main": "index.js",
   "scripts": {
     "start": "ENV=development supervisor -i public index",
     "server": "ENV=production supervisor -i public index",
-    "dev": "gulp dev --env development",
-    "develop": "gulp develop --env development",
+    "dev-watch": "gulp dev-watch --env development",
+    "dev-build": "gulp dev-build --env development",
     "build": "gulp build"
   },
   "dependencies": {
