@@ -6,7 +6,7 @@
 const util = require('../helper/util');
 const xss = require('sanitizer');
 const models = require('../models/index');
-const common = require('./common');
+const commonService = require('../services/common');
 const appConfig = require('../config/core');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const {User, Usermeta} = models;
@@ -19,7 +19,7 @@ module.exports = {
         }
         req.session.loginReferer = util.getReferrer(req);
 
-        common.getInitOptions((err, result) => {
+        commonService.getInitOptions((err, result) => {
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'showLogin.getInitOptions',

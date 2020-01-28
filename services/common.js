@@ -1,9 +1,11 @@
 /**
  * 通用方法
  * @author fuyun
- * @since 2017/04/13.
+ * @since 2017/04/13
  */
-const models = require('../models/index');
+const path = require('path');
+const gm = require('gm').subClass({imageMagick: true});
+const models = require('../models');
 const util = require('../helper/util');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const {Link, Post, TermTaxonomy, Comment, Option, VPostDateArchive} = models;
@@ -442,5 +444,68 @@ module.exports = {
         }).then((data) => {
             cb(null, data);
         });
+    },
+    /**
+     * 水印处理
+     * @param {String} imgPath 图片路径
+     * @param {Function} cb 回调函数
+     * @return {*} null
+     */
+    watermark(imgPath, cb) {
+        const fontSize = 18;
+        const lineMargin = 2;
+        const markWidth = 138;
+        const markHeight = fontSize * 2 + lineMargin;
+        // 字体实际高度比字体大小略小≈17
+        const markMarginX = 10;
+        const markMarginY = 6;
+        const copy = '@抚云';
+        const site = 'www.ifuyun.com';
+        const fontPath = path.join(__dirname, '..', 'config', 'PingFang.ttc');
+        let imgWidth;
+        let imgHeight;
+        let markedWidth;
+        let markedHeight;
+        let ratio = 1;
+        let gmImg = gm(imgPath);
+        gmImg
+            .size((err, data) => {
+                if (err) {
+                    return cb(err);
+                }
+                imgWidth = markedWidth = data.width;
+                imgHeight = markedHeight = data.height;
+                ratio = Math.max(markWidth / imgWidth, markHeight / imgHeight);
+
+                if (ratio > 1) {
+                    markedWidth = imgWidth * ratio;
+                    markedHeight = imgHeight * ratio;
+                    gmImg = gmImg.resize(markedWidth, markedHeight, '!');
+                }
+                gmImg.font(fontPath, fontSize)
+                    .fill('#222222')
+                    .drawText(markMarginX, markMarginY + fontSize + lineMargin, copy, 'SouthEast')
+                    .drawText(markMarginX, markMarginY, site, 'SouthEast')
+                    .fill('#ffffff')
+                    .drawText(markMarginX + 1, markMarginY + fontSize + lineMargin + 1, copy, 'SouthEast')
+                    .drawText(markMarginX + 1, markMarginY + 1, site, 'SouthEast');
+                if (ratio > 1) {
+                    gmImg = gmImg.resize(markedWidth / ratio, markedHeight / ratio, '!');
+                }
+                gmImg
+                    .write(imgPath, (err) => {
+                        if (err) {
+                            return cb(err);
+                        }
+                        logger.info(formatOpLog({
+                            fn: 'watermark',
+                            msg: 'Watermark added',
+                            data: {
+                                imgPath
+                            }
+                        }));
+                        cb();
+                    });
+            });
     }
 };

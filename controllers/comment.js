@@ -7,7 +7,7 @@ const async = require('async');
 const moment = require('moment');
 const xss = require('sanitizer');
 const models = require('../models/index');
-const common = require('./common');
+const commonService = require('../services/common');
 const appConfig = require('../config/core');
 const util = require('../helper/util');
 const formatter = require('../helper/formatter');
@@ -303,7 +303,7 @@ module.exports = {
             titleArr.push(req.query.keyword, '搜索');
         }
         async.auto({
-            options: common.getInitOptions,
+            options: commonService.getInitOptions,
             commentsCount: (cb) => {
                 Comment.count({
                     where
@@ -396,7 +396,7 @@ module.exports = {
             }, next);
         }
         async.parallel({
-            options: common.getInitOptions,
+            options: commonService.getInitOptions,
             comment: function (cb) {
                 Comment.findByPk(commentId, {
                     attributes: ['commentId', 'postId', 'commentContent', 'commentStatus', 'commentAuthor', 'commentAuthorEmail', 'commentIp', 'commentCreated', 'commentModified'],

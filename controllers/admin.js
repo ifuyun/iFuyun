@@ -7,7 +7,7 @@ const async = require('async');
 const xss = require('sanitizer');
 const util = require('../helper/util');
 const models = require('../models/index');
-const common = require('./common');
+const commonService = require('../services/common');
 const appConfig = require('../config/core');
 const {Option} = models;
 const Op = models.Sequelize.Op;
@@ -41,7 +41,7 @@ module.exports = {
                 message: '不支持该操作'
             }, next);
         }
-        common.getInitOptions((err, options) => {
+        commonService.getInitOptions((err, options) => {
             if (err) {
                 return next(err);
             }

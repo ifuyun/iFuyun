@@ -70,9 +70,9 @@ module.exports = Object.assign({}, loggers, {
      *      {Object}[msg] 日志消息
      *      {Object}[data] 日志数据
      *      {Object}[req] 请求对象
-     * @return {String} 日志内容:"Function: function; Msg: some error; Data: {"a":"b","c":"d"}" - IP - "UserAgent"
+     * @return {String} 日志内容:"Function: fn; Msg: error msg; Msg Detail: error detail info; Data: {"a":"b","c":"d"}" - IP - "UserAgent"
      * @author Fuyun
-     * @version 2.0.0
+     * @version 3.0.0
      * @since 2.0.0
      */
     formatOpLog: function (logObj) {
@@ -83,6 +83,9 @@ module.exports = Object.assign({}, loggers, {
         }
         if (logObj.msg) {
             logData.push('Msg: ' + (typeof logObj.msg === 'string' ? logObj.msg : (logObj.msg.message || '未知错误')));
+        }
+        if (logObj.msgDetail) {
+            logData.push('Msg Detail: ' + logObj.msgDetail);
         }
         if (logObj.data) {
             logData.push('Data: ' + JSON.stringify(logObj.data));

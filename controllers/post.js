@@ -10,15 +10,16 @@ const moment = require('moment');
 const url = require('url');
 const xss = require('sanitizer');
 const formidable = require('formidable');
-const gm = require('gm').subClass({imageMagick: true});
-const models = require('../models/index');
-const common = require('./common');
 const appConfig = require('../config/core');
-const util = require('../helper/util');
-const formatter = require('../helper/formatter');
-const uploader = require('./upload');
 const credentials = require('../config/credentials');
+const constants = require('../services/constants');
+const util = require('../helper/util');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
+const formatter = require('../helper/formatter');
+const models = require('../models/index');
+const commonService = require('../services/common');
+const postService = require('../services/post');
+const uploader = require('./upload');
 const idReg = /^[0-9a-fA-F]{16}$/i;
 const pagesOut = 9;
 const {Post, User, Postmeta, TermTaxonomy, VTagVisibleTaxonomy} = models;
@@ -34,23 +35,23 @@ function getCommonData(param, cb) {
     // 执行时间在30-60ms，间歇60-80ms
     async.parallel({
         archiveDates: (cb) => {
-            common.archiveDates(cb, {
+            commonService.archiveDates(cb, {
                 postType: param.postType || 'post',
                 filterCategory: param.filterCategory
             });
         },
-        recentPosts: common.recentPosts,
-        randPosts: common.randPosts,
-        hotPosts: common.hotPosts,
-        friendLinks: (cb) => common.getLinks('friendlink', param.from !== 'list' || param.page > 1 ? ['site'] : ['homepage', 'site'], cb),
-        quickLinks: (cb) => common.getLinks('quicklink', ['homepage', 'site'], cb),
+        recentPosts: commonService.recentPosts,
+        randPosts: commonService.randPosts,
+        hotPosts: commonService.hotPosts,
+        friendLinks: (cb) => commonService.getLinks('friendlink', param.from !== 'list' || param.page > 1 ? ['site'] : ['homepage', 'site'], cb),
+        quickLinks: (cb) => commonService.getLinks('quicklink', ['homepage', 'site'], cb),
         categories: (cb) => {
-            common.getCategoryTree(cb, param.filterCategory === true ? {
+            commonService.getCategoryTree(cb, param.filterCategory === true ? {
                 visible: 1
             } : {});
         },
-        mainNavs: common.mainNavs,
-        options: common.getInitOptions
+        mainNavs: commonService.mainNavs,
+        options: commonService.getInitOptions
     }, function (err, result) {
         if (err) {
             logger.error(formatOpLog({
@@ -235,142 +236,21 @@ function checkPostFields({data, type, postCategory, postTag}) {
     return true;
 }
 
-/**
- * 水印处理
- * @param {String} imgPath 图片路径
- * @param {Function} cb 回调函数
- * @return {*} null
- */
-function watermark(imgPath, cb) {
-    const fontSize = 18;
-    const lineMargin = 2;
-    const markWidth = 138;
-    const markHeight = fontSize * 2 + lineMargin;
-    // 字体实际高度比字体大小略小≈17
-    const markMarginX = 10;
-    const markMarginY = 6;
-    const copy = '@抚云';
-    const site = 'www.ifuyun.com';
-    const fontPath = path.join(__dirname, '..', 'config', 'PingFang.ttc');
-    let imgWidth;
-    let imgHeight;
-    let markedWidth;
-    let markedHeight;
-    let ratio = 1;
-    let gmImg = gm(imgPath);
-    gmImg
-        .size((err, data) => {
-            if (err) {
-                return cb(err);
-            }
-            imgWidth = markedWidth = data.width;
-            imgHeight = markedHeight = data.height;
-            ratio = Math.max(markWidth / imgWidth, markHeight / imgHeight);
-
-            if (ratio > 1) {
-                markedWidth = imgWidth * ratio;
-                markedHeight = imgHeight * ratio;
-                gmImg = gmImg.resize(markedWidth, markedHeight, '!');
-            }
-            gmImg.font(fontPath, fontSize)
-                .fill('#222222')
-                .drawText(markMarginX, markMarginY + fontSize + lineMargin, copy, 'SouthEast')
-                .drawText(markMarginX, markMarginY, site, 'SouthEast')
-                .fill('#ffffff')
-                .drawText(markMarginX + 1, markMarginY + fontSize + lineMargin + 1, copy, 'SouthEast')
-                .drawText(markMarginX + 1, markMarginY + 1, site, 'SouthEast');
-            if (ratio > 1) {
-                gmImg = gmImg.resize(markedWidth / ratio, markedHeight / ratio, '!');
-            }
-            gmImg
-                .write(imgPath, (err) => {
-                    if (err) {
-                        return cb(err);
-                    }
-                    logger.info(formatOpLog({
-                        fn: 'watermark',
-                        msg: 'Watermark added',
-                        data: {
-                            imgPath
-                        }
-                    }));
-                    cb();
-                });
-        });
-}
-
 module.exports = {
     listPosts: function (req, res, next) {
-        const isAdmin = util.isAdminUser(req);
         let page = parseInt(req.params.page, 10) || 1;
-        let where = {
-            postStatus: {
-                [Op.eq]: 'publish'
-            },
-            postType: {
-                [Op.eq]: 'post'
-            }
-        };
-        if (req.query.keyword) {
-            where[Op.or] = [{
-                postTitle: {
-                    [Op.like]: `%${req.query.keyword}%`
-                }
-            }, {
-                postContent: {
-                    [Op.like]: `%${req.query.keyword}%`
-                }
-            }, {
-                postExcerpt: {
-                    [Op.like]: `%${req.query.keyword}%`
-                }
-            }];
-        }
-        let includeOpt = [{
-            model: TermTaxonomy,
-            attributes: ['taxonomyId', 'visible'],
-            where: {
-                visible: {
-                    [Op.in]: isAdmin ? [0, 1] : [1]
-                },
-                taxonomy: {
-                    [Op.eq]: 'post'
-                }
-            }
-        }];
-        async.auto({
-            commonData: (cb) => {
-                getCommonData({
-                    page,
-                    from: 'list',
-                    filterCategory: !isAdmin
-                }, cb);
-            },
-            postsCount: (cb) => {
-                Post.count({
-                    where,
-                    include: includeOpt,
-                    distinct: true
-                }).then((result) => cb(null, result));
-            },
-            posts: ['postsCount', (result, cb) => {
-                page = (page > result.postsCount / 10 ? Math.ceil(result.postsCount / 10) : page) || 1;
-                queryPosts({
-                    page,
-                    where,
-                    includeOpt,
-                    filterCategory: !isAdmin,
-                    from: 'index'
-                }, cb);
-            }],
-            comments: ['posts', (result, cb) => common.getCommentCountByPosts(result.posts, cb)]
-        }, function (err, result) {
+        postService.listPosts({
+            isAdmin: util.isAdminUser(req),
+            page,
+            keyword: req.query.keyword
+        }, (err, result, logInfo) => {
+            page = logInfo.page;
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'listPosts',
                     msg: err,
                     data: {
-                        where,
+                        where: logInfo.where,
                         page
                     },
                     req
@@ -425,145 +305,15 @@ module.exports = {
             }));
             return next();
         }
-        async.auto({
-            commonData: (cb) => {
-                getCommonData({
-                    from: 'post',
-                    filterCategory: !isAdmin
-                }, cb);
-            },
-            post: function (cb) {
-                let where = {
-                    taxonomy: {
-                        [Op.in]: ['post', 'tag']
-                    }
-                };
-                if (!isAdmin) {
-                    where.visible = {
-                        [Op.eq]: 1
-                    };
-                }
-                Post.findByPk(postId, {
-                    attributes: [
-                        'postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus',
-                        'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated',
-                        'postGuid', 'commentCount', 'postViewCount'
-                    ],
-                    include: [{
-                        model: User,
-                        attributes: ['userDisplayName']
-                    }, {
-                        model: models.TermTaxonomy,
-                        attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'visible', 'count'],
-                        where
-                    }]
-                }).then(function (post) {
-                    if (!post || !post.postId) {
-                        logger.error(formatOpLog({
-                            fn: 'showPost',
-                            msg: `Post: ${postId} Not Exist.`,
-                            req
-                        }));
-                        return cb(util.catchError({
-                            status: 404,
-                            code: 404,
-                            message: 'Page Not Found.'
-                        }));
-                    }
-                    // 无管理员权限不允许访问非公开文章(包括草稿)
-                    if (!isAdmin && post.postStatus !== 'publish') {
-                        logger.warn(formatOpLog({
-                            fn: 'showPost',
-                            msg: `[Unauthorized]${post.postId}:${post.postTitle} is ${post.postStatus}`,
-                            req
-                        }));
-                        return cb(util.catchError({
-                            status: 404,
-                            code: 404,
-                            message: 'Page Not Found.'
-                        }));
-                    }
-                    cb(null, post);
-                });
-            },
-            comments: ['post', (result, cb) => common.getCommentsByPostId(result.post.postId, cb)],
-            crumb: ['commonData', 'post',
-                function (result, cb) {
-                    let post = result.post;
-                    let categories = [];
-                    post.TermTaxonomies.forEach((v) => {
-                        if (v.taxonomy === 'post') {
-                            categories.push(v);
-                        }
-                    });
-                    if (categories.length < 1) {
-                        logger.error(formatOpLog({
-                            fn: 'showPost',
-                            msg: 'Category Not Exist.',
-                            data: {
-                                postId: post.postId,
-                                postTitle: post.postTitle
-                            },
-                            req
-                        }));
-                        return cb(util.catchError({
-                            status: 404,
-                            code: 500,
-                            message: 'Page Not Found.'
-                        }));
-                    }
-                    let crumbCatId;
-                    for (let i = 0; i < categories.length; i += 1) {
-                        const curCat = categories[i];
-                        if (curCat.visible || isAdmin) {
-                            crumbCatId = curCat.taxonomyId;
-                            break;
-                        }
-                    }
-                    if (!isAdmin && !crumbCatId) {
-                        logger.error(formatOpLog({
-                            fn: 'showPost',
-                            msg: 'Category is Invisible.',
-                            data: {
-                                postId: post.postId,
-                                postTitle: post.postTitle
-                            },
-                            req
-                        }));
-                        return cb(util.catchError({
-                            status: 404,
-                            code: 500,
-                            message: 'Page Not Found.'
-                        }));
-                    }
-                    cb(null, common.getCategoryPath({
-                        catData: result.commonData.categories.catData,
-                        taxonomyId: crumbCatId
-                    }));
-                }],
-            postViewCount: (cb) => {
-                const viewCount = models.sequelize.literal('post_view_count + 1');
-                Post.update({
-                    postViewCount: viewCount
-                }, {
-                    where: {
-                        postId: {
-                            [Op.eq]: postId
-                        }
-                    },
-                    silent: true
-                }).then((post) => {
-                    cb(null, post);
-                });
-            },
-            prevPost: (cb) => common.getPrevPost(postId, cb),
-            nextPost: (cb) => common.getNextPost(postId, cb)
-        }, function (err, result) {
+        postService.showPost({
+            isAdmin,
+            postId
+        }, (err, result) => {
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'showPost',
-                    msg: err,
-                    data: {
+                    msg: err.messageDetail || err.message,
+                    data: err.data || {
                         postId
                     },
                     req
@@ -600,7 +350,7 @@ module.exports = {
             keywords.push(options.site_keywords.optionValue);
 
             resData.meta.title = util.getTitle([result.post.postTitle, options.site_name.optionValue]);
-            resData.meta.description = result.post.postExcerpt || util.cutStr(util.filterHtmlTag(result.post.postContent), 140);
+            resData.meta.description = result.post.postExcerpt || util.cutStr(util.filterHtmlTag(result.post.postContent), constants.POST_SUMMARY_LENGTH);
             resData.meta.keywords = keywords.join(',') + ',' + options.site_keywords.optionValue;
             resData.meta.author = options.site_author.optionValue;
             resData.post = result.post;
@@ -672,7 +422,7 @@ module.exports = {
                     cb(null, post);
                 });
             },
-            comments: ['post', (result, cb) => common.getCommentsByPostId(result.post.postId, cb)],
+            comments: ['post', (result, cb) => commonService.getCommentsByPostId(result.post.postId, cb)],
             postViewCount: ['post', (result, cb) => {
                 const viewCount = models.sequelize.literal('post_view_count + 1');
                 Post.update({
@@ -755,9 +505,9 @@ module.exports = {
                     filterCategory: !isAdmin
                 }, cb);
             },
-            categories: common.getCategoryTree.bind(common),
+            categories: commonService.getCategoryTree.bind(commonService),
             subCategories: ['categories', (result, cb) => {
-                common.getSubCategoriesBySlug({
+                commonService.getSubCategoriesBySlug({
                     catData: result.categories.catData,
                     slug: category,
                     filterCategory: !isAdmin
@@ -793,7 +543,7 @@ module.exports = {
                     from: 'category'
                 }, cb);
             }],
-            comments: ['posts', (result, cb) => common.getCommentCountByPosts(result.posts, cb)]
+            comments: ['posts', (result, cb) => commonService.getCommentCountByPosts(result.posts, cb)]
         }, function (err, result) {
             if (err) {
                 logger.error(formatOpLog({
@@ -890,7 +640,7 @@ module.exports = {
                     from: 'tag'
                 }, cb);
             }],
-            comments: ['posts', (result, cb) => common.getCommentCountByPosts(result.posts, cb)]
+            comments: ['posts', (result, cb) => commonService.getCommentCountByPosts(result.posts, cb)]
         }, function (err, result) {
             if (err) {
                 logger.error(formatOpLog({
@@ -1002,7 +752,7 @@ module.exports = {
                     from: 'archive'
                 }, cb);
             }],
-            comments: ['posts', (result, cb) => common.getCommentCountByPosts(result.posts, cb)]
+            comments: ['posts', (result, cb) => commonService.getCommentCountByPosts(result.posts, cb)]
         }, (err, result) => {
             if (err) {
                 logger.error(formatOpLog({
@@ -1193,19 +943,19 @@ module.exports = {
         paramArr.push(`type=${where.postType}`);
 
         async.auto({
-            options: common.getInitOptions,
+            options: commonService.getInitOptions,
             archiveDates: (cb) => {
-                common.archiveDates(cb, {
+                commonService.archiveDates(cb, {
                     postType: where.postType
                 });
             },
-            categories: common.getCategoryTree.bind(common),
+            categories: commonService.getCategoryTree.bind(commonService),
             subCategories: ['categories', (result, cb) => {
                 if (req.query.category) {
                     from = 'category';
                     paramArr.push(`category=${req.query.category}`);
 
-                    common.getSubCategoriesBySlug({
+                    commonService.getSubCategoriesBySlug({
                         catData: result.categories.catData,
                         slug: req.query.category
                     }, (err, data) => {
@@ -1253,7 +1003,7 @@ module.exports = {
                     includeOpt
                 }, cb);
             }],
-            comments: ['posts', (result, cb) => common.getCommentCountByPosts(result.posts, cb)],
+            comments: ['posts', (result, cb) => commonService.getCommentCountByPosts(result.posts, cb)],
             typeCount: (cb) => {
                 Post.findAll({
                     attributes: [
@@ -1351,8 +1101,8 @@ module.exports = {
         const postId = req.query.postId;
         const action = (req.query.action || 'create').toLowerCase();
         let tasks = {
-            categories: common.getCategoryTree.bind(common),
-            options: common.getInitOptions
+            categories: commonService.getCategoryTree.bind(commonService),
+            options: commonService.getInitOptions
         };
         if (!['create', 'edit'].includes(action)) {
             logger.error(formatOpLog({
@@ -1742,9 +1492,9 @@ module.exports = {
         paramArr.push(`type=${where.postType}`);
 
         async.auto({
-            options: common.getInitOptions,
+            options: commonService.getInitOptions,
             archiveDates: (cb) => {
-                common.archiveDates(cb, {
+                commonService.archiveDates(cb, {
                     postType: where.postType
                 });
             },
@@ -1852,7 +1602,7 @@ module.exports = {
         });
     },
     createMedia: function (req, res, next) {
-        common.getInitOptions((err, options) => {
+        commonService.getInitOptions((err, options) => {
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'createMedia.getInitOptions',
@@ -1940,7 +1690,7 @@ module.exports = {
             const saveDb = function (cloudPath) {
                 models.sequelize.transaction(function (t) {
                     let tasks = {
-                        options: common.getInitOptions,
+                        options: commonService.getInitOptions,
                         checkGuid: function (cb) {
                             const where = {
                                 postGuid: {
@@ -2033,7 +1783,7 @@ module.exports = {
                         });
                     };
                     if (fields.watermark !== '0') {// 默认开启水印
-                        watermark(filepath, response);
+                        commonService.watermark(filepath, response);
                     } else {
                         response();
                     }

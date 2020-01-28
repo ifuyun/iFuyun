@@ -7,7 +7,7 @@ const async = require('async');
 const xss = require('sanitizer');
 const moment = require('moment');
 const models = require('../models/index');
-const common = require('./common');
+const commonService = require('../services/common');
 const appConfig = require('../config/core');
 const util = require('../helper/util');
 const formatter = require('../helper/formatter');
@@ -20,7 +20,7 @@ module.exports = {
     listLink: function (req, res, next) {
         let page = parseInt(req.params.page, 10) || 1;
         async.auto({
-            options: common.getInitOptions,
+            options: commonService.getInitOptions,
             count: (cb) => {
                 Link.count().then((data) => cb(null, data));
             },
@@ -94,9 +94,9 @@ module.exports = {
             }, next);
         }
         let tasks = {
-            options: common.getInitOptions,
+            options: commonService.getInitOptions,
             categories: (cb) => {
-                common.getCategoryTree(cb, {
+                commonService.getCategoryTree(cb, {
                     type: 'link'
                 });
             }

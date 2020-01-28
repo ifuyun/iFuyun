@@ -7,7 +7,7 @@
 const async = require('async');
 const xss = require('sanitizer');
 const models = require('../models/index');
-const common = require('./common');
+const commonService = require('../services/common');
 const appConfig = require('../config/core');
 const util = require('../helper/util');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
@@ -72,7 +72,7 @@ module.exports = {
             titleArr.push(req.query.keyword, '搜索');
         }
         async.auto({
-            options: common.getInitOptions,
+            options: commonService.getInitOptions,
             count: (cb) => {
                 TermTaxonomy.count({
                     where
@@ -172,7 +172,7 @@ module.exports = {
             }, next);
         }
         let tasks = {
-            options: common.getInitOptions
+            options: commonService.getInitOptions
         };
         if (action === 'edit') {
             tasks.taxonomy = (cb) => {
@@ -183,7 +183,7 @@ module.exports = {
         }
         if (type !== 'tag') {
             tasks.categories = (cb) => {
-                common.getCategoryTree(cb, {type});
+                commonService.getCategoryTree(cb, {type});
             };
         }
         async.auto(tasks, function (err, result) {
