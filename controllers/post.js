@@ -22,49 +22,8 @@ const postService = require('../services/post');
 const uploader = require('./upload');
 const idReg = /^[0-9a-fA-F]{16}$/i;
 const pagesOut = 9;
-const {Post, User, Postmeta, TermTaxonomy} = models;
+const {Post, User, Postmeta} = models;
 const Op = models.Sequelize.Op;
-
-/**
- * 查询公共数据
- * @param {Object} param 参数对象
- * @param {Function} cb 回调函数
- * @return {*} null
- */
-function getCommonData(param, cb) {
-    // 执行时间在30-60ms，间歇60-80ms
-    async.parallel({
-        archiveDates: (cb) => {
-            commonService.archiveDates(cb, {
-                postType: param.postType || 'post',
-                filterCategory: param.filterCategory
-            });
-        },
-        recentPosts: commonService.recentPosts,
-        randPosts: commonService.randPosts,
-        hotPosts: commonService.hotPosts,
-        friendLinks: (cb) => commonService.getLinks('friendlink', param.from !== 'list' || param.page > 1 ? ['site'] : ['homepage', 'site'], cb),
-        quickLinks: (cb) => commonService.getLinks('quicklink', ['homepage', 'site'], cb),
-        categories: (cb) => {
-            commonService.getCategoryTree(cb, param.filterCategory === true ? {
-                visible: 1
-            } : {});
-        },
-        mainNavs: commonService.mainNavs,
-        options: commonService.getInitOptions
-    }, function (err, result) {
-        if (err) {
-            logger.error(formatOpLog({
-                fn: 'getCommonData',
-                msg: err,
-                data: param
-            }));
-            cb(err);
-        } else {
-            cb(null, result);
-        }
-    });
-}
 
 /**
  * 根据IDs查询post
@@ -243,13 +202,13 @@ module.exports = {
             isAdmin: util.isAdminUser(req.session.user),
             page,
             keyword: req.query.keyword
-        }, (err, result, logInfo) => {
-            page = logInfo.page;
+        }, (err, result, logData) => {
+            page = logData.page;
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'listPosts',
                     msg: err,
-                    data: err.data || logInfo,
+                    data: err.data || logData,
                     req
                 }));
                 return next(err);
@@ -416,12 +375,12 @@ module.exports = {
             isAdmin,
             page: req.params.page,
             category
-        }, (err, result, logInfo) => {
+        }, (err, result, logData) => {
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'listByCategory',
                     msg: err.messageDetail || err.message,
-                    data: err.data || logInfo,
+                    data: err.data || logData,
                     req
                 }));
                 return next(err);
@@ -468,12 +427,12 @@ module.exports = {
             isAdmin,
             page: req.params.page,
             tag
-        }, (err, result, logInfo) => {
+        }, (err, result, logData) => {
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'listByTag',
                     msg: err.messageDetail || err.message,
-                    data: err.data || logInfo,
+                    data: err.data || logData,
                     req
                 }));
                 return next(err);
@@ -529,63 +488,18 @@ module.exports = {
 
         year = year.toString();
         month = month ? month < 10 ? '0' + month : month.toString() : '';
-        const where = {
-            postStatus: {
-                [Op.eq]: 'publish'
-            },
-            postType: {
-                [Op.eq]: 'post'
-            },
-            [Op.and]: [models.sequelize.where(models.sequelize.fn('date_format', models.sequelize.col('post_date'), month ? '%Y%m' : '%Y'), month ? year + month : year)]
-        };
-        let includeOpt = [{
-            model: TermTaxonomy,
-            attributes: ['taxonomyId', 'visible'],
-            where: {
-                visible: {
-                    [Op.in]: isAdmin ? [0, 1] : [1]
-                },
-                taxonomy: {
-                    [Op.eq]: 'post'
-                }
-            }
-        }];
 
-        async.auto({
-            commonData: (cb) => {
-                getCommonData({
-                    from: 'archive',
-                    filterCategory: !isAdmin
-                }, cb);
-            },
-            postsCount: (cb) => {
-                Post.count({
-                    where,
-                    include: includeOpt,
-                    distinct: true
-                }).then((data) => cb(null, data));
-            },
-            posts: ['postsCount', (result, cb) => {
-                page = (page > result.postsCount / 10 ? Math.ceil(result.postsCount / 10) : page) || 1;
-                queryPosts({
-                    page,
-                    where,
-                    includeOpt,
-                    filterCategory: !isAdmin,
-                    from: 'archive'
-                }, cb);
-            }],
-            comments: ['posts', (result, cb) => commonService.getCommentCountByPosts(result.posts, cb)]
-        }, (err, result) => {
+        postService.listByDate({
+            isAdmin,
+            page,
+            year,
+            month
+        }, (err, result, logData) => {
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'listByDate',
-                    msg: err,
-                    data: {
-                        year,
-                        month,
-                        page
-                    },
+                    msg: err.messageDetail || err.message,
+                    data: err.data || logData,
                     req
                 }));
                 return next(err);
@@ -643,18 +557,14 @@ module.exports = {
     },
     listArchiveDate: function (req, res, next) {
         const isAdmin = util.isAdminUser(req.session.user);
-        async.auto({
-            commonData: (cb) => {
-                getCommonData({
-                    from: 'archive',
-                    filterCategory: !isAdmin
-                }, cb);
-            }
+
+        postService.listArchiveDate({
+            isAdmin
         }, (err, result) => {
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'listArchiveDate',
-                    msg: err,
+                    msg: err.message,
                     req
                 }));
                 return next(err);
@@ -690,169 +600,17 @@ module.exports = {
         });
     },
     listEdit: function (req, res, next) {
-        let page = parseInt(req.params.page, 10) || 1;
-        let where = {};
-        let titleArr = [];
-        let paramArr = [];
-        let from = 'admin';
-
-        if (req.query.status) {
-            if (req.query.status === 'draft') {
-                where.postStatus = {
-                    [Op.in]: ['draft', 'auto-draft']
-                };
-            } else {
-                where.postStatus = {
-                    [Op.eq]: req.query.status
-                };
-            }
-            paramArr.push(`status=${req.query.status}`);
-            titleArr.push(formatter.postStatus(req.query.status) || req.query.status, '状态');
-        } else {
-            where.postStatus = {
-                [Op.in]: ['publish', 'private', 'draft', 'auto-draft', 'trash']
-            };
-        }
-        if (req.query.author) {
-            where.postAuthor = {
-                [Op.eq]: req.query.author
-            };
-            paramArr.push(`author=${req.query.author}`);
-            titleArr.push('作者');
-        }
-        if (req.query.date) {
-            where[Op.and] = [models.sequelize.where(models.sequelize.fn('date_format', models.sequelize.col('post_date'), '%Y/%m'), '=', req.query.date)];
-            paramArr.push(`date=${req.query.date}`);
-            titleArr.push(req.query.date, '日期');
-        }
-        if (req.query.keyword) {
-            where[Op.or] = [{
-                postTitle: {
-                    [Op.like]: `%${req.query.keyword}%`
-                }
-            }, {
-                postContent: {
-                    [Op.like]: `%${req.query.keyword}%`
-                }
-            }, {
-                postExcerpt: {
-                    [Op.like]: `%${req.query.keyword}%`
-                }
-            }];
-            paramArr.push(`keyword=${req.query.keyword}`);
-            titleArr.push(req.query.keyword, '搜索');
-        }
-        let includeOpt = [];
-        let tagWhere;
-        if (req.query.tag) {
-            from = 'tag';
-            tagWhere = {
-                taxonomy: {
-                    [Op.eq]: 'tag'
-                },
-                slug: {
-                    [Op.eq]: req.query.tag
-                }
-            };
-            includeOpt.push({
-                model: models.TermTaxonomy,
-                attributes: ['taxonomyId'],
-                where: tagWhere
-            });
-            paramArr.push(`tag=${req.query.tag}`);
-            titleArr.push(req.query.tag, '标签');
-        }
-        where.postType = req.query.type === 'page' ? 'page' : 'post';
-        paramArr.push(`type=${where.postType}`);
-
-        async.auto({
-            options: commonService.getInitOptions,
-            archiveDates: (cb) => {
-                commonService.archiveDates(cb, {
-                    postType: where.postType
-                });
-            },
-            categories: commonService.getCategoryTree.bind(commonService),
-            subCategories: ['categories', (result, cb) => {
-                if (req.query.category) {
-                    from = 'category';
-                    paramArr.push(`category=${req.query.category}`);
-
-                    commonService.getSubCategoriesBySlug({
-                        catData: result.categories.catData,
-                        slug: req.query.category
-                    }, (err, data) => {
-                        if (err) {
-                            logger.error(formatOpLog({
-                                fn: 'listEdit.getSubCategoriesBySlug',
-                                msg: err,
-                                data: {
-                                    catData: result.categories.catData,
-                                    slug: req.query.category
-                                },
-                                req
-                            }));
-                            return cb(err);
-                        }
-                        includeOpt.push({
-                            model: models.TermRelationship,
-                            attributes: ['objectId'],
-                            where: {
-                                termTaxonomyId: {
-                                    [Op.in]: data.subCatIds
-                                }
-                            }
-                        });
-                        titleArr.push(data.catRoot.name, '分类');
-                        cb(null);
-                    });
-                } else {
-                    cb(null);
-                }
-            }],
-            postsCount: ['subCategories', (result, cb) => {
-                Post.count({
-                    where,
-                    include: includeOpt,
-                    distinct: true
-                }).then((data) => cb(null, data));
-            }],
-            posts: ['postsCount', (result, cb) => {
-                page = (page > result.postsCount / 10 ? Math.ceil(result.postsCount / 10) : page) || 1;
-                queryPosts({
-                    page,
-                    where,
-                    from,
-                    includeOpt
-                }, cb);
-            }],
-            comments: ['posts', (result, cb) => commonService.getCommentCountByPosts(result.posts, cb)],
-            typeCount: (cb) => {
-                Post.findAll({
-                    attributes: [
-                        'postStatus',
-                        'postType',
-                        [models.sequelize.fn('count', 1), 'count']
-                    ],
-                    where: {
-                        postType: {
-                            [Op.eq]: where.postType
-                        },
-                        postStatus: {
-                            [Op.in]: ['publish', 'private', 'draft', 'auto-draft', 'trash']
-                        }
-                    },
-                    group: ['postStatus']
-                }).then((data) => cb(null, data));
-            }
-        }, function (err, result) {
+        postService.listEdit({
+            page: req.params.page,
+            query: req.query
+        }, (err, result, data) => {
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'listEdit',
-                    msg: err,
-                    data: {
-                        where,
-                        page
+                    msg: err.messageDetail || err.message,
+                    data: err.data || {
+                        where: data.where,
+                        page: data.page
                     },
                     req
                 }));
@@ -860,8 +618,8 @@ module.exports = {
             }
             let resData = {
                 meta: {},
-                type: where.postType,
-                page: where.postType,
+                type: data.where.postType,
+                page: data.where.postType,
                 archiveDates: result.archiveDates,
                 categories: result.categories,
                 options: result.options,
@@ -878,16 +636,18 @@ module.exports = {
                 formatter,
                 moment
             };
-            resData.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), pagesOut);
+            resData.paginator = util.paginator(data.page, Math.ceil(result.postsCount / 10), pagesOut);
             resData.paginator.linkUrl = '/admin/post/page-';
-            resData.paginator.linkParam = paramArr.length > 0 ? '?' + paramArr.join('&') : '';
+            resData.paginator.linkParam = data.paramArr.length > 0 ? '?' + data.paramArr.join('&') : '';
             resData.paginator.pageLimit = 10;
             resData.paginator.total = result.postsCount;
 
-            if (page > 1) {
-                resData.meta.title = util.getTitle(titleArr.concat(['第' + page + '页', where.postType === 'page' ? '页面列表' : '文章列表', '管理后台', result.options.site_name.optionValue]));
+            if (data.page > 1) {
+                resData.meta.title = util.getTitle(
+                    data.titleArr.concat(['第' + data.page + '页', data.where.postType === 'page' ? '页面列表' : '文章列表', '管理后台', result.options.site_name.optionValue]));
             } else {
-                resData.meta.title = util.getTitle(titleArr.concat([where.postType === 'page' ? '页面列表' : '文章列表', '管理后台', result.options.site_name.optionValue]));
+                resData.meta.title = util.getTitle(
+                    data.titleArr.concat([data.where.postType === 'page' ? '页面列表' : '文章列表', '管理后台', result.options.site_name.optionValue]));
             }
 
             result.typeCount.forEach((item) => {
@@ -923,10 +683,6 @@ module.exports = {
     editPost: function (req, res, next) {
         const postId = req.query.postId;
         const action = (req.query.action || 'create').toLowerCase();
-        let tasks = {
-            categories: commonService.getCategoryTree.bind(commonService),
-            options: commonService.getInitOptions
-        };
         if (!['create', 'edit'].includes(action)) {
             logger.error(formatOpLog({
                 fn: 'editPost',
@@ -939,61 +695,22 @@ module.exports = {
                 message: '不支持该操作'
             }, next);
         }
-        if (postId) {
-            if (!idReg.test(postId)) {
-                return util.catchError({
-                    status: 404,
-                    code: 404,
-                    message: '文章不存在'
-                }, next);
-            }
-            let includeOpt = [{
-                model: User,
-                attributes: ['userDisplayName']
-            }];
-            if (req.query.type !== 'page') {
-                includeOpt.push({
-                    model: models.TermTaxonomy,
-                    attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'count'],
-                    where: {
-                        taxonomy: {
-                            [Op.in]: ['post', 'tag']
-                        }
-                    }
-                });
-            }
-            tasks.post = (cb) => {
-                Post.findByPk(postId, {
-                    attributes: [
-                        'postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus', 'postType', 'postPassword',
-                        'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'],
-                    include: includeOpt
-                }).then(function (post) {
-                    if (!post || !post.postId) {
-                        logger.error(formatOpLog({
-                            fn: 'editPost',
-                            msg: 'Post Not Exist.',
-                            data: {
-                                postId: postId
-                            },
-                            req
-                        }));
-                        return cb(util.catchError({
-                            status: 404,
-                            code: 404,
-                            message: 'Page Not Found.'
-                        }));
-                    }
-                    cb(null, post);
-                });
-            };
+        if (postId && !idReg.test(postId)) {
+            return util.catchError({
+                status: 404,
+                code: 404,
+                message: '文章不存在'
+            }, next);
         }
-        async.parallel(tasks, function (err, result) {
+        postService.editPost({
+            postId,
+            query: req.query
+        }, (err, result) => {
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'editPost',
-                    msg: err,
-                    data: {
+                    msg: err.messageDetail || err.message,
+                    data: err.data || {
                         postId
                     },
                     req
@@ -1009,12 +726,20 @@ module.exports = {
                 moment
             };
             let title;
+            const pageTitle = {
+                page: '撰写新页面',
+                post: '撰写新文章'
+            };
+            const editTitle = {
+                page: '编辑页面',
+                post: '编辑文章'
+            };
             if (postId) {
-                title = result.post.postType === 'page' ? '编辑页面' : '编辑文章';
                 resData.page = result.post.postType;
+                title = editTitle[result.post.postType];
             } else {
-                title = req.query.type === 'page' ? '撰写新页面' : '撰写新文章';
                 resData.page = req.query.type === 'page' ? 'page' : 'post';
+                title = pageTitle[resData.page];
             }
             resData.title = title;
             resData.meta.title = util.getTitle([title, '管理后台', result.options.site_name.optionValue]);
@@ -1090,155 +815,22 @@ module.exports = {
             data.postPassword = '';
         }
 
-        models.sequelize.transaction(function (t) {
-            let tasks = {
-                deleteCatRel: function (cb) {
-                    if (type !== 'post' || !postId) {
-                        return cb(null);
-                    }
-                    models.TermRelationship.destroy({
-                        where: {
-                            objectId: {
-                                [Op.eq]: postId
-                            }
-                        },
-                        transaction: t
-                    }).then((data) => cb(null, data));
-                },
-                checkGuid: function (cb) {
-                    let where = {
-                        postGuid: {
-                            [Op.eq]: data.postGuid
-                        }
-                    };
-                    if (postId) {
-                        where.postId = {
-                            [Op.ne]: postId
-                        };
-                    }
-                    Post.count({
-                        where
-                    }).then((count) => cb(null, count));
-                },
-                post: ['checkGuid', function (result, cb) {
-                    if (result.checkGuid > 0) {
-                        return cb('URL已存在');
-                    }
-                    data.postDateGmt = data.postDate;
-                    if (!postId) {
-                        data.postId = newPostId;
-                        data.postModifiedGmt = nowTime;
-                        Post.create(data, {
-                            transaction: t
-                        }).then((post) => cb(null, post));
-                    } else {
-                        Post.update(data, {
-                            where: {
-                                postId: {
-                                    [Op.eq]: postId
-                                }
-                            },
-                            transaction: t
-                        }).then((post) => cb(null, post));
-                    }
-                }]
-            };
-            // 对于异步的循环，若中途其他操作出现报错，将触发rollback，但循环并未中断，从而导致事务执行报错，因此需要强制加入依赖关系，改为顺序执行
-            if (type !== 'page' && type !== 'attachment') {
-                tasks.category = ['deleteCatRel', 'post', (result, cb) => {
-                    async.times(postCategory.length, (i, nextFn) => {
-                        if (postCategory[i]) {
-                            models.TermRelationship.create({
-                                objectId: newPostId,
-                                termTaxonomyId: postCategory[i]
-                            }, {
-                                transaction: t
-                            }).then((rel) => nextFn(null, rel));
-                        } else {
-                            nextFn(null);
-                        }
-                    }, (err, categories) => {
-                        cb(err, categories);
-                    });
-                }];
-                tasks.tag = ['deleteCatRel', 'post', (result, cb) => {
-                    async.times(postTag.length, (i, nextFn) => {
-                        const tag = postTag[i].trim();
-                        if (tag) {
-                            async.auto({
-                                taxonomy: function (innerCb) {
-                                    models.TermTaxonomy.findAll({
-                                        attributes: ['taxonomyId'],
-                                        where: {
-                                            slug: {
-                                                [Op.eq]: tag
-                                            }
-                                        }
-                                    }).then((tags) => {
-                                        if (tags.length > 0) {// 已存在标签
-                                            return innerCb(null, tags[0].taxonomyId);
-                                        }
-                                        const taxonomyId = util.getUuid();
-                                        // sequelize对事务中的created、modified处理有bug，会保存为invalid date，因此取消默认的行为，改为显式赋值
-                                        models.TermTaxonomy.create({
-                                            taxonomyId: taxonomyId,
-                                            taxonomy: 'tag',
-                                            name: tag,
-                                            slug: tag,
-                                            description: tag,
-                                            count: 1,
-                                            created: nowTime,
-                                            modified: nowTime
-                                        }, {
-                                            transaction: t
-                                        }).then((taxonomy) => innerCb(null, taxonomyId));
-                                    });
-                                },
-                                relationship: ['taxonomy', function (innerResult, innerCb) {
-                                    models.TermRelationship.create({
-                                        objectId: newPostId,
-                                        termTaxonomyId: innerResult.taxonomy
-                                    }, {
-                                        transaction: t
-                                    }).then((rel) => innerCb(null, rel));
-                                }]
-                            }, function (err, tags) {
-                                if (err) {
-                                    return nextFn(err);
-                                }
-                                nextFn(null, tags);
-                            });
-                        } else {
-                            nextFn(null);
-                        }
-                    }, (err, tags) => {
-                        cb(err, tags);
-                    });
-                }];
-            }
-            // 需要返回promise实例
-            return new Promise((resolve, reject) => {
-                async.auto(tasks, function (err, result) {
-                    if (err) {
-                        logger.error(formatOpLog({
-                            fn: 'savePost',
-                            msg: err,
-                            data,
-                            req
-                        }));
-                        reject(new Error(err));
-                    } else {
-                        logger.info(formatOpLog({
-                            fn: 'savePost',
-                            msg: `Post: ${newPostId}:${data.postTitle} is saved.`,
-                            data,
-                            req
-                        }));
-                        resolve(result);
-                    }
-                });
-            });
-        }).then(() => {
+        postService.savePost({
+            postId,
+            data,
+            newPostId,
+            nowTime,
+            type,
+            postCategory,
+            postTag
+        }, () => {
+            logger.info(formatOpLog({
+                fn: 'savePost',
+                msg: `Post: ${newPostId}:${data.postTitle} is saved.`,
+                data,
+                req
+            }));
+
             const referer = req.session.postReferer;
             delete req.session.postReferer;
             res.type('application/json');
@@ -1251,10 +843,16 @@ module.exports = {
                 }
             });
         }, (err) => {
+            logger.error(formatOpLog({
+                fn: 'savePost',
+                msg: err.messageDetail || err.message,
+                data: err.data,
+                req
+            }));
             next({
                 status: 200,
                 code: 500,
-                message: err.message || err
+                message: err.message
             });
         });
     },
