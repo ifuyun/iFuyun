@@ -17,8 +17,8 @@ module.exports = {
         res.redirect('/admin/post');
     },
     checkAuth: function (req, res, next) {
-        res.locals.isLogin = util.isLogin(req);
-        if (util.isAdminUser(req)) {
+        res.locals.isLogin = util.isLogin(req.session.user);
+        if (util.isAdminUser(req.session.user)) {
             return next();
         }
         if (res.locals.isLogin) {

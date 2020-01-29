@@ -500,29 +500,29 @@ module.exports = {
      * 判断是否已登录
      * @method isLogin
      * @static
-     * @param {Object} req 请求对象
+     * @param {Object} user user对象
      * @return {Boolean} 判断结果：已登录返回true，否则返回false
      * @author Fuyun
-     * @version 1.0.0
+     * @version 3.0.0
      * @since 1.0.0
      */
-    isLogin: function (req) {
-        const curUser = req.session.user;
-        return curUser ? !!curUser : false;
+    isLogin: function (user) {
+        // const curUser = req.session.user;
+        return user ? !!user : false;
     },
     /**
      * 判断登录用户是否管理员
      * @method isAdminUser
      * @static
-     * @param {Object} req 请求对象
+     * @param {Object} user user对象
      * @return {Boolean} 判断结果：是管理员返回true，否则返回false
      * @author Fuyun
-     * @version 1.0.0
+     * @version 3.0.0
      * @since 1.0.0
      */
-    isAdminUser: function (req) {
-        const curUser = req.session.user;
-        return this.isLogin(req) && curUser.usermeta && curUser.usermeta.role === 'admin';
+    isAdminUser: function (user) {
+        // const curUser = req.session.user;
+        return this.isLogin(user) && user.usermeta && user.usermeta.role === 'admin';
     },
     /**
      * URL添加来源参数

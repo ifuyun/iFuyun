@@ -22,7 +22,7 @@ const postService = require('../services/post');
 const uploader = require('./upload');
 const idReg = /^[0-9a-fA-F]{16}$/i;
 const pagesOut = 9;
-const {Post, User, Postmeta, TermTaxonomy, VTagVisibleTaxonomy} = models;
+const {Post, User, Postmeta, TermTaxonomy} = models;
 const Op = models.Sequelize.Op;
 
 /**
@@ -240,7 +240,7 @@ module.exports = {
     listPosts: function (req, res, next) {
         let page = parseInt(req.params.page, 10) || 1;
         postService.listPosts({
-            isAdmin: util.isAdminUser(req),
+            isAdmin: util.isAdminUser(req.session.user),
             page,
             keyword: req.query.keyword
         }, (err, result, logInfo) => {
@@ -249,10 +249,7 @@ module.exports = {
                 logger.error(formatOpLog({
                     fn: 'listPosts',
                     msg: err,
-                    data: {
-                        where: logInfo.where,
-                        page
-                    },
+                    data: err.data || logInfo,
                     req
                 }));
                 return next(err);
@@ -295,7 +292,7 @@ module.exports = {
         });
     },
     showPost: function (req, res, next) {
-        const isAdmin = util.isAdminUser(req);
+        const isAdmin = util.isAdminUser(req.session.user);
         const postId = req.params.postId;
         if (!postId || !/^[0-9a-fA-F]{16}$/i.test(postId)) {// 不能抛出错误，有可能是/page
             logger.warn(formatOpLog({
@@ -364,86 +361,20 @@ module.exports = {
         });
     },
     showPage: function (req, res, next) {
-        const isAdmin = util.isAdminUser(req);
+        const isAdmin = util.isAdminUser(req.session.user);
         const reqUrl = url.parse(req.url);
         const reqPath = reqUrl.pathname;
-        async.auto({
-            commonData: (cb) => {
-                getCommonData({
-                    from: 'page',
-                    postType: 'post',
-                    filterCategory: !isAdmin
-                }, cb);
-            },
-            post: function (cb) {
-                Post.findOne({
-                    attributes: [
-                        'postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus',
-                        'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'
-                    ],
-                    include: [{
-                        model: User,
-                        attributes: ['userDisplayName']
-                    }],
-                    where: {
-                        postGuid: {
-                            [Op.eq]: decodeURIComponent(reqPath)
-                        },
-                        postType: {
-                            [Op.in]: ['post', 'page']
-                        }
-                    }
-                }).then(function (post) {
-                    if (!post || !post.postId) {
-                        logger.error(formatOpLog({
-                            fn: 'showPage',
-                            msg: `Post: ${reqPath} Not Exist.`,
-                            req
-                        }));
-                        return cb(util.catchError({
-                            status: 404,
-                            code: 404,
-                            message: 'Page Not Found.'
-                        }));
-                    }
-                    // 无管理员权限不允许访问非公开文章(包括草稿)
-                    if (!util.isAdminUser(req) && post.postStatus !== 'publish') {
-                        logger.warn(formatOpLog({
-                            fn: 'showPage',
-                            msg: `[Unauthorized]${post.postId}:${post.postTitle} is ${post.postStatus}`,
-                            req
-                        }));
-                        return cb(util.catchError({
-                            status: 404,
-                            code: 404,
-                            message: 'Page Not Found.'
-                        }));
-                    }
-                    cb(null, post);
-                });
-            },
-            comments: ['post', (result, cb) => commonService.getCommentsByPostId(result.post.postId, cb)],
-            postViewCount: ['post', (result, cb) => {
-                const viewCount = models.sequelize.literal('post_view_count + 1');
-                Post.update({
-                    postViewCount: viewCount
-                }, {
-                    where: {
-                        postId: {
-                            [Op.eq]: result.post.postId
-                        }
-                    },
-                    silent: true
-                }).then((post) => {
-                    cb(null, post);
-                });
-            }]
-        }, function (err, result) {
+
+        postService.showPage({
+            isAdmin,
+            reqPath,
+            user: req.session.user
+        }, (err, result) => {
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'showPage',
-                    msg: err,
-                    data: {
+                    msg: err.messageDetail || err.message,
+                    data: err.data || {
                         reqUrl
                     },
                     req
@@ -465,7 +396,7 @@ module.exports = {
             Object.assign(resData, result.commonData);
 
             resData.meta.title = util.getTitle([result.post.postTitle, options.site_name.optionValue]);
-            resData.meta.description = result.post.postExcerpt || util.cutStr(util.filterHtmlTag(result.post.postContent), 140);
+            resData.meta.description = result.post.postExcerpt || util.cutStr(util.filterHtmlTag(result.post.postContent), constants.POST_SUMMARY_LENGTH);
             resData.meta.keywords = result.post.postTitle + ',' + options.site_keywords.optionValue;
             resData.meta.author = options.site_author.optionValue;
 
@@ -477,83 +408,20 @@ module.exports = {
         });
     },
     listByCategory: function (req, res, next) {
-        const isAdmin = util.isAdminUser(req);
+        const isAdmin = util.isAdminUser(req.session.user);
         let page = parseInt(req.params.page, 10) || 1;
         const category = req.params.category;
-        let where = {
-            postStatus: {
-                [Op.eq]: 'publish'
-            },
-            postType: {
-                [Op.eq]: 'post'
-            }
-        };
-        let includeOpt = [{
-            model: TermTaxonomy,
-            attributes: ['taxonomyId', 'visible'],
-            where: {
-                visible: {
-                    [Op.eq]: 1
-                }
-            }
-        }];
-        async.auto({
-            commonData: (cb) => {
-                getCommonData({
-                    page: page,
-                    from: 'category',
-                    filterCategory: !isAdmin
-                }, cb);
-            },
-            categories: commonService.getCategoryTree.bind(commonService),
-            subCategories: ['categories', (result, cb) => {
-                commonService.getSubCategoriesBySlug({
-                    catData: result.categories.catData,
-                    slug: category,
-                    filterCategory: !isAdmin
-                }, cb);
-            }],
-            setRelationshipWhere: ['subCategories', (result, cb) => {
-                includeOpt.push({
-                    model: models.TermRelationship,
-                    attributes: ['objectId'],
-                    where: {
-                        termTaxonomyId: {
-                            [Op.in]: result.subCategories.subCatIds
-                        }
-                    }
-                });
-                cb(null);
-            }],
-            postsCount: ['setRelationshipWhere', (result, cb) => {
-                Post.count({
-                    where,
-                    include: includeOpt,
-                    subQuery: false,
-                    distinct: true
-                }).then((count) => cb(null, count));
-            }],
-            posts: ['postsCount', (result, cb) => {
-                page = (page > result.postsCount / 10 ? Math.ceil(result.postsCount / 10) : page) || 1;
-                queryPosts({
-                    page,
-                    where,
-                    includeOpt,
-                    filterCategory: !isAdmin,
-                    from: 'category'
-                }, cb);
-            }],
-            comments: ['posts', (result, cb) => commonService.getCommentCountByPosts(result.posts, cb)]
-        }, function (err, result) {
+
+        postService.listByCategory({
+            isAdmin,
+            page: req.params.page,
+            category
+        }, (err, result, logInfo) => {
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'listByCategory',
-                    msg: err,
-                    data: {
-                        where,
-                        category,
-                        page
-                    },
+                    msg: err.messageDetail || err.message,
+                    data: err.data || logInfo,
                     req
                 }));
                 return next(err);
@@ -592,65 +460,20 @@ module.exports = {
         });
     },
     listByTag: function (req, res, next) {
-        const isAdmin = util.isAdminUser(req);
+        const isAdmin = util.isAdminUser(req.session.user);
         let page = parseInt(req.params.page, 10) || 1;
         const tag = req.params.tag;
-        let where = {
-            postStatus: {
-                [Op.eq]: 'publish'
-            },
-            postType: {
-                [Op.eq]: 'post'
-            }
-        };
-        let includeOpt = [{
-            model: isAdmin ? TermTaxonomy : VTagVisibleTaxonomy,
-            attributes: ['taxonomyId'],
-            where: {
-                taxonomy: {
-                    [Op.eq]: 'tag'
-                },
-                slug: {
-                    [Op.eq]: tag
-                }
-            }
-        }];
-        async.auto({
-            commonData: (cb) => {
-                getCommonData({
-                    page: page,
-                    from: 'tag',
-                    filterCategory: !isAdmin
-                }, cb);
-            },
-            postsCount: (cb) => {
-                Post.count({
-                    where,
-                    include: includeOpt,
-                    distinct: true
-                }).then((count) => cb(null, count));
-            },
-            posts: ['postsCount', (result, cb) => {
-                page = (page > result.postsCount / 10 ? Math.ceil(result.postsCount / 10) : page) || 1;
-                queryPosts({
-                    page,
-                    where,
-                    includeOpt,
-                    filterCategory: !isAdmin,
-                    from: 'tag'
-                }, cb);
-            }],
-            comments: ['posts', (result, cb) => commonService.getCommentCountByPosts(result.posts, cb)]
-        }, function (err, result) {
+
+        postService.listByTag({
+            isAdmin,
+            page: req.params.page,
+            tag
+        }, (err, result, logInfo) => {
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'listByTag',
-                    msg: err,
-                    data: {
-                        where,
-                        tag,
-                        page
-                    },
+                    msg: err.messageDetail || err.message,
+                    data: err.data || logInfo,
                     req
                 }));
                 return next(err);
@@ -699,7 +522,7 @@ module.exports = {
         });
     },
     listByDate: function (req, res, next) {
-        const isAdmin = util.isAdminUser(req);
+        const isAdmin = util.isAdminUser(req.session.user);
         let page = parseInt(req.params.page, 10) || 1;
         let year = parseInt(req.params.year, 10) || new Date().getFullYear();
         let month = parseInt(req.params.month, 10);
@@ -819,7 +642,7 @@ module.exports = {
         });
     },
     listArchiveDate: function (req, res, next) {
-        const isAdmin = util.isAdminUser(req);
+        const isAdmin = util.isAdminUser(req.session.user);
         async.auto({
             commonData: (cb) => {
                 getCommonData({

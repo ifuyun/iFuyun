@@ -22,7 +22,7 @@ module.exports = {
         const param = req.body;
         let user = {};
         let data = {};
-        const isAdmin = util.isAdminUser(req);
+        const isAdmin = util.isAdminUser(req.session.user);
         let commentId = util.trim(xss.sanitize(param.commentId));
 
         if (!param.captchaCode || !req.session.captcha) {

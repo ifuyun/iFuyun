@@ -349,5 +349,201 @@ module.exports = {
             prevPost: (cb) => commonService.getPrevPost(param.postId, cb),
             nextPost: (cb) => commonService.getNextPost(param.postId, cb)
         }, cb);
+    },
+    showPage(param, cb) {
+        async.auto({
+            commonData: (cb) => {
+                this.getCommonData({
+                    from: 'page',
+                    postType: 'post',
+                    filterCategory: !param.isAdmin
+                }, cb);
+            },
+            post: function (cb) {
+                Post.findOne({
+                    attributes: [
+                        'postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus',
+                        'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'
+                    ],
+                    include: [{
+                        model: User,
+                        attributes: ['userDisplayName']
+                    }],
+                    where: {
+                        postGuid: {
+                            [Op.eq]: decodeURIComponent(param.reqPath)
+                        },
+                        postType: {
+                            [Op.in]: ['post', 'page']
+                        }
+                    }
+                }).then(function (post) {
+                    if (!post || !post.postId) {
+                        return cb(util.catchError({
+                            status: 404,
+                            code: ERR_CODES.POST_NOT_EXIST,
+                            message: 'Page Not Found.',
+                            messageDetail: `Post: ${param.reqPath} Not Exist.`
+                        }));
+                    }
+                    // 无管理员权限不允许访问非公开文章(包括草稿)
+                    if (!util.isAdminUser(param.user) && post.postStatus !== 'publish') {
+                        return cb(util.catchError({
+                            status: 404,
+                            code: ERR_CODES.UNAUTHORIZED,
+                            message: 'Page Not Found.',
+                            messageDetail: `[Unauthorized]${post.postId}:${post.postTitle} is ${post.postStatus}`
+                        }));
+                    }
+                    cb(null, post);
+                });
+            },
+            comments: ['post', (result, cb) => commonService.getCommentsByPostId(result.post.postId, cb)],
+            postViewCount: ['post', (result, cb) => {
+                const viewCount = models.sequelize.literal('post_view_count + 1');
+                Post.update({
+                    postViewCount: viewCount
+                }, {
+                    where: {
+                        postId: {
+                            [Op.eq]: result.post.postId
+                        }
+                    },
+                    silent: true
+                }).then((post) => {
+                    cb(null, post);
+                });
+            }]
+        }, cb);
+    },
+    listByCategory(param, cb) {
+        let page = parseInt(param.page, 10) || 1;
+        let where = {
+            postStatus: {
+                [Op.eq]: 'publish'
+            },
+            postType: {
+                [Op.eq]: 'post'
+            }
+        };
+        let includeOpt = [{
+            model: TermTaxonomy,
+            attributes: ['taxonomyId', 'visible'],
+            where: {
+                visible: {
+                    [Op.eq]: 1
+                }
+            }
+        }];
+        async.auto({
+            commonData: (cb) => {
+                this.getCommonData({
+                    page: page,
+                    from: 'category',
+                    filterCategory: !param.isAdmin
+                }, cb);
+            },
+            categories: commonService.getCategoryTree.bind(commonService),
+            subCategories: ['categories', (result, cb) => {
+                commonService.getSubCategoriesBySlug({
+                    catData: result.categories.catData,
+                    slug: param.category,
+                    filterCategory: !param.isAdmin
+                }, cb);
+            }],
+            setRelationshipWhere: ['subCategories', (result, cb) => {
+                includeOpt.push({
+                    model: models.TermRelationship,
+                    attributes: ['objectId'],
+                    where: {
+                        termTaxonomyId: {
+                            [Op.in]: result.subCategories.subCatIds
+                        }
+                    }
+                });
+                cb(null);
+            }],
+            postsCount: ['setRelationshipWhere', (result, cb) => {
+                Post.count({
+                    where,
+                    include: includeOpt,
+                    subQuery: false,
+                    distinct: true
+                }).then((count) => cb(null, count));
+            }],
+            posts: ['postsCount', (result, cb) => {
+                page = (page > result.postsCount / 10 ? Math.ceil(result.postsCount / 10) : page) || 1;
+                this.queryPosts({
+                    page,
+                    where,
+                    includeOpt,
+                    filterCategory: !param.isAdmin,
+                    from: 'category'
+                }, cb);
+            }],
+            comments: ['posts', (result, cb) => commonService.getCommentCountByPosts(result.posts, cb)]
+        }, (err, result) => {
+            cb(err, result, {
+                where,
+                category: param.category,
+                page
+            });
+        });
+    },
+    listByTag(param, cb) {
+        let page = parseInt(param.page, 10) || 1;
+        let where = {
+            postStatus: {
+                [Op.eq]: 'publish'
+            },
+            postType: {
+                [Op.eq]: 'post'
+            }
+        };
+        let includeOpt = [{
+            model: param.isAdmin ? TermTaxonomy : VTagVisibleTaxonomy,
+            attributes: ['taxonomyId'],
+            where: {
+                taxonomy: {
+                    [Op.eq]: 'tag'
+                },
+                slug: {
+                    [Op.eq]: param.tag
+                }
+            }
+        }];
+        async.auto({
+            commonData: (cb) => {
+                this.getCommonData({
+                    page: page,
+                    from: 'tag',
+                    filterCategory: !param.isAdmin
+                }, cb);
+            },
+            postsCount: (cb) => {
+                Post.count({
+                    where,
+                    include: includeOpt,
+                    distinct: true
+                }).then((count) => cb(null, count));
+            },
+            posts: ['postsCount', (result, cb) => {
+                page = (page > result.postsCount / 10 ? Math.ceil(result.postsCount / 10) : page) || 1;
+                this.queryPosts({
+                    page,
+                    where,
+                    includeOpt,
+                    filterCategory: !param.isAdmin,
+                    from: 'tag'
+                }, cb);
+            }],
+            comments: ['posts', (result, cb) => commonService.getCommentCountByPosts(result.posts, cb)]
+        }, (err, result) => {
+            cb(err, result, {
+                where,
+                tag: param.tag,
+                page
+            });
+        });
     }
 };
