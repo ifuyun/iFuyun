@@ -1,7 +1,8 @@
 /**
  * 设置
  * @author fuyun
- * @since 2017/05/25
+ * @version 3.0.0
+ * @since 1.1.0(2017-05-25)
  */
 const async = require('async');
 const xss = require('sanitizer');
@@ -13,10 +14,10 @@ const {Option} = models;
 const Op = models.Sequelize.Op;
 
 module.exports = {
-    welcome: function (req, res) {
+    welcome(req, res) {
         res.redirect('/admin/post');
     },
-    checkAuth: function (req, res, next) {
+    checkAuth(req, res, next) {
         res.locals.isLogin = util.isLogin(req.session.user);
         if (util.isAdminUser(req.session.user)) {
             return next();
@@ -31,7 +32,7 @@ module.exports = {
             res.redirect('/user/login');
         }
     },
-    settings: function (req, res, next) {
+    settings(req, res, next) {
         const type = (req.query.type || 'general').toLowerCase();
 
         if (!['general', 'writing', 'reading', 'discussion'].includes(type)) {
@@ -63,7 +64,7 @@ module.exports = {
             res.render(`${appConfig.pathViews}/admin/pages/settings`, resData);
         });
     },
-    saveSettings: function (req, res, next) {
+    saveSettings(req, res, next) {
         const param = req.body;
         const settings = [{
             name: 'site_name',
@@ -120,9 +121,9 @@ module.exports = {
                 }, next);
             }
         }
-        models.sequelize.transaction(function (t) {
+        models.sequelize.transaction((t) =>
             // 需要返回promise实例
-            return new Promise((resolve, reject) => {
+            new Promise((resolve, reject) => {
                 async.times(settings.length, (i, nextFn) => {
                     Option.update({
                         optionValue: settings[i].value
@@ -141,8 +142,8 @@ module.exports = {
                         resolve(result);
                     }
                 });
-            });
-        }).then(() => {
+            })
+        ).then(() => {
             res.type('application/json');
             res.send({
                 code: 0,

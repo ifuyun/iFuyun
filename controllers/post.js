@@ -21,58 +21,6 @@ const uploader = require('./upload');
 const idReg = /^[0-9a-fA-F]{16}$/i;
 const pagesOut = 9;
 
-/**
- * post保存校验
- * @param {Object} data 数据
- * @param {String} type post类型
- * @param {Array} postCategory 分类数组
- * @param {Array} postTag 标签数组
- * @return {*} null
- */
-function checkPostFields({data, type, postCategory, postTag}) {
-    // TODO: postGuid:/page-,/post/page-,/category/,/archive/,/tag/,/comment/,/user/,/admin/,/post/comment/
-    let rules = [{
-        rule: !data.postTitle,
-        message: '标题不能为空'
-    }, {
-        rule: !data.postContent,
-        message: '内容不能为空'
-    }, {
-        rule: !data.postStatus,
-        message: '状态不能为空'
-    }, {
-        rule: data.postStatus === 'password' && !data.postPassword,
-        message: '密码不能为空'
-    }];
-    if (type === 'post') {
-        rules = rules.concat([{
-            rule: !postCategory || postCategory.length < 1,
-            message: '目录不能为空'
-        }, {
-            rule: postCategory.length > constants.POST_CATEGORY_LIMIT,
-            message: `目录数应不大于${constants.POST_CATEGORY_LIMIT}个`
-        }, {
-            rule: postTag.length > 10,
-            message: '标签数应不大于10个'
-        }]);
-    } else {
-        rules.push({
-            rule: !data.postGuid,
-            message: 'URL不能为空'
-        });
-    }
-    for (let i = 0; i < rules.length; i += 1) {
-        if (rules[i].rule) {
-            return util.catchError({
-                status: 200,
-                code: 400,
-                message: rules[i].message
-            });
-        }
-    }
-    return true;
-}
-
 module.exports = {
     listPosts: function (req, res, next) {
         let page = parseInt(req.params.page, 10) || 1;
@@ -678,7 +626,7 @@ module.exports = {
         const postCategory = toArray(util.trim(xss.sanitize(param.postCategory)));
         const postTag = toArray(util.trim(xss.sanitize(param.postTag)));
 
-        const checkResult = checkPostFields({
+        const checkResult = postService.validatePostFields({
             data,
             type,
             postCategory,

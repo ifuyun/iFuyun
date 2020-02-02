@@ -12,141 +12,55 @@ const appConfig = require('../config/core');
 const util = require('../helper/util');
 const formatter = require('../helper/formatter');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
+const commentService = require('../services/comment');
 const idReg = /^[0-9a-fA-F]{16}$/i;
 const pagesOut = 9;
 const {Comment, Vote} = models;
 const Op = models.Sequelize.Op;
 
 module.exports = {
-    saveComment: function (req, res, next) {
+    saveComment(req, res, next) {
         const param = req.body;
-        let user = {};
+        let user = req.session.user || {};
         let data = {};
         const isAdmin = util.isAdminUser(req.session.user);
         let commentId = util.trim(xss.sanitize(param.commentId));
+        const shouldCheckCaptcha = !isAdmin || !commentId;
 
-        if (!param.captchaCode || !req.session.captcha) {
-            return util.catchError({
-                status: 200,
-                code: 400,
-                message: '请输入验证码'
-            }, next);
+        const checkCaptcha = commentService.validateCaptcha({
+            param,
+            shouldCheckCaptcha,
+            req
+        });
+        if (checkCaptcha !== true) {
+            return next(checkCaptcha);
         }
-        if (req.session.captcha.toLowerCase() !== param.captchaCode.toLowerCase()) {
-            return util.catchError({
-                status: 200,
-                code: 480,
-                message: '验证码输入有误，请重新输入'
-            }, next);
-        }
-        if (req.session.user) {
-            user = req.session.user;
-        }
-
-        // 避免undefined问题
-        data.commentContent = util.trim(xss.sanitize(param.commentContent));
-        data.parentId = util.trim(xss.sanitize(param.parentId));
-        data.postId = util.trim(xss.sanitize(param.postId));
-        data.commentAuthor = util.trim(xss.sanitize(param.commentUser)) || user.userDisplayName || '';
-        data.commentAuthorEmail = util.trim(xss.sanitize(param.commentEmail)) || user.userEmail || '';
-        // data.commentAuthorLink = util.trim(xss.sanitize(param.commentLink));
-        data.commentStatus = isAdmin ? 'normal' : 'pending';
-        data.commentIp = util.getRemoteIp(req);
-        data.commentAgent = req.headers['user-agent'];
-        data.userId = user.userId || '';
-
         if (!commentId || !idReg.test(commentId)) {
             commentId = '';
         }
-        if (!data.postId || !idReg.test(data.postId)) {
-            logger.warn(formatOpLog({
-                fn: 'saveComment',
-                msg: `comment's post: ${data.postId} is not exist.`,
-                req
-            }));
-            return util.catchError({
-                status: 200,
-                code: 400,
-                message: '评论文章不存在'
-            }, next);
+
+        data = commentService.wrapCommentData({
+            param,
+            user,
+            isAdmin,
+            req
+        });
+        const checkComment = commentService.validateComment({
+            data
+        });
+        if (checkComment !== true) {
+            return next(checkComment);
         }
-        if (!data.commentAuthor) {
-            return util.catchError({
-                status: 200,
-                code: 400,
-                message: '昵称不能为空'
-            }, next);
-        }
-        if (!/^[\da-zA-Z]+[\da-zA-Z_.\-]*@[\da-zA-Z_\-]+\.[\da-zA-Z_\-]+$/i.test(data.commentAuthorEmail)) {
-            return util.catchError({
-                status: 200,
-                code: 400,
-                message: 'Email输入不正确'
-            }, next);
-        }
-        if (!data.commentContent.trim()) {
-            return util.catchError({
-                status: 200,
-                code: 400,
-                message: '评论内容不能为空'
-            }, next);
-        }
-        async.auto({
-            post: (cb) => {
-                // 权限校验
-                models.Post.findByPk(data.postId, {
-                    attributes: ['postId', 'postTitle', 'postGuid', 'postStatus', 'commentFlag']
-                }).then(function (post) {
-                    if (!post || !post.postId) {
-                        logger.error(formatOpLog({
-                            fn: 'saveComment',
-                            msg: `Post: ${data.postId} is not exist.`,
-                            req
-                        }));
-                        return cb(util.catchError({
-                            status: 404,
-                            code: 404,
-                            message: 'Page Not Found.'
-                        }));
-                    }
-                    if (post.commentFlag === 'closed' && !isAdmin) {
-                        logger.warn(formatOpLog({
-                            fn: 'saveComment',
-                            msg: `[Forbidden]${post.postId}:${post.postTitle} is not allowed comment.`,
-                            req
-                        }));
-                        return cb(util.catchError({
-                            status: 403,
-                            code: 403,
-                            message: '该文章禁止评论'
-                        }));
-                    }
-                    if (post.commentFlag === 'open' || isAdmin) {
-                        data.commentStatus = 'normal';
-                    }
-                    cb(null, post);
-                });
-            },
-            comment: ['post', function (result, cb) {
-                if (!commentId) {
-                    data.commentId = util.getUuid();
-                    data.commentCreatedGmt = data.commentModifiedGmt = new Date();
-                    Comment.create(data).then((comment) => cb(null, comment));
-                } else {
-                    Comment.update(data, {
-                        where: {
-                            commentId: {
-                                [Op.eq]: commentId
-                            }
-                        }
-                    }).then((comment) => cb(null, comment));
-                }
-            }]
-        }, function (err, result) {
+        commentService.saveComment({
+            data,
+            isAdmin,
+            commentId
+        }, (err, result, logData) => {
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'saveComment',
-                    msg: err,
+                    msg: err.messageDetail || err.message,
+                    data: err.data || logData,
                     req
                 }));
                 return next(err);
@@ -162,11 +76,9 @@ module.exports = {
             const postUrl = postGuid || ('/post/' + result.post.postId);
 
             logger.info(formatOpLog({
-                fn: 'uploadFile',
-                msg: `Comment: ${data.commentId}:${data.postTitle} is saved.`,
-                data: {
-                    data
-                },
+                fn: 'saveComment',
+                msg: `Comment: ${logData.commentId}:${result.post.postTitle} is saved.`,
+                data,
                 req
             }));
             res.type('application/json');
@@ -181,7 +93,7 @@ module.exports = {
             });
         });
     },
-    saveVote: function (req, res, next) {
+    saveVote(req, res, next) {
         const param = req.body;
         let user = {};
         let data = {};
@@ -278,7 +190,7 @@ module.exports = {
             });
         });
     },
-    listComments: function (req, res, next) {
+    listComments(req, res, next) {
         let page = parseInt(req.params.page, 10) || 1;
         let where = {};
         let titleArr = [];
@@ -377,7 +289,7 @@ module.exports = {
             res.render(`${appConfig.pathViews}/admin/pages/commentList`, resData);
         });
     },
-    editComment: function (req, res, next) {
+    editComment(req, res, next) {
         let action = req.query.action;
         if (action !== 'edit' && action !== 'reply') {
             action = 'show';
@@ -397,7 +309,7 @@ module.exports = {
         }
         async.parallel({
             options: commonService.getInitOptions,
-            comment: function (cb) {
+            comment(cb) {
                 Comment.findByPk(commentId, {
                     attributes: ['commentId', 'postId', 'commentContent', 'commentStatus', 'commentAuthor', 'commentAuthorEmail', 'commentIp', 'commentCreated', 'commentModified'],
                     include: [{
@@ -437,7 +349,7 @@ module.exports = {
             res.render(`${appConfig.pathViews}/admin/pages/commentForm`, resData);
         });
     },
-    updateStatus: function (req, res, next) {
+    updateStatus(req, res, next) {
         let param = req.body;
         let data = {};
         const commentId = xss.sanitize(param.commentId.trim()) || '';
@@ -488,7 +400,7 @@ module.exports = {
             });
         });
     },
-    removeComments: function (req, res, next) {
+    removeComments(req, res, next) {
         res.send();
     }
 };

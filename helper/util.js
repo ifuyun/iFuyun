@@ -25,7 +25,7 @@ module.exports = {
      * @version 2.0.0
      * @since 1.0.0
      */
-    formatPages: function (page, pages, pagesOut) {
+    formatPages(page, pages, pagesOut) {
         let pageData = {
             start: 1,
             end: 1
@@ -58,7 +58,7 @@ module.exports = {
      * 生成分页对象
      * @method paginator
      * @static
-     * @param {Number} [page=1] 请求页
+     * @param {Number|String} [page=1] 请求页
      * @param {Number} [pages=1] 总页数
      * @param {Number} [pagesOut=9] 每页显示页数
      * @return {Object} 分页对象
@@ -66,7 +66,7 @@ module.exports = {
      * @version 2.0.0
      * @since 1.0.0
      */
-    paginator: function (page, pages, pagesOut) {
+    paginator(page, pages, pagesOut) {
         if (typeof page === 'string') {// page是字符串
             page = parseInt(page, 10);
         }
@@ -86,7 +86,7 @@ module.exports = {
             totalPage: pages
         };
     },
-    createCrumb: function (crumbData, separator) {
+    createCrumb(crumbData, separator) {
         let crumbArr = [];
         separator = separator || '&nbsp;→&nbsp;';
         crumbData.unshift({
@@ -116,28 +116,28 @@ module.exports = {
      * @version 1.0.0
      * @since 1.0.0
      */
-    getMonthName: function (month) {
-        const monthNames = {
-            '1': '一月',
-            '2': '二月',
-            '3': '三月',
-            '4': '四月',
-            '5': '五月',
-            '6': '六月',
-            '7': '七月',
-            '8': '八月',
-            '9': '九月',
-            '10': '十月',
-            '11': '十一',
-            '12': '十二'
-        };
-        month = parseInt(month, 10);
-        if (!month || month > 12 || month < 1) {
-            month = 1;
-        }
-
-        return monthNames[month];
-    },
+    // getMonthName(month) {
+    //     const monthNames = {
+    //         '1': '一月',
+    //         '2': '二月',
+    //         '3': '三月',
+    //         '4': '四月',
+    //         '5': '五月',
+    //         '6': '六月',
+    //         '7': '七月',
+    //         '8': '八月',
+    //         '9': '九月',
+    //         '10': '十月',
+    //         '11': '十一',
+    //         '12': '十二'
+    //     };
+    //     month = parseInt(month, 10);
+    //     if (!month || month > 12 || month < 1) {
+    //         month = 1;
+    //     }
+    //
+    //     return monthNames[month];
+    // },
     /**
      * 截取字符串为指定长度，超过长度加'...'
      * @method cutStr
@@ -149,7 +149,7 @@ module.exports = {
      * @version 1.0.0
      * @since 1.0.0
      */
-    cutStr: function (srcStr, cutLength) {
+    cutStr(srcStr, cutLength) {
         let resultStr;
         let i = 0;
         let n = 0;
@@ -186,7 +186,7 @@ module.exports = {
      * @version 1.0.0
      * @since 1.0.0
      */
-    filterHtmlTag: function (srcStr) {
+    filterHtmlTag(srcStr) {
         return srcStr.replace(/<\/?[^>]*>/ig, '');
         // \w\s~!@#$%^&*\(\)\-=+\[\]\{\}\\\|;:'",\.\/<\?\u4E00-\uFA29
     },
@@ -200,7 +200,7 @@ module.exports = {
      * @version 1.0.0
      * @since 1.0.0
      */
-    getRemoteIp: function (req) {
+    getRemoteIp(req) {
         return req.headers['x-real-ip'] || req.headers['x-forwarded-for'] || req.ip ||
             req._remoteAddress || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress;
     },
@@ -214,9 +214,9 @@ module.exports = {
      * @version 1.0.0
      * @since 1.0.0
      */
-    getHttpMethod: function (req) {
-        return req.method;
-    },
+    // getHttpMethod(req) {
+    //     return req.method;
+    // },
     /**
      * 获取请求URL
      * @method getUrl
@@ -227,7 +227,7 @@ module.exports = {
      * @version 1.0.0
      * @since 1.0.0
      */
-    getUrl: function (req) {
+    getUrl(req) {
         return req.originalUrl || req.url;
     },
     /**
@@ -240,9 +240,9 @@ module.exports = {
      * @version 1.0.0
      * @since 1.0.0
      */
-    getHttpStatus: function (res) {
-        return res.statusCode || '';
-    },
+    // getHttpStatus(res) {
+    //     return res.statusCode || '';
+    // },
     /**
      * 获取访客信息
      * @method getUserAgent
@@ -253,7 +253,7 @@ module.exports = {
      * @version 1.0.0
      * @since 1.0.0
      */
-    getUserAgent: function (req) {
+    getUserAgent(req) {
         return req.headers['user-agent'];
     },
     /**
@@ -266,9 +266,9 @@ module.exports = {
      * @version 1.0.0
      * @since 1.0.0
      */
-    getHttpVersion: function (req) {
-        return req.httpVersionMajor + '.' + req.httpVersionMinor;
-    },
+    // getHttpVersion(req) {
+    //     return req.httpVersionMajor + '.' + req.httpVersionMinor;
+    // },
     /**
      * 获取来源页地址
      * @method getReferrer
@@ -279,7 +279,7 @@ module.exports = {
      * @version 1.0.0
      * @since 1.0.0
      */
-    getReferrer: function (req) {
+    getReferrer(req) {
         return req.headers.referer || req.headers.referrer;
     },
     /**
@@ -293,7 +293,7 @@ module.exports = {
      * @version 1.0.0
      * @since 1.0.0
      */
-    getResponseHeader: function (res, field) {
+    getResponseHeader(res, field) {
         if (!res._header) {
             return;
         }
@@ -310,9 +310,9 @@ module.exports = {
      * @version 1.0.0
      * @since 1.0.0
      */
-    getContentLength: function (res) {
-        return this.getResponseHeader(res, 'content-length');
-    },
+    // getContentLength(res) {
+    //     return this.getResponseHeader(res, 'content-length');
+    // },
     /**
      * 获取访问日志
      * @method getAccessLog
@@ -324,9 +324,9 @@ module.exports = {
      * @version 1.0.0
      * @since 1.0.0
      */
-    getAccessLog: function (req, res) {
-        return this.getRemoteIp(req) + ' - ' + this.getHttpMethod(req) + ' ' + this.getHttpStatus(res) + ' ' + this.getUrl(req);
-    },
+    // getAccessLog(req, res) {
+    //     return this.getRemoteIp(req) + ' - ' + this.getHttpMethod(req) + ' ' + this.getHttpStatus(res) + ' ' + this.getUrl(req);
+    // },
     /**
      * 获取访客信息
      * @method getAccessUser
@@ -337,7 +337,7 @@ module.exports = {
      * @version 1.0.0
      * @since 1.0.0
      */
-    getAccessUser: function (req) {
+    getAccessUser(req) {
         return this.getRemoteIp(req) + ' - "' + this.getUserAgent(req) + '"';
     },
     /**
@@ -354,7 +354,7 @@ module.exports = {
      * @version 1.0.0
      * @since 1.0.0
      */
-    catchError: function (msgObj, next = null) {
+    catchError(msgObj, next = null) {
         msgObj.message = msgObj.message || 'Page Not Found';
         msgObj.status = msgObj.status || ERR_CODES.PAGE_NOT_FOUND;
         msgObj.code = msgObj.code || ERR_CODES.PAGE_NOT_FOUND;
@@ -374,7 +374,7 @@ module.exports = {
      * @version 1.0.0
      * @since 1.0.0
      */
-    md5: function (str) {
+    md5(str) {
         let md5sum = crypto.createHash('md5');
         md5sum.update(str);
         return md5sum.digest('hex');
@@ -390,7 +390,7 @@ module.exports = {
      * @version 1.0.0
      * @since 1.0.0
      */
-    getTitle: function (titleArr, delimiter) {
+    getTitle(titleArr, delimiter) {
         delimiter = delimiter || ' - ';
         if (!titleArr) {
             titleArr = [];
@@ -410,7 +410,7 @@ module.exports = {
      * @version 2.0.0(2014-06-18)
      * @since 1.0.0(2014-06-17)
      */
-    getUuid: function () {
+    getUuid() {
         // 1e12 + 0x4ba0000000
         const idLen = 16;
         const hex = 16;
@@ -435,7 +435,7 @@ module.exports = {
      * @version 1.0.0
      * @since 1.0.0
      */
-    isEmptyObject: function (obj) {
+    isEmptyObject(obj) {
         for (let name in obj) {
             if (obj.hasOwnProperty(name)) {
                 return false;
@@ -455,7 +455,7 @@ module.exports = {
      * @version 1.0.0
      * @since 1.0.0
      */
-    inArray: function (elem, arr, i) {
+    inArray(elem, arr, i) {
         if (arr) {
             const len = arr.length;
             i = i ? i < 0 ? Math.max(0, len + i) : i : 0;
@@ -481,7 +481,7 @@ module.exports = {
      * @version 1.0.0
      * @since 1.0.0
      */
-    isArray: function (obj) {
+    isArray(obj) {
         return Object.prototype.toString.call(obj) === '[object Array]';
     },
     /**
@@ -493,7 +493,7 @@ module.exports = {
      * @version 2.0.0
      * @since 2.0.0
      */
-    trim: function (str) {
+    trim(str) {
         return str ? str.trim() : '';
     },
     /**
@@ -506,7 +506,7 @@ module.exports = {
      * @version 3.0.0
      * @since 1.0.0
      */
-    isLogin: function (user) {
+    isLogin(user) {
         // const curUser = req.session.user;
         return user ? !!user : false;
     },
@@ -520,7 +520,7 @@ module.exports = {
      * @version 3.0.0
      * @since 1.0.0
      */
-    isAdminUser: function (user) {
+    isAdminUser(user) {
         // const curUser = req.session.user;
         return this.isLogin(user) && user.usermeta && user.usermeta.role === 'admin';
     },
@@ -535,8 +535,23 @@ module.exports = {
      * @version 2.0.0
      * @since 2.0.0
      */
-    setUrlRef: function (url, from) {
+    setUrlRef(url, from) {
         const split = url.indexOf('?') >= 0 ? '&' : '?';
         return url + split + 'ref=' + from;
+    },
+    /**
+     * 生成验证码随机字符串
+     * @return {string} 验证码
+     */
+    getRandomText() {
+        const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        const charsLength = chars.length;
+        const captchaLength = 4;
+        let captchaStr = '';
+        for (let i = 0; i < captchaLength; i += 1) {
+            captchaStr += chars[Math.floor(Math.random() * charsLength)];
+        }
+
+        return captchaStr;
     }
 };

@@ -4,25 +4,10 @@
  * @since 2017/11/16
  */
 const gm = require('gm').subClass({imageMagick: true});
-
-/**
- * 生成验证码随机字符串
- * @return {string} 验证码
- */
-function getRandomText() {
-    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    const charsLength = chars.length;
-    const captchaLength = 4;
-    let captchaStr = '';
-    for (let i = 0; i < captchaLength; i += 1) {
-        captchaStr += chars[Math.floor(Math.random() * charsLength)];
-    }
-
-    return captchaStr;
-}
+const util = require('../helper/util');
 
 module.exports = {
-    create: function (req, res, next) {
+    create(req, res, next) {
         const maxFontSize = 22;
         const maxLineY = 28;
         const maxMarginLeft = 15;
@@ -37,7 +22,7 @@ module.exports = {
         const marginLeftRange = [0, maxMarginLeft];
         const waveAmplitude = (imgHeight - blankHeight) / 2;
         const waveLengthRange = [minWaveLength, 60];
-        const captchaText = getRandomText();
+        const captchaText = util.getRandomText();
         const textGravity = ['West', 'East'];
         let gmImg = gm(imgWidth, blankHeight, '#ddd');
 

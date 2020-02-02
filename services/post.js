@@ -4,6 +4,7 @@ const formatter = require('../helper/formatter');
 const util = require('../helper/util');
 const models = require('../models/index');
 const commonService = require('../services/common');
+const constants = require('../services/constants');
 const ERR_CODES = require('../services/error-codes');
 const {Post, User, Postmeta, TermTaxonomy, VTagVisibleTaxonomy} = models;
 const Op = models.Sequelize.Op;
@@ -1132,5 +1133,56 @@ module.exports = {
                 });
             });
         }).then(successCb, errorCb);
+    },
+    /**
+     * post保存校验
+     * @param {Object} data 数据
+     * @param {String} type post类型
+     * @param {Array} postCategory 分类数组
+     * @param {Array} postTag 标签数组
+     * @return {*} null
+     */
+    validatePostFields({data, type, postCategory, postTag}) {
+        // TODO: postGuid:/page-,/post/page-,/category/,/archive/,/tag/,/comment/,/user/,/admin/,/post/comment/
+        let rules = [{
+            rule: !data.postTitle,
+            message: '标题不能为空'
+        }, {
+            rule: !data.postContent,
+            message: '内容不能为空'
+        }, {
+            rule: !data.postStatus,
+            message: '状态不能为空'
+        }, {
+            rule: data.postStatus === 'password' && !data.postPassword,
+            message: '密码不能为空'
+        }];
+        if (type === 'post') {
+            rules = rules.concat([{
+                rule: !postCategory || postCategory.length < 1,
+                message: '目录不能为空'
+            }, {
+                rule: postCategory.length > constants.POST_CATEGORY_LIMIT,
+                message: `目录数应不大于${constants.POST_CATEGORY_LIMIT}个`
+            }, {
+                rule: postTag.length > 10,
+                message: '标签数应不大于10个'
+            }]);
+        } else {
+            rules.push({
+                rule: !data.postGuid,
+                message: 'URL不能为空'
+            });
+        }
+        for (let i = 0; i < rules.length; i += 1) {
+            if (rules[i].rule) {
+                return util.catchError({
+                    status: 200,
+                    code: 400,
+                    message: rules[i].message
+                });
+            }
+        }
+        return true;
     }
 };
