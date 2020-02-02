@@ -2,7 +2,7 @@
  * 安全信息配置
  * @module cfg_credential
  * @author Fuyun
- * @version 2.1.0
+ * @version 3.0.0
  * @since 1.0.0
  */
 module.exports = {
@@ -11,12 +11,12 @@ module.exports = {
     upload: {
         initUrl: '[url-init]',
         targetUrl: '[url-get-target]',
-        bucket: '[bucket]'
+        bucket: '[bucket]',
+        appKey: '[app-key]',
+        appSecret: '[app-secret]',
+        appAccessKey: '[app-access-key]',
+        appSecretKey: '[app-secret-key]'
     },
-    appKey: '[app-key]',
-    appSecret: '[app-secret]',
-    appAccessKey: '[app-access-key]',
-    appSecretKey: '[app-secret-key]',
     redis: {
         development: {
             password: '[redis-dev-pwd]'

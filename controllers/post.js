@@ -5,7 +5,6 @@
  */
 const fs = require('fs');
 const path = require('path');
-const async = require('async');
 const moment = require('moment');
 const url = require('url');
 const xss = require('sanitizer');
@@ -16,132 +15,11 @@ const constants = require('../services/constants');
 const util = require('../helper/util');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const formatter = require('../helper/formatter');
-const models = require('../models/index');
 const commonService = require('../services/common');
 const postService = require('../services/post');
 const uploader = require('./upload');
 const idReg = /^[0-9a-fA-F]{16}$/i;
 const pagesOut = 9;
-const {Post, User, Postmeta} = models;
-const Op = models.Sequelize.Op;
-
-/**
- * 根据IDs查询post
- * @param {Object} param 参数对象
- *     {Array}[posts] post对象数组,
- *     {Array}[postIds] post id数组,
- *     {Boolean}[filterCategory] 是否过滤隐藏分类下的文章
- * @param {Function} cb 回调函数
- * @return {*} null
- */
-function queryPostsByIds(param, cb) {
-    const {posts, postIds, filterCategory} = param;
-    // 执行时间在10-20ms
-    /**
-     * 根据group方式去重（distinct需要使用子查询，sequelize不支持include时的distinct）
-     * 需要注意的是posts和postsCount的一致性
-     * 评论数的查询通过posts进行循环查询，采用关联查询会导致结果不全（hasMany关系对应的是INNER JOIN，并不是LEFT OUTER JOIN），且并不需要所有评论数据，只需要总数
-     *
-     * sequelize有一个Bug：
-     * 关联查询去重时，通过group by方式无法获取关联表的多行数据（如：此例的文章分类，只能返回第一条，并没有返回所有的分类）*/
-    let where = {
-        taxonomy: {
-            [Op.in]: ['post', 'tag']
-        }
-    };
-    if (filterCategory) {
-        where.visible = {
-            [Op.eq]: 1
-        };
-    }
-    models.TermTaxonomy.findAll({
-        attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'visible', 'count'],
-        include: [{
-            model: models.TermRelationship,
-            attributes: ['objectId', 'termTaxonomyId'],
-            where: {
-                objectId: {
-                    [Op.in]: postIds
-                }
-            }
-        }],
-        where,
-        order: [['termOrder', 'asc']]
-    }).then((data) => {
-        let result = [];
-        posts.forEach((post) => {
-            let tags = [];
-            let categories = [];
-            if (post.Postmeta) {
-                post.meta = {};
-                post.Postmeta.forEach((u) => {
-                    post.meta[u.metaKey] = u.metaValue;
-                });
-            }
-            data.forEach((u) => {
-                if (u.taxonomy === 'tag') {
-                    u.TermRelationships.forEach((v) => {
-                        if (v.objectId === post.postId) {
-                            tags.push(u);
-                        }
-                    });
-                } else {
-                    u.TermRelationships.forEach((v) => {
-                        if (v.objectId === post.postId) {
-                            categories.push(u);
-                        }
-                    });
-                }
-            });
-            result.push({
-                post,
-                tags,
-                categories
-            });
-        });
-        cb(null, result);
-    });
-}
-
-/**
- * 查询posts
- * @param {Object} param 参数对象
- * @param {Function} cb 回调函数
- * @return {*} null
- */
-function queryPosts(param, cb) {
-    let queryOpt = {
-        where: param.where,
-        attributes: [
-            'postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus',
-            'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'
-        ],
-        include: [{
-            model: User,
-            attributes: ['userDisplayName']
-        }, {
-            model: Postmeta,
-            attributes: ['metaKey', 'metaValue']
-        }],
-        order: [['postCreated', 'desc'], ['postDate', 'desc']],
-        limit: 10,
-        offset: 10 * (param.page - 1),
-        subQuery: false
-    };
-    if (param.includeOpt) {
-        queryOpt.include = queryOpt.include.concat(param.includeOpt);
-        queryOpt.group = ['postId'];
-    }
-    Post.findAll(queryOpt).then((posts) => {
-        let postIds = [];
-        posts.forEach((v) => postIds.push(v.postId));
-        queryPostsByIds({
-            posts,
-            postIds,
-            filterCategory: param.filterCategory
-        }, cb);
-    });
-}
 
 /**
  * post保存校验
@@ -171,8 +49,8 @@ function checkPostFields({data, type, postCategory, postTag}) {
             rule: !postCategory || postCategory.length < 1,
             message: '目录不能为空'
         }, {
-            rule: postCategory.length > 5,
-            message: '目录数应不大于5个'
+            rule: postCategory.length > constants.POST_CATEGORY_LIMIT,
+            message: `目录数应不大于${constants.POST_CATEGORY_LIMIT}个`
         }, {
             rule: postTag.length > 10,
             message: '标签数应不大于10个'
@@ -857,107 +735,17 @@ module.exports = {
         });
     },
     listMedia: function (req, res, next) {
-        let page = parseInt(req.params.page, 10) || 1;
-        let where = {};
-        let titleArr = [];
-        let paramArr = [];
-        let from = 'admin';
-
-        if (req.query.status) {
-            if (req.query.status === 'draft') {
-                where.postStatus = {
-                    [Op.in]: ['draft', 'auto-draft']
-                };
-            } else {
-                where.postStatus = {
-                    [Op.eq]: req.query.status
-                };
-            }
-            paramArr.push(`status=${req.query.status}`);
-            titleArr.push(formatter.postStatus(req.query.status) || req.query.status, '状态');
-        } else {
-            where.postStatus = {
-                [Op.in]: ['publish', 'private', 'draft', 'auto-draft', 'trash']
-            };
-        }
-        if (req.query.author) {
-            where.postAuthor = {
-                [Op.eq]: req.query.author
-            };
-            paramArr.push(`author=${req.query.author}`);
-            titleArr.push('作者');
-        }
-        if (req.query.date) {
-            where[Op.and] = [models.sequelize.where(models.sequelize.fn('date_format', models.sequelize.col('post_date'), '%Y/%m'), '=', req.query.date)];
-            paramArr.push(`date=${req.query.date}`);
-            titleArr.push(req.query.date, '日期');
-        }
-        if (req.query.keyword) {
-            where[Op.or] = [{
-                postTitle: {
-                    [Op.like]: `%${req.query.keyword}%`
-                }
-            }, {
-                postContent: {
-                    [Op.like]: `%${req.query.keyword}%`
-                }
-            }, {
-                postExcerpt: {
-                    [Op.like]: `%${req.query.keyword}%`
-                }
-            }];
-            paramArr.push(`keyword=${req.query.keyword}`);
-            titleArr.push(req.query.keyword, '搜索');
-        }
-        where.postType = 'attachment';
-        paramArr.push(`type=${where.postType}`);
-
-        async.auto({
-            options: commonService.getInitOptions,
-            archiveDates: (cb) => {
-                commonService.archiveDates(cb, {
-                    postType: where.postType
-                });
-            },
-            postsCount: (cb) => {
-                Post.count({
-                    where
-                }).then((data) => cb(null, data));
-            },
-            posts: ['postsCount', (result, cb) => {
-                page = (page > result.postsCount / 10 ? Math.ceil(result.postsCount / 10) : page) || 1;
-                queryPosts({
-                    page,
-                    where,
-                    from
-                }, cb);
-            }],
-            typeCount: (cb) => {
-                Post.findAll({
-                    attributes: [
-                        'postStatus',
-                        'postType',
-                        [models.sequelize.fn('count', 1), 'count']
-                    ],
-                    where: {
-                        postType: {
-                            [Op.eq]: where.postType
-                        },
-                        postStatus: {
-                            [Op.in]: ['publish', 'private', 'draft', 'auto-draft', 'trash']
-                        }
-                    },
-                    group: ['postStatus']
-                }).then((data) => cb(null, data));
-            }
-        }, function (err, result) {
+        postService.listMedia({
+            page: req.params.page,
+            query: req.query
+        }, (err, result, data) => {
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'listMedia',
-                    msg: err,
+                    msg: err.messageDetail || err.message,
                     data: {
-                        where,
-                        page
+                        where: data.where,
+                        page: data.page
                     },
                     req
                 }));
@@ -965,7 +753,7 @@ module.exports = {
             }
             let resData = {
                 meta: {},
-                type: where.postType,
+                type: data.where.postType,
                 page: 'media',
                 archiveDates: result.archiveDates,
                 options: result.options,
@@ -981,16 +769,20 @@ module.exports = {
                 formatter,
                 moment
             };
-            resData.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), pagesOut);
+            resData.paginator = util.paginator(data.page, Math.ceil(result.postsCount / 10), pagesOut);
             resData.paginator.linkUrl = '/admin/media/page-';
-            resData.paginator.linkParam = paramArr.length > 0 ? '?' + paramArr.join('&') : '';
+            resData.paginator.linkParam = data.paramArr.length > 0 ? '?' + data.paramArr.join('&') : '';
             resData.paginator.pageLimit = 10;
             resData.paginator.total = result.postsCount;
 
-            if (page > 1) {
-                resData.meta.title = util.getTitle(titleArr.concat(['第' + page + '页', '多媒体列表', '管理后台', result.options.site_name.optionValue]));
+            if (data.page > 1) {
+                resData.meta.title = util.getTitle(
+                    data.titleArr.concat(['第' + data.page + '页', '多媒体列表', '管理后台', result.options.site_name.optionValue])
+                );
             } else {
-                resData.meta.title = util.getTitle(titleArr.concat(['多媒体列表', '管理后台', result.options.site_name.optionValue]));
+                resData.meta.title = util.getTitle(
+                    data.titleArr.concat(['多媒体列表', '管理后台', result.options.site_name.optionValue])
+                );
             }
 
             result.typeCount.forEach((item) => {
@@ -1108,71 +900,24 @@ module.exports = {
             fileData.postGuid = '/' + curYear + '/' + curMonth + '/' + filename;
             fileData.postModifiedGmt = fileData.postDateGmt = fileData.postDate = nowTime;
 
-            const saveDb = function (cloudPath) {
-                models.sequelize.transaction(function (t) {
-                    let tasks = {
-                        options: commonService.getInitOptions,
-                        checkGuid: function (cb) {
-                            const where = {
-                                postGuid: {
-                                    [Op.eq]: fileData.postGuid
-                                }
-                            };
-                            Post.count({
-                                where
-                            }).then((count) => cb(null, count));
+            const saveDb = (cloudPath) => {
+                postService.uploadFile({
+                    fileData,
+                    cloudPath
+                }, () => {
+                    logger.info(formatOpLog({
+                        fn: 'uploadFile',
+                        msg: `File: ${filename}:${fileData.postTitle} is uploaded.`,
+                        data: {
+                            uploadPath,
+                            filename: files.mediafile.name,
+                            watermark: fields.watermark === '1',
+                            uploadCloud: fields.uploadCloud === '1'
                         },
-                        post: ['options', 'checkGuid', function (result, cb) {
-                            if (result.checkGuid > 0) {
-                                return cb('URL已存在');
-                            }
-                            fileData.postGuid = result.options.upload_path.optionValue + fileData.postGuid;
-                            Post.create(fileData, {
-                                transaction: t
-                            }).then((post) => cb(null, post));
-                        }]
-                    };
-                    if (cloudPath) {
-                        tasks.postMeta = (cb) => {
-                            Postmeta.create({
-                                metaId: util.getUuid(),
-                                postId: fileData.postId,
-                                metaKey: 'cloudPath',
-                                metaValue: cloudPath
-                            }, {
-                                transaction: t
-                            }).then((postMeta) => cb(null, postMeta));
-                        };
-                    }
-                    // 需要返回promise实例
-                    return new Promise((resolve, reject) => {
-                        async.auto(tasks, function (err, result) {
-                            if (err) {
-                                logger.error(formatOpLog({
-                                    fn: 'uploadFile',
-                                    msg: err,
-                                    data: fileData,
-                                    req
-                                }));
-                                reject(new Error(err));
-                            } else {
-                                logger.info(formatOpLog({
-                                    fn: 'uploadFile',
-                                    msg: `File saved: ${filename}`,
-                                    data: {
-                                        uploadPath,
-                                        filename: files.mediafile.name,
-                                        watermark: fields.watermark === '1',
-                                        uploadCloud: fields.uploadCloud === '1'
-                                    },
-                                    req
-                                }));
-                                resolve(result);
-                            }
-                        });
-                    });
-                }).then(() => {
-                    const response = function (err) {
+                        req
+                    }));
+
+                    const response = (err) => {
                         if (err) {
                             logger.error(formatOpLog({
                                 fn: 'uploadFile',
@@ -1209,6 +954,12 @@ module.exports = {
                         response();
                     }
                 }, (err) => {
+                    logger.error(formatOpLog({
+                        fn: 'uploadFile',
+                        msg: err.messageDetail || err.message,
+                        data: err.data,
+                        req
+                    }));
                     res.send({
                         status: 200,
                         code: 500,
@@ -1219,10 +970,13 @@ module.exports = {
             };
             res.type('application/json');
 
-            if (fields.uploadCloud === '1') {// 不带水印
+            if (credentials.upload && fields.uploadCloud === '1') {// 云+不带水印
                 uploader.init({
-                    appKey: credentials.appKey,
-                    appSecret: credentials.appSecret,
+                    upload: {
+                        appAccessKey: credentials.upload.appAccessKey,
+                        appSecretKey: credentials.upload.appSecretKey,
+                        bucket: credentials.upload.bucket
+                    },
                     onSuccess: saveDb,
                     onError: (err) => {
                         res.send({

@@ -966,8 +966,165 @@ module.exports = {
                             status: 500,
                             code: ERR_CODES.POST_SAVE_ERROR,
                             message: 'Post Save Error.',
-                            messageDetail: `Post: ${param.newPostId}:${param.data.postTitle} saved fail.`,
+                            messageDetail: `Post: ${param.newPostId}:${param.data.postTitle} save failed.`,
                             data: param.data
+                        }));
+                    } else {
+                        resolve(result);
+                    }
+                });
+            });
+        }).then(successCb, errorCb);
+    },
+    listMedia(param, cb) {
+        let page = parseInt(param.page, 10) || 1;
+        let where = {};
+        let titleArr = [];
+        let paramArr = [];
+        let from = 'admin';
+
+        if (param.query.status) {
+            if (param.query.status === 'draft') {
+                where.postStatus = {
+                    [Op.in]: ['draft', 'auto-draft']
+                };
+            } else {
+                where.postStatus = {
+                    [Op.eq]: param.query.status
+                };
+            }
+            paramArr.push(`status=${param.query.status}`);
+            titleArr.push(formatter.postStatus(param.query.status) || param.query.status, '状态');
+        } else {
+            where.postStatus = {
+                [Op.in]: ['publish', 'private', 'draft', 'auto-draft', 'trash']
+            };
+        }
+        if (param.query.author) {
+            where.postAuthor = {
+                [Op.eq]: param.query.author
+            };
+            paramArr.push(`author=${param.query.author}`);
+            titleArr.push('作者');
+        }
+        if (param.query.date) {
+            where[Op.and] = [models.sequelize.where(models.sequelize.fn('date_format', models.sequelize.col('post_date'), '%Y/%m'), '=', param.query.date)];
+            paramArr.push(`date=${param.query.date}`);
+            titleArr.push(param.query.date, '日期');
+        }
+        if (param.query.keyword) {
+            where[Op.or] = [{
+                postTitle: {
+                    [Op.like]: `%${param.query.keyword}%`
+                }
+            }, {
+                postContent: {
+                    [Op.like]: `%${param.query.keyword}%`
+                }
+            }, {
+                postExcerpt: {
+                    [Op.like]: `%${param.query.keyword}%`
+                }
+            }];
+            paramArr.push(`keyword=${param.query.keyword}`);
+            titleArr.push(param.query.keyword, '搜索');
+        }
+        where.postType = 'attachment';
+        paramArr.push(`type=${where.postType}`);
+
+        async.auto({
+            options: commonService.getInitOptions,
+            archiveDates: (cb) => {
+                commonService.archiveDates(cb, {
+                    postType: where.postType
+                });
+            },
+            postsCount: (cb) => {
+                Post.count({
+                    where
+                }).then((data) => cb(null, data));
+            },
+            posts: ['postsCount', (result, cb) => {
+                page = (page > result.postsCount / 10 ? Math.ceil(result.postsCount / 10) : page) || 1;
+                this.queryPosts({
+                    page,
+                    where,
+                    from
+                }, cb);
+            }],
+            typeCount: (cb) => {
+                Post.findAll({
+                    attributes: [
+                        'postStatus',
+                        'postType',
+                        [models.sequelize.fn('count', 1), 'count']
+                    ],
+                    where: {
+                        postType: {
+                            [Op.eq]: where.postType
+                        },
+                        postStatus: {
+                            [Op.in]: ['publish', 'private', 'draft', 'auto-draft', 'trash']
+                        }
+                    },
+                    group: ['postStatus']
+                }).then((data) => cb(null, data));
+            }
+        }, (err, result) => {
+            cb(err, result, {
+                where,
+                page,
+                titleArr,
+                paramArr
+            });
+        });
+    },
+    uploadFile(param, successCb, errorCb) {
+        models.sequelize.transaction(function (t) {
+            let tasks = {
+                options: commonService.getInitOptions,
+                checkGuid: function (cb) {
+                    const where = {
+                        postGuid: {
+                            [Op.eq]: param.fileData.postGuid
+                        }
+                    };
+                    Post.count({
+                        where
+                    }).then((count) => cb(null, count));
+                },
+                post: ['options', 'checkGuid', function (result, cb) {
+                    if (result.checkGuid > 0) {
+                        return cb('URL已存在');
+                    }
+                    param.fileData.postGuid = result.options.upload_path.optionValue + param.fileData.postGuid;
+                    Post.create(param.fileData, {
+                        transaction: t
+                    }).then((post) => cb(null, post));
+                }]
+            };
+            if (param.cloudPath) {
+                tasks.postMeta = (cb) => {
+                    Postmeta.create({
+                        metaId: util.getUuid(),
+                        postId: param.fileData.postId,
+                        metaKey: 'cloudPath',
+                        metaValue: param.cloudPath
+                    }, {
+                        transaction: t
+                    }).then((postMeta) => cb(null, postMeta));
+                };
+            }
+            // 需要返回promise实例
+            return new Promise((resolve, reject) => {
+                async.auto(tasks, function (err, result) {
+                    if (err) {
+                        reject(util.catchError({
+                            status: 500,
+                            code: ERR_CODES.UPLOAD_ERROR,
+                            message: 'Upload Error.',
+                            messageDetail: `File: ${param.fileData.postTitle} upload failed.`,
+                            data: param.fileData
                         }));
                     } else {
                         resolve(result);

@@ -1,7 +1,7 @@
 /*global require*/
 /**
  * node.js版本上传SDK
- * @version 2.0.0
+ * @version 3.0.0
  * @since 2.0.0
  * @author Fuyun
  */
@@ -9,6 +9,7 @@ const fs = require('fs');
 const request = require('request');
 const sqlite3 = require('sqlite3').verbose();
 const crypto = require('crypto');
+const credentials = require('../config/credentials');
 const {uploadLog: logger, formatOpLog} = require('../helper/logger');
 let uploader;
 let db;
@@ -22,7 +23,11 @@ const maxTrunkSize = 4;// MB
 let config = {
     nonce: Math.round(Math.random() * Math.pow(10, 16)).toString(),
     curTime: Math.round(Date.now() / 1000).toString(),
-    trunkSize: maxTrunkSize * 1024 * 1024
+    trunkSize: maxTrunkSize * 1024 * 1024,
+    upload: {
+        initUrl: credentials.upload.initUrl,
+        targetUrl: credentials.upload.targetUrl
+    }
 };
 
 /**
@@ -73,11 +78,11 @@ function getNosToken(filename) {
         Object: filename,
         Expires: 4102329600
     });
-    const str1 = new Buffer(str).toString('base64');
-    const shastr = crypto.createHmac('sha256', config.appSecretKey);
+    const str1 = Buffer.from(str).toString('base64');
+    const shastr = crypto.createHmac('sha256', config.upload.appSecretKey);
     shastr.update(str1);
     const str2 = shastr.digest('base64');
-    const str3 = 'UPLOAD ' + config.appAccessKey + ':' + str2 + ':' + str1;
+    const str3 = 'UPLOAD ' + config.upload.appAccessKey + ':' + str2 + ':' + str1;
 
     return {
         ret: {
@@ -94,7 +99,7 @@ function getNosToken(filename) {
  * @return {Undefined} null
  */
 function getInitData(filename) {
-    if (config.upload.bucket) {
+    if (config.upload && config.upload.bucket) {
         new Promise((resolve) => {
             resolve(getNosToken(filename));
         }).then((nosToken) => {
@@ -105,10 +110,10 @@ function getInitData(filename) {
             method: 'post',
             uri: config.upload.initUrl,
             headers: {
-                AppKey: config.appKey,
+                AppKey: config.upload.appKey,
                 Nonce: config.nonce,
                 CurTime: config.curTime,
-                CheckSum: getCheckSum(config.appSecret, config.nonce, config.curTime)
+                CheckSum: getCheckSum(config.upload.appSecret, config.nonce, config.curTime)
             },
             json: true,
             body: {
@@ -311,10 +316,13 @@ function removeFile(fileInfo) {
  */
 function saveContext(fileInfo) {
     const where = 'WHERE filepath = "' + fileInfo.filepath + '" and mtime = ' + +fileInfo.mtime + ' and filesize = ' + fileInfo.filesize;
-    const sql = 'UPDATE files SET nosContext = ?' + where;
+    const sql = 'UPDATE files SET nosContext = ? ' + where;
     logger.trace(formatOpLog({
         fn: 'saveContext',
-        data: `sql: ${sql}`
+        data: {
+            sql,
+            nosContext: fileInfo.nosContext
+        }
     }));
     db.run(sql, [fileInfo.nosContext], (err) => {
         if (err) {
@@ -329,7 +337,7 @@ function saveContext(fileInfo) {
  * 文件上传入口
  * @return {Undefined} null
  */
-function * uploads() {
+function* uploads() {
     try {
         let fileData = yield getFileData(filepath);
         fileData.filepath = fs.realpathSync(filepath);
@@ -436,20 +444,14 @@ function * uploads() {
  * @return {*} null
  */
 function init(conf) {
-    if (!conf.appKey || !conf.appSecret) {
-        logger.error(formatOpLog({
-            fn: 'init',
-            msg: '请传入appKey和appSecret。'
-        }));
-        return false;
-    }
     if (conf.trunkSize > config.trunkSize) {
         logger.warn(formatOpLog({
             fn: 'init',
             msg: '分片大小超过最大限制（4MB），将设为上限值。'
         }));
     }
-    Object.assign(config, conf);
+    config.upload = conf.upload = Object.assign(config.upload, conf.upload);
+    config = Object.assign(config, conf);
     config.trunkSize = Math.min(config.trunkSize, conf.trunkSize || config.trunkSize);
 }
 
@@ -459,10 +461,25 @@ function init(conf) {
  * @return {*} null
  */
 function upload(filePath) {
-    if (!config.appKey || !config.appSecret) {
+    if (!config.upload) {
         logger.error(formatOpLog({
             fn: 'upload',
-            msg: 'appKey或appSecret无效。'
+            msg: '缺少upload配置。'
+        }));
+        return false;
+    }
+    const isBucket = !!config.upload.bucket;
+    if (!isBucket && (!config.upload.appKey || !config.upload.appSecret)) {
+        logger.error(formatOpLog({
+            fn: 'upload',
+            msg: '缺少appKey或appSecret。'
+        }));
+        return false;
+    }
+    if (isBucket && (!config.upload.appAccessKey || !config.upload.appSecretKey)) {
+        logger.error(formatOpLog({
+            fn: 'upload',
+            msg: '缺少appAccessKey或appSecretKey。'
         }));
         return false;
     }
@@ -479,6 +496,8 @@ function upload(filePath) {
         createDb();
     });
 }
+
 module.exports = {
-    init, upload
+    init,
+    upload
 };
