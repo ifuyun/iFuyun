@@ -38,7 +38,6 @@ module.exports = function (app, router) {
     router.get('/comment/:commentId', comment.editComment);
     router.post('/comment/save', comment.saveComment);
     router.post('/comment/status', comment.updateStatus);
-    router.post('/comment/remove', comment.removeComments);
 
     router.get('/taxonomy', taxonomy.listTaxonomy);
     router.get('/taxonomy/page-:page', taxonomy.listTaxonomy);

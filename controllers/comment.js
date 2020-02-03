@@ -3,11 +3,8 @@
  * @author fuyun
  * @since 2017/05/19.
  */
-const async = require('async');
 const moment = require('moment');
 const xss = require('sanitizer');
-const models = require('../models/index');
-const commonService = require('../services/common');
 const appConfig = require('../config/core');
 const util = require('../helper/util');
 const formatter = require('../helper/formatter');
@@ -15,8 +12,6 @@ const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const commentService = require('../services/comment');
 const idReg = /^[0-9a-fA-F]{16}$/i;
 const pagesOut = 9;
-const {Comment, Vote} = models;
-const Op = models.Sequelize.Op;
 
 module.exports = {
     saveComment(req, res, next) {
@@ -95,18 +90,12 @@ module.exports = {
     },
     saveVote(req, res, next) {
         const param = req.body;
-        let user = {};
+        let user = req.session.user || {};
         let data = {};
-        let commentVote;
-
-        if (req.session.user) {
-            user = req.session.user;
-        }
 
         data.userIp = util.getRemoteIp(req);
         data.userAgent = req.headers['user-agent'];
         data.userId = user.userId || '';
-
         data.objectId = xss.sanitize(param.commentId.trim());
 
         if (!idReg.test(data.objectId)) {
@@ -133,42 +122,7 @@ module.exports = {
                 message: '参数错误'
             }, next);
         }
-        if (param.type === 'up') {
-            commentVote = models.sequelize.literal('comment_vote + 1');
-            data.voteCount = 1;
-        } else {
-            commentVote = models.sequelize.literal('comment_vote - 1');
-            data.voteCount = -1;
-        }
-        async.auto({// TODO: transaction
-            comment: (cb) => {
-                Comment.update({
-                    commentVote
-                }, {
-                    where: {
-                        commentId: {
-                            [Op.eq]: data.objectId
-                        }
-                    },
-                    silent: true
-                }).then((comment) => {
-                    cb(null, comment);
-                });
-            },
-            vote: (cb) => {
-                data.voteId = util.getUuid();
-                Vote.create(data).then((vote) => {
-                    cb(null, vote);
-                });
-            },
-            commentVote: ['comment', function (result, cb) {
-                Comment.findByPk(data.objectId, {
-                    attributes: ['commentId', 'commentVote']
-                }).then(function (comment) {
-                    cb(null, comment);
-                });
-            }]
-        }, function (err, result) {
+        commentService.saveVote({data}, (err, result) => {
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'saveVote',
@@ -191,66 +145,18 @@ module.exports = {
         });
     },
     listComments(req, res, next) {
-        let page = parseInt(req.params.page, 10) || 1;
-        let where = {};
-        let titleArr = [];
-        let paramArr = [];
-
-        if (req.query.status) {
-            where.commentStatus = {
-                [Op.eq]: req.query.status
-            };
-            paramArr.push(`status=${req.query.status}`);
-            titleArr.push(req.query.status, '状态');
-        } else {
-            where.commentStatus = {
-                [Op.in]: ['normal', 'pending', 'spam', 'trash', 'reject']
-            };
-        }
-        if (req.query.keyword) {
-            where.commentContent = {
-                [Op.like]: `%${req.query.keyword}%`
-            };
-            paramArr.push(`keyword=${req.query.keyword}`);
-            titleArr.push(req.query.keyword, '搜索');
-        }
-        async.auto({
-            options: commonService.getInitOptions,
-            commentsCount: (cb) => {
-                Comment.count({
-                    where
-                }).then((data) => cb(null, data));
-            },
-            comments: ['commentsCount', (result, cb) => {
-                page = (page > result.commentsCount / 10 ? Math.ceil(result.commentsCount / 10) : page) || 1;
-                Comment.findAll({
-                    where,
-                    attributes: ['commentId', 'postId', 'commentContent', 'commentStatus', 'commentAuthor', 'commentAuthorEmail', 'commentIp', 'commentCreated', 'commentModified', 'commentVote'],
-                    include: [{
-                        model: models.Post,
-                        attributes: ['postId', 'postGuid', 'postTitle']
-                    }],
-                    order: [['commentCreated', 'desc']],
-                    limit: 10,
-                    offset: 10 * (page - 1),
-                    subQuery: false
-                }).then((comments) => cb(null, comments));
-            }],
-            typeCount: (cb) => {
-                Comment.findAll({
-                    attributes: [
-                        'commentStatus',
-                        [models.sequelize.fn('count', 1), 'count']
-                    ],
-                    group: ['commentStatus']
-                }).then((data) => cb(null, data));
-            }
-        }, function (err, result) {
+        commentService.listComments({
+            page: req.params.page,
+            query: req.query
+        }, (err, result, data) => {
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'listComments',
-                    msg: err,
-                    where,
+                    msg: err.messageDetail || err.message,
+                    data: {
+                        where: data.where,
+                        page: data.page
+                    },
                     req
                 }));
                 return next(err);
@@ -270,16 +176,20 @@ module.exports = {
                 formatter,
                 moment
             };
-            resData.paginator = util.paginator(page, Math.ceil(result.commentsCount / 10), pagesOut);
+            resData.paginator = util.paginator(data.page, Math.ceil(result.commentsCount / 10), pagesOut);
             resData.paginator.linkUrl = '/admin/comment/page-';
-            resData.paginator.linkParam = paramArr.length > 0 ? '?' + paramArr.join('&') : '';
+            resData.paginator.linkParam = data.paramArr.length > 0 ? '?' + data.paramArr.join('&') : '';
             resData.paginator.pageLimit = 10;
             resData.paginator.total = result.commentsCount;
 
-            if (page > 1) {
-                resData.meta.title = util.getTitle(titleArr.concat(['第' + page + '页', '评论列表', '管理后台', result.options.site_name.optionValue]));
+            if (data.page > 1) {
+                resData.meta.title = util.getTitle(
+                    data.titleArr.concat(['第' + data.page + '页', '评论列表', '管理后台', result.options.site_name.optionValue])
+                );
             } else {
-                resData.meta.title = util.getTitle(titleArr.concat(['评论列表', '管理后台', result.options.site_name.optionValue]));
+                resData.meta.title = util.getTitle(
+                    data.titleArr.concat(['评论列表', '管理后台', result.options.site_name.optionValue])
+                );
             }
 
             result.typeCount.forEach((item) => {
@@ -307,18 +217,7 @@ module.exports = {
                 message: 'Comment Not Found'
             }, next);
         }
-        async.parallel({
-            options: commonService.getInitOptions,
-            comment(cb) {
-                Comment.findByPk(commentId, {
-                    attributes: ['commentId', 'postId', 'commentContent', 'commentStatus', 'commentAuthor', 'commentAuthorEmail', 'commentIp', 'commentCreated', 'commentModified'],
-                    include: [{
-                        model: models.Post,
-                        attributes: ['postId', 'postGuid', 'postTitle']
-                    }]
-                }).then((comment) => cb(null, comment));
-            }
-        }, function (err, result) {
+        commentService.editComment({commentId}, (err, result) => {
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'editComment',
@@ -382,13 +281,10 @@ module.exports = {
         };
         data.commentStatus = statusMap[param.action];
 
-        Comment.update(data, {
-            where: {
-                commentId: {
-                    [Op.eq]: commentId
-                }
-            }
-        }).then((comment) => {
+        commentService.updateStatus({
+            data,
+            commentId
+        }, () => {
             res.type('application/json');
             res.send({
                 status: 200,
@@ -399,8 +295,5 @@ module.exports = {
                 }
             });
         });
-    },
-    removeComments(req, res, next) {
-        res.send();
     }
 };

@@ -1,15 +1,10 @@
 const async = require('async');
-const moment = require('moment');
 const xss = require('sanitizer');
-const appConfig = require('../config/core');
 const models = require('../models/index');
-const formatter = require('../helper/formatter');
-const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const util = require('../helper/util');
 const commonService = require('../services/common');
 const ERR_CODES = require('../services/error-codes');
 const idReg = /^[0-9a-fA-F]{16}$/i;
-const pagesOut = 9;
 const {Comment, Vote} = models;
 const Op = models.Sequelize.Op;
 
@@ -29,7 +24,7 @@ module.exports = {
             userId: user.userId || ''
         };
     },
-    validateCaptcha({param, req, shouldCheckCaptcha}) {
+    validateCaptcha({param, shouldCheckCaptcha, req}) {
         if (shouldCheckCaptcha && (!param.captchaCode || !req.session.captcha)) {
             return util.catchError({
                 status: 200,
@@ -122,5 +117,131 @@ module.exports = {
                 commentId: param.commentId
             });
         });
+    },
+    saveVote(param, cb) {
+        let commentVote;
+        if (param.type === 'up') {
+            commentVote = models.sequelize.literal('comment_vote + 1');
+            param.data.voteCount = 1;
+        } else {
+            commentVote = models.sequelize.literal('comment_vote - 1');
+            param.data.voteCount = -1;
+        }
+        async.auto({// TODO: transaction
+            comment: (cb) => {
+                Comment.update({
+                    commentVote
+                }, {
+                    where: {
+                        commentId: {
+                            [Op.eq]: param.data.objectId
+                        }
+                    },
+                    silent: true
+                }).then((comment) => {
+                    cb(null, comment);
+                });
+            },
+            vote: (cb) => {
+                param.data.voteId = util.getUuid();
+                Vote.create(param.data).then((vote) => {
+                    cb(null, vote);
+                });
+            },
+            commentVote: ['comment', function (result, cb) {
+                Comment.findByPk(param.data.objectId, {
+                    attributes: ['commentId', 'commentVote']
+                }).then(function (comment) {
+                    cb(null, comment);
+                });
+            }]
+        }, cb);
+    },
+    listComments(param, cb) {
+        let page = parseInt(param.page, 10) || 1;
+        let where = {};
+        let titleArr = [];
+        let paramArr = [];
+
+        if (param.query.status) {
+            where.commentStatus = {
+                [Op.eq]: param.query.status
+            };
+            paramArr.push(`status=${param.query.status}`);
+            titleArr.push(param.query.status, '状态');
+        } else {
+            where.commentStatus = {
+                [Op.in]: ['normal', 'pending', 'spam', 'trash', 'reject']
+            };
+        }
+        if (param.query.keyword) {
+            where.commentContent = {
+                [Op.like]: `%${param.query.keyword}%`
+            };
+            paramArr.push(`keyword=${param.query.keyword}`);
+            titleArr.push(param.query.keyword, '搜索');
+        }
+        async.auto({
+            options: commonService.getInitOptions,
+            commentsCount: (cb) => {
+                Comment.count({
+                    where
+                }).then((data) => cb(null, data));
+            },
+            comments: ['commentsCount', (result, cb) => {
+                page = (page > result.commentsCount / 10 ? Math.ceil(result.commentsCount / 10) : page) || 1;
+                Comment.findAll({
+                    where,
+                    attributes: ['commentId', 'postId', 'commentContent', 'commentStatus', 'commentAuthor', 'commentAuthorEmail', 'commentIp', 'commentCreated', 'commentModified', 'commentVote'],
+                    include: [{
+                        model: models.Post,
+                        attributes: ['postId', 'postGuid', 'postTitle']
+                    }],
+                    order: [['commentCreated', 'desc']],
+                    limit: 10,
+                    offset: 10 * (page - 1),
+                    subQuery: false
+                }).then((comments) => cb(null, comments));
+            }],
+            typeCount: (cb) => {
+                Comment.findAll({
+                    attributes: [
+                        'commentStatus',
+                        [models.sequelize.fn('count', 1), 'count']
+                    ],
+                    group: ['commentStatus']
+                }).then((data) => cb(null, data));
+            }
+        }, (err, result) => {
+            cb(err, result, {
+                where,
+                page,
+                titleArr,
+                paramArr
+            });
+        });
+    },
+    editComment(param, cb) {
+        async.parallel({
+            options: commonService.getInitOptions,
+            comment(cb) {
+                Comment.findByPk(param.commentId, {
+                    attributes: ['commentId', 'postId', 'commentContent', 'commentStatus', 'commentAuthor', 'commentAuthorEmail', 'commentIp', 'commentCreated', 'commentModified'],
+                    include: [{
+                        model: models.Post,
+                        attributes: ['postId', 'postGuid', 'postTitle']
+                    }]
+                }).then((comment) => cb(null, comment));
+            }
+        }, cb);
+    },
+    updateStatus(param, cb) {
+        Comment.update(param.data, {
+            where: {
+                commentId: {
+                    [Op.eq]: param.commentId
+                }
+            }
+        }).then(cb);
     }
 };
