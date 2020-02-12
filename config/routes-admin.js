@@ -45,8 +45,8 @@ module.exports = function (app, router) {
     router.post('/taxonomy/save', taxonomy.saveTaxonomy);
     router.post('/taxonomy/remove', taxonomy.removeTaxonomy);
 
-    router.get('/link', link.listLink);
-    router.get('/link/page-:page', link.listLink);
+    router.get('/link', link.listLinks);
+    router.get('/link/page-:page', link.listLinks);
     router.get('/link/item', link.editLink);
     router.post('/link/save', link.saveLink);
     router.post('/link/remove', link.removeLink);

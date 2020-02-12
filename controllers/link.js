@@ -12,34 +12,21 @@ const appConfig = require('../config/core');
 const util = require('../helper/util');
 const formatter = require('../helper/formatter');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
+const constants = require('../services/constants');
+const linkService = require('../services/link');
 const idReg = /^[0-9a-fA-F]{16}$/i;
 const {Link, TermTaxonomy, TermRelationship} = models;
 const Op = models.Sequelize.Op;
 
 module.exports = {
-    listLink: function (req, res, next) {
-        let page = parseInt(req.params.page, 10) || 1;
-        async.auto({
-            options: commonService.getInitOptions,
-            count: (cb) => {
-                Link.count().then((data) => cb(null, data));
-            },
-            links: ['count', function (result, cb) {
-                page = (page > result.count / 10 ? Math.ceil(result.count / 10) : page) || 1;
-                Link.findAll({
-                    attributes: ['linkId', 'linkUrl', 'linkName', 'linkTarget', 'linkDescription', 'linkVisible', 'linkRating', 'linkRss', 'linkCreated'],
-                    order: [['linkRating', 'desc']],
-                    limit: 10,
-                    offset: 10 * (page - 1)
-                }).then((links) => cb(null, links));
-            }]
-        }, function (err, result) {
+    listLinks: function (req, res, next) {
+        linkService.listLinks({page: req.params.page}, (err, result, data) => {
             if (err) {
                 logger.error(formatOpLog({
-                    fn: 'listLink',
-                    msg: err,
+                    fn: 'listLinks',
+                    msg: err.messageDetail || err.message,
                     data: {
-                        page
+                        page: data.page
                     },
                     req
                 }));
@@ -55,7 +42,7 @@ module.exports = {
                 moment,
                 formatter
             };
-            resData.paginator = util.paginator(page, Math.ceil(result.count / 10), 9);
+            resData.paginator = util.paginator(data.page, Math.ceil(result.count / 10), constants.PAGINATION_SIZE);
             resData.paginator.linkUrl = '/admin/link/page-';
             resData.paginator.linkParam = '';
             resData.paginator.pageLimit = 10;
@@ -63,8 +50,8 @@ module.exports = {
 
             resData.links = result.links;
 
-            if (page > 1) {
-                resData.meta.title = util.getTitle(['第' + page + '页', '链接列表', '管理后台', result.options.site_name.optionValue]);
+            if (data.page > 1) {
+                resData.meta.title = util.getTitle(['第' + data.page + '页', '链接列表', '管理后台', result.options.site_name.optionValue]);
             } else {
                 resData.meta.title = util.getTitle(['链接列表', '管理后台', result.options.site_name.optionValue]);
             }

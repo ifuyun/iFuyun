@@ -6,12 +6,12 @@
 const moment = require('moment');
 const xss = require('sanitizer');
 const appConfig = require('../config/core');
-const util = require('../helper/util');
 const formatter = require('../helper/formatter');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
+const util = require('../helper/util');
 const commentService = require('../services/comment');
+const constants = require('../services/constants');
 const idReg = /^[0-9a-fA-F]{16}$/i;
-const pagesOut = 9;
 
 module.exports = {
     saveComment(req, res, next) {
@@ -176,7 +176,7 @@ module.exports = {
                 formatter,
                 moment
             };
-            resData.paginator = util.paginator(data.page, Math.ceil(result.commentsCount / 10), pagesOut);
+            resData.paginator = util.paginator(data.page, Math.ceil(result.commentsCount / 10), constants.PAGINATION_SIZE);
             resData.paginator.linkUrl = '/admin/comment/page-';
             resData.paginator.linkParam = data.paramArr.length > 0 ? '?' + data.paramArr.join('&') : '';
             resData.paginator.pageLimit = 10;
