@@ -863,7 +863,7 @@ module.exports = {
                         where
                     }).then((count) => cb(null, count));
                 },
-                post: ['checkGuid', function (result, cb) {
+                post: ['checkGuid', (result, cb) => {
                     if (result.checkGuid > 0) {
                         return cb('URL已存在');
                     }

@@ -844,6 +844,7 @@ module.exports = {
             fileData.postAuthor = req.session.user.userId;
             fileData.postStatus = 'publish';
             fileData.postType = 'attachment';
+            fileData.postOriginal = parseInt(fields.original, 10) ? 1 : 0;
             fileData.postId = util.getUuid();
             fileData.postGuid = '/' + curYear + '/' + curMonth + '/' + filename;
             fileData.postModifiedGmt = fileData.postDateGmt = fileData.postDate = nowTime;
@@ -859,6 +860,7 @@ module.exports = {
                         data: {
                             uploadPath,
                             filename: files.mediafile.name,
+                            original: fields.original === '1',
                             watermark: fields.watermark === '1',
                             uploadCloud: fields.uploadCloud === '1'
                         },

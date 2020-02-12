@@ -21,19 +21,15 @@ const uglify = require('gulp-uglify');
 const webpackConfig = require('./webpack.config');
 const compiler = webpack(webpackConfig);
 
-gulp.task('clean', function () {
-    return gulp.src([config.pathDist, config.pathTmp], {
-        read: false
-    }).pipe(clean());
-});
+gulp.task('clean', () => gulp.src([config.pathDist, path.join(config.pathTmp, '**')], {
+    read: false
+}).pipe(clean()));
 
-gulp.task('less', function (cb) {
-    return gulp.src(path.join(config.pathSrc, config.pathLess, '**/*.less'))
-        .pipe(less())
-        .pipe(gulp.dest(path.join(config.pathSrc, config.pathCss)));
-});
+gulp.task('less', () => gulp.src(path.join(config.pathSrc, config.pathLess, '**/*.less'))
+    .pipe(less())
+    .pipe(gulp.dest(path.join(config.pathSrc, config.pathCss))));
 
-const checkJsFile = function (file) {
+const checkJsFile = (file) => {
     if (/[\-\.]min.js$/.test(file.path)) {
         return false;
     }
@@ -43,18 +39,16 @@ const checkJsFile = function (file) {
  * 针对较大的第三方库（>100KB），通过webpack打包性能较差；
  * 但gulp方式下，useref与webpack的结合不是很优雅（css、js的搜索源及路径问题）
  */
-gulp.task('useref-html', function () {
-    return gulp.src(path.join(config.pathViews, config.pathViewsSrc, '**/*.{html,htm,ejs}'))
-        .pipe(useref({
-            searchPath: config.pathSrc
-        }))
-        .pipe(gulpif(checkJsFile, uglify()))
-        .pipe(gulpif('*.css', cleanCss()))
-        .pipe(gulp.dest(config.pathTmp1));
-});
+gulp.task('useref-html', () => gulp.src(path.join(config.pathViews, config.pathViewsSrc, '**/*.{html,htm,ejs}'))
+    .pipe(useref({
+        searchPath: config.pathSrc
+    }))
+    .pipe(gulpif(checkJsFile, uglify()))
+    .pipe(gulpif('*.css', cleanCss()))
+    .pipe(gulp.dest(config.pathTmp1)));
 gulp.task('useref', gulp.series('useref-html', (cb) => cb()));
 
-gulp.task('imagemin', function () {
+gulp.task('imagemin', () => {
     if (argv.imgMin && argv.imgMin === 'on') {
         return gulp.src(path.join(config.pathSrc, '**/*.{jpg,jpeg,gif,png}'))
             .pipe(imagemin({
@@ -71,15 +65,13 @@ gulp.task('imagemin', function () {
         .pipe(gulp.dest(config.pathTmp1));
 });
 
-gulp.task('rev-image', function () {
-    return gulp.src([path.join(config.pathTmp1, '**/*.{jpg,jpeg,gif,png}')])
-        .pipe(rev())
-        .pipe(gulp.dest(config.pathTmp2))
-        .pipe(rev.manifest('rev-manifest-img.json'))
-        .pipe(gulp.dest(config.pathTmp2));
-});
+gulp.task('rev-image', () => gulp.src([path.join(config.pathTmp1, '**/*.{jpg,jpeg,gif,png}')])
+    .pipe(rev())
+    .pipe(gulp.dest(config.pathTmp2))
+    .pipe(rev.manifest('rev-manifest-img.json'))
+    .pipe(gulp.dest(config.pathTmp2)));
 
-gulp.task('revreplace-css', function () {
+gulp.task('revreplace-css', () => {
     const manifest = gulp.src([
         path.join(config.pathTmp2, 'rev-manifest-img.json')
     ]);
@@ -93,23 +85,19 @@ gulp.task('revreplace-css', function () {
         .pipe(gulp.dest(config.pathTmp1));
 });
 
-gulp.task('rev-css', function () {
-    return gulp.src([path.join(config.pathTmp1, '**/*.css')])
-        .pipe(rev())
-        .pipe(gulp.dest(config.pathTmp2))
-        .pipe(rev.manifest('rev-manifest-css.json'))
-        .pipe(gulp.dest(config.pathTmp2));
-});
+gulp.task('rev-css', () => gulp.src([path.join(config.pathTmp1, '**/*.css')])
+    .pipe(rev())
+    .pipe(gulp.dest(config.pathTmp2))
+    .pipe(rev.manifest('rev-manifest-css.json'))
+    .pipe(gulp.dest(config.pathTmp2)));
 
-gulp.task('rev-js', function () {
-    return gulp.src([path.join(config.pathTmp1, '**/*.js')])
-        .pipe(rev())
-        .pipe(gulp.dest(config.pathTmp2))
-        .pipe(rev.manifest('rev-manifest-js.json'))
-        .pipe(gulp.dest(config.pathTmp2));
-});
+gulp.task('rev-js', () => gulp.src([path.join(config.pathTmp1, '**/*.js')])
+    .pipe(rev())
+    .pipe(gulp.dest(config.pathTmp2))
+    .pipe(rev.manifest('rev-manifest-js.json'))
+    .pipe(gulp.dest(config.pathTmp2)));
 
-gulp.task('revreplace-ejs', function () {
+gulp.task('revreplace-ejs', () => {
     const manifest = gulp.src([
         path.join(config.pathTmp2, 'rev-manifest-img.json'),
         path.join(config.pathTmp2, 'rev-manifest-css.json'),
@@ -125,8 +113,8 @@ gulp.task('revreplace-ejs', function () {
         .pipe(gulp.dest(path.join(config.pathTmp2, config.pathViews)));
 });
 
-gulp.task('webpack', function (cb) {
-    compiler.run(function (err, stats) {
+gulp.task('webpack', (cb) => {
+    compiler.run((err, stats) => {
         if (err) {
             throw new gutil.PluginError('webpack: ', err);
         }
@@ -137,42 +125,38 @@ gulp.task('webpack', function (cb) {
     });
 });
 
-gulp.task('copy-build-css', () => gulp.src(path.join(config.pathTmp2, config.pathCss, '**')).pipe(gulp.dest(path.join(config.pathDist, config.pathCss))));
-gulp.task('copy-build-js', () => gulp.src(path.join(config.pathTmp2, config.pathJs, '**')).pipe(gulp.dest(path.join(config.pathDist, config.pathJs))));
-gulp.task('copy-build-image', () => gulp.src(path.join(config.pathTmp2, config.pathImg, '**')).pipe(gulp.dest(path.join(config.pathDist, config.pathImg))));
-gulp.task('copy-build-fonts', () => gulp.src(path.join(config.pathSrc, config.pathFonts, '**')).pipe(gulp.dest(path.join(config.pathDist, config.pathFonts))));
-gulp.task('copy-build-views', () => gulp.src(path.join(config.pathTmp2, config.pathViews, '**')).pipe(gulp.dest(path.join(config.pathViews, config.pathViewsDist))));
-gulp.task('copy-js-plugin', () => gulp.src(path.join(config.pathSrc, config.pathJsPluginSrc, '**')).pipe(gulp.dest(path.join(config.pathDist, config.pathJsPluginDist))));
+gulp.task('copy-build-css', () => gulp.src(path.join(config.pathTmp2, config.pathCss, '**'))
+    .pipe(gulp.dest(path.join(config.pathDist, config.pathCss))));
+gulp.task('copy-build-js', () => gulp.src(path.join(config.pathTmp2, config.pathJs, '**'))
+    .pipe(gulp.dest(path.join(config.pathDist, config.pathJs))));
+gulp.task('copy-build-image', () => gulp.src(path.join(config.pathTmp2, config.pathImg, '**'))
+    .pipe(gulp.dest(path.join(config.pathDist, config.pathImg))));
+gulp.task('copy-build-fonts', () => gulp.src(path.join(config.pathSrc, config.pathFonts, '**'))
+    .pipe(gulp.dest(path.join(config.pathDist, config.pathFonts))));
+gulp.task('copy-build-views', () => gulp.src(path.join(config.pathTmp2, config.pathViews, '**'))
+    .pipe(gulp.dest(path.join(config.pathViews, config.pathViewsDist))));
+gulp.task('copy-js-plugin', () => gulp.src(path.join(config.pathSrc, config.pathJsPluginSrc, '**'))
+    .pipe(gulp.dest(path.join(config.pathDist, config.pathJsPluginDist))));
 
 gulp.task('copy-build', gulp.series('copy-build-css', 'copy-build-js', 'copy-build-image', 'copy-build-fonts', 'copy-js-plugin', 'copy-build-views', (cb) => cb()));
 
 gulp.task('build', gulp.series('clean', 'less', 'useref', 'imagemin', 'rev-image', 'revreplace-css', 'rev-css', 'rev-js', 'revreplace-ejs', 'webpack', 'copy-build', (cb) => cb()));
 
-gulp.task('clean-dev', function () {
-    return gulp.src([config.pathDev, config.pathTmp], {
-        read: false
-    }).pipe(clean());
-});
+gulp.task('clean-dev', () => gulp.src([config.pathDev, path.join(config.pathTmp, '**')], {
+    read: false
+}).pipe(clean()));
 
-gulp.task('copy-dev-style', function () {
-    return gulp.src(path.join(config.pathSrc, config.pathStyle, '**'))
-        .pipe(gulp.dest(path.join(config.pathDev, config.pathStyle)));
-});
+gulp.task('copy-dev-style', () => gulp.src(path.join(config.pathSrc, config.pathStyle, '**'))
+    .pipe(gulp.dest(path.join(config.pathDev, config.pathStyle))));
 
-gulp.task('copy-dev-js-plugin', function () {
-    return gulp.src(path.join(config.pathSrc, config.pathJsPluginSrc, '**'))
-        .pipe(gulp.dest(path.join(config.pathDev, config.pathJsPluginDist)));
-});
+gulp.task('copy-dev-js-plugin', () => gulp.src(path.join(config.pathSrc, config.pathJsPluginSrc, '**'))
+    .pipe(gulp.dest(path.join(config.pathDev, config.pathJsPluginDist))));
 
-gulp.task('copy-dev-js-admin', function () {
-    return gulp.src(path.join(config.pathSrc, config.pathJsDevAdmin, '**'))
-        .pipe(gulp.dest(path.join(config.pathDev, config.pathJsDevAdmin)));
-});
+gulp.task('copy-dev-js-admin', () => gulp.src(path.join(config.pathSrc, config.pathJsDevAdmin, '**'))
+    .pipe(gulp.dest(path.join(config.pathDev, config.pathJsDevAdmin))));
 
-gulp.task('copy-dev-js-web', function () {
-    return gulp.src(path.join(config.pathSrc, config.pathJsDevWeb, '**'))
-        .pipe(gulp.dest(path.join(config.pathDev, config.pathJsDevWeb)));
-});
+gulp.task('copy-dev-js-web', () => gulp.src(path.join(config.pathSrc, config.pathJsDevWeb, '**'))
+    .pipe(gulp.dest(path.join(config.pathDev, config.pathJsDevWeb))));
 
 gulp.task('dev-build', gulp.series('clean-dev', 'less', 'copy-dev-style', 'webpack', 'copy-dev-js-plugin', 'copy-dev-js-admin', 'copy-dev-js-web', (cb) => cb()));
 
@@ -181,7 +165,7 @@ gulp.task('dev-watch', (cb) => {
 
     compiler.watch({
         aggregateTimeout: 300
-    }, function (err, stats) {
+    }, (err, stats) => {
         if (err) {
             throw new gutil.PluginError('webpack: ', err);
         }
@@ -189,7 +173,7 @@ gulp.task('dev-watch', (cb) => {
             colors: true
         }));
     });
-    gulp.watch(['./public/src/js/plugins/**', './public/src/js/admin', './public/src/js/web'], function (event) {
+    gulp.watch(['./public/src/js/plugins/**', './public/src/js/admin', './public/src/js/web'], (event) => {
         gulp.series('copy-dev-js-plugin', 'copy-dev-js-admin', 'copy-dev-js-web');
     });
     gulp.watch(['./public/src/style/**/*.less'], function (event) {
