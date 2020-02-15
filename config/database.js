@@ -3,7 +3,7 @@
  * 数据库配置
  * @module cfg_database
  * @author Fuyun
- * @version 2.0.0
+ * @version 3.0.0
  * @since 1.0.0
  */
 const credentials = require('./credentials');
@@ -21,7 +21,7 @@ module.exports = {
             min: 0,
             idle: 30000
         },
-        logging: function (sql) {
+        logging: (sql) => {
             logger.trace(sql);
         }
     },
@@ -37,7 +37,7 @@ module.exports = {
             min: 0,
             idle: 30000
         },
-        logging: function (sql) {
+        logging: (sql) => {
             logger.trace(sql);
         }
     }

@@ -23,7 +23,7 @@ const idReg = /^[0-9a-fA-F]{16}$/i;
 const pagesOut = 9;
 
 module.exports = {
-    listPosts: function (req, res, next) {
+    listPosts(req, res, next) {
         let page = parseInt(req.params.page, 10) || 1;
         postService.listPosts({
             isAdmin: util.isAdminUser(req.session.user),
@@ -77,7 +77,7 @@ module.exports = {
             res.render(`${appConfig.pathViews}/front/pages/postList`, resData);
         });
     },
-    showPost: function (req, res, next) {
+    showPost(req, res, next) {
         const isAdmin = util.isAdminUser(req.session.user);
         const postId = req.params.postId;
         if (!postId || !/^[0-9a-fA-F]{16}$/i.test(postId)) {// 不能抛出错误，有可能是/page
@@ -146,7 +146,7 @@ module.exports = {
             res.render(`${appConfig.pathViews}/front/pages/post`, resData);
         });
     },
-    showPage: function (req, res, next) {
+    showPage(req, res, next) {
         const isAdmin = util.isAdminUser(req.session.user);
         const reqUrl = url.parse(req.url);
         const reqPath = reqUrl.pathname;
@@ -193,7 +193,7 @@ module.exports = {
             res.render(`${appConfig.pathViews}/front/pages/page`, resData);
         });
     },
-    listByCategory: function (req, res, next) {
+    listByCategory(req, res, next) {
         const isAdmin = util.isAdminUser(req.session.user);
         let page = parseInt(req.params.page, 10) || 1;
         const category = req.params.category;
@@ -245,7 +245,7 @@ module.exports = {
             res.render(`${appConfig.pathViews}/front/pages/postList`, resData);
         });
     },
-    listByTag: function (req, res, next) {
+    listByTag(req, res, next) {
         const isAdmin = util.isAdminUser(req.session.user);
         let page = parseInt(req.params.page, 10) || 1;
         const tag = req.params.tag;
@@ -307,7 +307,7 @@ module.exports = {
             res.render(`${appConfig.pathViews}/front/pages/postList`, resData);
         });
     },
-    listByDate: function (req, res, next) {
+    listByDate(req, res, next) {
         const isAdmin = util.isAdminUser(req.session.user);
         let page = parseInt(req.params.page, 10) || 1;
         let year = parseInt(req.params.year, 10) || new Date().getFullYear();
@@ -382,7 +382,7 @@ module.exports = {
             res.render(`${appConfig.pathViews}/front/pages/postList`, resData);
         });
     },
-    listArchiveDate: function (req, res, next) {
+    listArchiveDate(req, res, next) {
         const isAdmin = util.isAdminUser(req.session.user);
 
         postService.listArchiveDate({
@@ -426,7 +426,7 @@ module.exports = {
             res.render(`${appConfig.pathViews}/front/pages/archiveList`, resData);
         });
     },
-    listEdit: function (req, res, next) {
+    listEdit(req, res, next) {
         postService.listEdit({
             page: req.params.page,
             query: req.query
@@ -507,7 +507,7 @@ module.exports = {
             res.render(`${appConfig.pathViews}/admin/pages/postList`, resData);
         });
     },
-    editPost: function (req, res, next) {
+    editPost(req, res, next) {
         const postId = req.query.postId;
         const action = (req.query.action || 'create').toLowerCase();
         if (!['create', 'edit'].includes(action)) {
@@ -593,7 +593,7 @@ module.exports = {
             res.render(`${appConfig.pathViews}/admin/pages/postForm`, resData);
         });
     },
-    savePost: function (req, res, next) {
+    savePost(req, res, next) {
         const param = req.body;
         const type = req.query.type !== 'page' ? 'post' : 'page';
         const nowTime = new Date();
@@ -614,7 +614,7 @@ module.exports = {
             postDate: param.postDate ? new Date(+moment(param.postDate)) : nowTime,
             postType: type
         };
-        const toArray = function (param) {
+        const toArray = (param) => {
             if (param === '') {
                 param = [];
             } else if (typeof param === 'string') {
@@ -683,7 +683,7 @@ module.exports = {
             });
         });
     },
-    listMedia: function (req, res, next) {
+    listMedia(req, res, next) {
         postService.listMedia({
             page: req.params.page,
             query: req.query
@@ -763,7 +763,7 @@ module.exports = {
             res.render(`${appConfig.pathViews}/admin/pages/mediaList`, resData);
         });
     },
-    createMedia: function (req, res, next) {
+    createMedia(req, res, next) {
         commonService.getInitOptions((err, options) => {
             if (err) {
                 logger.error(formatOpLog({
@@ -785,7 +785,7 @@ module.exports = {
             res.render(`${appConfig.pathViews}/admin/pages/mediaForm`, resData);
         });
     },
-    uploadFile: function (req, res, next) {
+    uploadFile(req, res, next) {
         const form = new formidable.IncomingForm();
         const now = moment();
         const curYear = now.format('YYYY');
@@ -806,7 +806,7 @@ module.exports = {
         form.keepExtensions = true;
         form.maxFieldsSize = sizeLimit * 1024 * 1024;
 
-        form.on('error', function (err) {
+        form.on('error', (err) => {
             logger.error(formatOpLog({
                 fn: 'uploadFile',
                 msg: err,
@@ -816,7 +816,7 @@ module.exports = {
                 req
             }));
         });
-        form.parse(req, function (err, fields, files) {
+        form.parse(req, (err, fields, files) => {
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'uploadFile',

@@ -16,7 +16,7 @@ const comment = require('../controllers/comment');
 const taxonomy = require('../controllers/taxonomy');
 const link = require('../controllers/link');
 
-module.exports = function (app, router) {
+module.exports = (app, router) => {
     router.use(admin.checkAuth);
     router.get('/', admin.welcome);
     // router.get('/profile', user.profile);

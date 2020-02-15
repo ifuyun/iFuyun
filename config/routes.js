@@ -7,7 +7,7 @@
  * @param {Object} express express对象
  * @return {void}
  * @author Fuyun
- * @version 2.0.0
+ * @version 3.0.0
  * @since 1.0.0
  */
 const path = require('path');
@@ -19,7 +19,7 @@ const captcha = require('../controllers/captcha');
 const routesAdmin = require('./routes-admin');
 const config = require('./core');
 
-module.exports = function (app, express) {
+module.exports = (app, express) => {
     const router = express.Router();
     const admin = routesAdmin(app, router);
     // 静态文件(若先路由后静态文件，将导致session丢失)

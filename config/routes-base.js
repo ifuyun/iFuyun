@@ -4,7 +4,7 @@
  * @module c_base
  * @static
  * @author Fuyun
- * @version 2.0.0
+ * @version 3.0.0
  * @since 1.0.0
  */
 const domain = require('domain');
@@ -29,7 +29,7 @@ module.exports = {
      * @version 1.1.0
      * @since 1.0.0
      */
-    init: function (req, res, next) {
+    init(req, res, next) {
         const rememberMe = req.cookies.rememberMe;
         const curUser = req.session.user;
         res.locals.isLogin = curUser ? !!curUser : false;
@@ -54,7 +54,7 @@ module.exports = {
      * @version 2.0.0
      * @since 1.0.0
      */
-    last: function (req, res, next) {
+    last(req, res, next) {
         return util.catchError({
             status: codeNotFound,
             code: codeNotFound,
@@ -74,7 +74,7 @@ module.exports = {
      * @version 2.0.0
      * @since 1.0.0
      */
-    error: function (err, req, res, next) {// TODO: IE can not custom page
+    error(err, req, res, next) {// TODO: IE can not custom page
         if (err.stack && err.output !== false) {// 对未捕获的错误记录堆栈信息
             logger.error(formatOpLog({
                 msg: err.stack,
@@ -109,14 +109,14 @@ module.exports = {
      * @version 2.0.0
      * @since 2.0.0
      */
-    globalError: function (server) {
-        return function (req, res, next) {
+    globalError(server) {
+        return (req, res, next) => {
             const d = domain.create();
             const killTimeout = 5000;
 
             d.add(req);
             d.add(res);
-            d.on('error', function (err) {
+            d.on('error', (err) => {
                 logger.error(formatOpLog({
                     msg: `Domain Error Caught: \n${err.stack}`,
                     req

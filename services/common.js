@@ -21,7 +21,7 @@ module.exports = {
                     [Op.eq]: 1
                 }
             }
-        }).then(function (data) {
+        }).then((data) => {
             let tmpObj = {};
             data.forEach((item) => {
                 tmpObj[item.optionName] = {
@@ -60,7 +60,7 @@ module.exports = {
                 };
             }
         }
-        VPostDateArchive.findAll(queryOpt).then(function (data) {
+        VPostDateArchive.findAll(queryOpt).then((data) => {
             cb(null, data);
         });
     },
@@ -81,7 +81,7 @@ module.exports = {
             ],
             limit: 10,
             offset: 0
-        }).then(function (data) {
+        }).then((data) => {
             cb(null, data);
         });
     },
@@ -101,7 +101,7 @@ module.exports = {
             ],
             limit: 10,
             offset: 0
-        }).then(function (data) {
+        }).then((data) => {
             cb(null, data);
         });
     },
@@ -121,7 +121,7 @@ module.exports = {
             ],
             limit: 10,
             offset: 0
-        }).then(function (data) {
+        }).then((data) => {
             cb(null, data);
         });
     },
@@ -148,7 +148,7 @@ module.exports = {
             order: [
                 ['linkRating', 'desc']
             ]
-        }).then(function (data) {
+        }).then((data) => {
             cb(null, data);
         });
     },
@@ -284,14 +284,14 @@ module.exports = {
         const catTree = this.createCategoryTree(catData);
         let subCatIds = [];
         // 循环获取子分类ID：父->子
-        const iterateCatTree = function (curNode) {
+        const iterateCatTree = (curNode) => {
             subCatIds.push(curNode.taxonomyId);
             Object.keys(curNode.children).forEach((v) => {
                 iterateCatTree(curNode.children[v]);
             });
         };
         // 获取匹配slug的根分类
-        const getRootCatNodeBySlug = function (slug, curNode) {
+        const getRootCatNodeBySlug = (slug, curNode) => {
             let rootNode;
             const nodeKeys = Object.keys(curNode.children);
             for (let i = 0; i < nodeKeys.length; i += 1) {
