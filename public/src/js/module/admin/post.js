@@ -3,13 +3,13 @@ require('../../lib/jquery.textposition');
 require('../../lib/jquery.datepicker');
 
 const service = {
-    initEvent: () => {
+    initEvent: function () {
         $('#post-date').datepicker({
             maxDate: new Date(),
             showOn: 'focus click',
             listenInput: true
         });
-        $('#form-post').on('submit', () => {
+        $('#form-post').on('submit', function () {
             const $that = $(this);
             tinymce.triggerSave();
             $.ajax({
@@ -17,7 +17,7 @@ const service = {
                 url: $that.attr('action'),
                 data: $that.serialize(),
                 dataType: 'json',
-                success: (d) => {
+                success: function (d) {
                     if (d.code === 0) {
                         location.href = d.data.url;
                     } else {
@@ -25,26 +25,26 @@ const service = {
                         alert(d.message);
                     }
                 },
-                error: (xhr) => {
+                error: function (xhr) {
                     const result = xhr.responseJSON || JSON.parse(xhr.responseText);
                     $('#csrfToken').val(result.token);
                     alert(result.message);
                 }
             });
             return false;
-        }).on('click', '.postStatus', () => {
+        }).on('click', '.postStatus', function () {
             if ($('#post-status-password').is(':checked')) {
                 $('#post-password-wrap').show();
             } else {
                 $('#post-password-wrap').hide();
             }
         });
-        $('#form-search,#form-filter').on('submit', () => {
+        $('#form-search,#form-filter').on('submit', function () {
             location.href = $(this).attr('action') + '&' + $(this).serialize();
             return false;
         });
     },
-    initMce: () => {
+    initMce: function () {
         const bar1 = [
             'fontsizeselect fontselect formatselect',
             'bold italic underline strikethrough',
@@ -105,7 +105,7 @@ const service = {
     }
 };
 
-$(() => {
+$(function () {
     service.initMce();
     service.initEvent();
     $('#post-title').focus();
