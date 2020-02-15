@@ -1,6 +1,6 @@
 /*global $*/
 let http = {
-    ajax(config) {
+    ajax: function (config) {
         let defer = $.Deferred();
 
         config = $.extend(true, {
@@ -19,7 +19,7 @@ let http = {
         });
         return defer.promise();
     },
-    get(url, data) {
+    get: function (url, data) {
         let defer = $.Deferred();
 
         $.get(url, data).done(function () {
@@ -29,7 +29,7 @@ let http = {
         });
         return defer.promise();
     },
-    post(config) {
+    post: function (config) {
         let defer = $.Deferred();
 
         config.data = JSON.stringify(config.data || {});
@@ -45,7 +45,7 @@ let http = {
         });
         return defer.promise();
     },
-    postEncoded(url, data) {
+    postEncoded: function (url, data) {
         let defer = $.Deferred();
 
         $.ajax({

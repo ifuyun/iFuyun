@@ -23,20 +23,20 @@ function showCaptcha() {
 }
 
 service = {
-    initEvent: () => {
-        $('body').on('submit', '.j-form-comment', () => {
+    initEvent: function () {
+        $('body').on('submit', '.j-form-comment', function () {
             const $that = $(this);
             $.ajax({
                 type: 'post',
                 url: $that.attr('action'),
                 data: $that.serialize(),
                 dataType: 'json',
-                success: (d) => {
+                success: function (d) {
                     if (d.code === 0) {
                         if (d.data.commentFlag === 'verify') {
                             popup.alert({
                                 content: '评论成功，请等待回复……',
-                                callback: () => {
+                                callback: function () {
                                     location.href = d.data.url;
                                 }
                             });
@@ -51,12 +51,12 @@ service = {
                         popup.alert(d.message);
                     }
                 },
-                error: () => {
+                error: function () {
                     return false;
                 }
             });
             return false;
-        }).on('click', '.j-vote-up', () => {
+        }).on('click', '.j-vote-up', function () {
             const that = this;
             $.ajax({
                 type: 'post',
@@ -67,7 +67,7 @@ service = {
                     _csrf: $('.csrfToken').val()
                 },
                 dataType: 'json',
-                success: (d) => {
+                success: function (d) {
                     $('.csrfToken').val(d.token);
                     if (d.code === 0) {
                         $(that).find('.j-vote-count').html(d.data.commentVote);
@@ -75,20 +75,20 @@ service = {
                         popup.alert(d.message);
                     }
                 },
-                error: () => {
+                error: function () {
                     return false;
                 }
             });
             return false;
-        }).on('mouseover', '#btnShare', () => {
+        }).on('mouseover', '#btnShare', function () {
             $qrcodeShare.show();
-        }).on('mouseout', '#btnShare', () => {
+        }).on('mouseout', '#btnShare', function () {
             $qrcodeShare.hide();
-        }).on('mouseover', '#btnReward', () => {
+        }).on('mouseover', '#btnReward', function () {
             $qrcodeReward.show();
-        }).on('mouseout', '#btnReward', () => {
+        }).on('mouseout', '#btnReward', function () {
             $qrcodeReward.hide();
-        }).on('click', '#postContent img', () => {
+        }).on('click', '#postContent img', function () {
             const $that = $(this);
             const $cloneImg = $that.clone(false);
             popup.custom({
@@ -102,7 +102,7 @@ service = {
                 ok: false,
                 cancel: true,
                 cancelValue: '关闭',
-                onclose: () => {
+                onclose: function () {
                     $cloneImg.remove();
                 }
             });
@@ -110,7 +110,7 @@ service = {
     }
 };
 
-$(() => {
+$(function () {
     service.initEvent();
     hljs.initHighlightingOnLoad();
 

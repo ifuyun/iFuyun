@@ -20,7 +20,7 @@
  * creditcard – Makes the element require a credit card number.
  * equalTo – Requires the element to be the same as another one
  */
-$.validator.addMethod('datetime', (v, e, p) => {
+$.validator.addMethod('datetime', function (v, e, p) {
     var reg;
 
     switch (p) {
@@ -43,10 +43,10 @@ $.validator.addMethod('datetime', (v, e, p) => {
     return this.optional(e) || reg.test(v);
 }, $.validator.format('Please enter a value with a valid date/time type.'));
 
-$.validator.addMethod('username',
-    (v, e, p) => this.optional(e) || /^[0-9a-zA-Z\u4E00-\uFA29_\-]*$/.test(v),
-    $.validator.format('名称仅包含汉字、数字、字母、下划线、减号'));
+$.validator.addMethod('username', function (v, e, p) {
+    return this.optional(e) || /^[0-9a-zA-Z\u4E00-\uFA29_\-]*$/.test(v);
+}, $.validator.format('名称仅包含汉字、数字、字母、下划线、减号'));
 
-$.validator.addMethod('mobile',
-    (v, e, p) => this.optional(e) || /^1[3578]\d{9}$/i.test(v),
-    $.validator.format('手机号码为11位数字'));
+$.validator.addMethod('mobile', function (v, e, p) {
+    return this.optional(e) || /^1[3578]\d{9}$/i.test(v);
+}, $.validator.format('手机号码为11位数字'));

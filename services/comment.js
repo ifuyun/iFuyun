@@ -66,7 +66,7 @@ module.exports = {
             if (rules[i].rule) {
                 return util.catchError({
                     status: 200,
-                    code: 400,
+                    code: ERR_CODES.BAD_REQUEST,
                     message: rules[i].message,
                     messageDetail: rules[i].messageDetail || rules[i].message
                 });

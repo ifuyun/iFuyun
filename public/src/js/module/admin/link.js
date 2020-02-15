@@ -1,7 +1,7 @@
 /*global $*/
-$(() => {
+$(function () {
     // 链接列表
-    $('.btn-delete').on('click', () => {
+    $('.btn-delete').on('click', function () {
         const $that = $(this);
         $.ajax({
             type: 'post',
@@ -13,7 +13,7 @@ $(() => {
                 'X-CSRF-Token': $('#csrfToken').val()
             },
             dataType: 'json',
-            success: (d) => {
+            success: function (d) {
                 if (d.code === 0) {
                     // location.href = d.data.url;
                     window.location.reload();
@@ -21,21 +21,23 @@ $(() => {
                     alert(d.message);
                 }
             },
-            error: () => false
+            error: function () {
+                return false;
+            }
         });
         return false;
     });
 
     // 链接表单
     $('#cat-name').focus();
-    $('#form-link').on('submit', () => {
+    $('#form-link').on('submit', function () {
         const $that = $(this);
         $.ajax({
             type: 'post',
             url: $that.attr('action'),
             data: $that.serialize(),
             dataType: 'json',
-            success: (d) => {
+            success: function (d) {
                 if (d.code === 0) {
                     location.href = d.data.url;
                 } else {
@@ -43,7 +45,9 @@ $(() => {
                     alert(d.message);
                 }
             },
-            error: () => false
+            error: function () {
+                return false;
+            }
         });
         return false;
     });
