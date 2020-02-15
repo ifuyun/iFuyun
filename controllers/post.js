@@ -1,7 +1,8 @@
 /**
  * 文章
  * @author fuyun
- * @since 2017/04/12
+ * @version 3.0.0
+ * @since 1.0.0(2017/04/12)
  */
 const fs = require('fs');
 const path = require('path');

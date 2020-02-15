@@ -1,8 +1,8 @@
 /**
  * 用户管理
  * @author fuyun
- * @since 1.0.0
  * @version 3.0.0
+ * @since 1.0.0(2017/05/23)
  */
 const xss = require('sanitizer');
 const appConfig = require('../config/core');

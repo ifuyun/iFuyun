@@ -1,3 +1,9 @@
+/**
+ * post services
+ * @author fuyun
+ * @version 3.0.0
+ * @since 3.0.0
+ */
 const async = require('async');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const formatter = require('../helper/formatter');

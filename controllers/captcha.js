@@ -1,7 +1,8 @@
 /**
  * 验证码
  * @author fuyun
- * @since 2017/11/16
+ * @version 2.0.0
+ * @since 2.0.0(2017/11/16)
  */
 const gm = require('gm').subClass({imageMagick: true});
 const util = require('../helper/util');

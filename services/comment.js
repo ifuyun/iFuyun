@@ -1,3 +1,9 @@
+/**
+ * comment services
+ * @author fuyun
+ * @version 3.0.0
+ * @since 3.0.0
+ */
 const async = require('async');
 const xss = require('sanitizer');
 const models = require('../models/index');

@@ -1,9 +1,9 @@
 /*global require*/
 /**
  * node.js版本上传SDK
+ * @author Fuyun
  * @version 3.0.0
  * @since 2.0.0
- * @author Fuyun
  */
 const fs = require('fs');
 const request = require('request');

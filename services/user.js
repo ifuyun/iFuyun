@@ -1,8 +1,8 @@
 /**
  * user services
  * @author fuyun
- * @since 3.0.0
  * @version 3.0.0
+ * @since 3.0.0
  */
 const models = require('../models/index');
 const {User, Usermeta} = models;

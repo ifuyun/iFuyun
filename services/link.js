@@ -1,6 +1,7 @@
 /**
- * 链接相关service
+ * link services
  * @author fuyun
+ * @version 3.0.0
  * @since 3.0.0
  */
 const async = require('async');

@@ -1,7 +1,8 @@
 /**
  * 评论
  * @author fuyun
- * @since 2017/05/19.
+ * @version 3.0.0
+ * @since 1.1.0(2017/05/19)
  */
 const moment = require('moment');
 const xss = require('sanitizer');

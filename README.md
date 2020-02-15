@@ -34,12 +34,12 @@ npm run server
 ## 构建
 ### 前端构建+监听
 ```js
-npm run dev
+npm run dev-watch
 ```
 
 ### 前端构建（不进行监听，仅用于开发模式的打包）
 ```js
-npm run develop
+npm run dev-build
 ```
 
 ### 生产构建

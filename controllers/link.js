@@ -1,7 +1,8 @@
 /**
  * 链接
  * @author fuyun
- * @since 1.0.0
+ * @version 3.0.0
+ * @since 1.1.0(2017/06/10)
  */
 const xss = require('sanitizer');
 const moment = require('moment');

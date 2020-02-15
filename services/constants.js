@@ -1,3 +1,9 @@
+/**
+ * constants
+ * @author fuyun
+ * @version 3.0.0
+ * @since 3.0.0
+ */
 const constants = {
     POST_SUMMARY_LENGTH: 140,
     POST_CATEGORY_LIMIT: 5,

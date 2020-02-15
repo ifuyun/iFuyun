@@ -1,7 +1,8 @@
 /**
- * 通用方法
+ * common services
  * @author fuyun
- * @since 2017/04/13
+ * @version 3.0.0
+ * @since 1.0.0(2017/04/13)
  */
 const path = require('path');
 const gm = require('gm').subClass({imageMagick: true});
@@ -12,7 +13,7 @@ const {Link, Post, TermTaxonomy, Comment, Option, VPostDateArchive} = models;
 const Op = models.Sequelize.Op;
 
 module.exports = {
-    getInitOptions: function (cb) {
+    getInitOptions(cb) {
         Option.findAll({
             attributes: ['blogId', 'optionName', 'optionValue', 'autoload'],
             where: {
@@ -31,7 +32,7 @@ module.exports = {
             cb(null, tmpObj);
         });
     },
-    archiveDates: function (cb, param) {
+    archiveDates(cb, param) {
         // 模型定义之外（别名）的属性需要通过.get()方式访问
         // 查询count时根据link_date、visible分组，其他情况只查询唯一的link_date
         const postType = param.postType || 'post';
@@ -63,7 +64,7 @@ module.exports = {
             cb(null, data);
         });
     },
-    recentPosts: function (cb) {
+    recentPosts(cb) {
         Post.findAll({
             attributes: ['postId', 'postTitle', 'postGuid'],
             where: {
@@ -84,7 +85,7 @@ module.exports = {
             cb(null, data);
         });
     },
-    randPosts: function (cb) {
+    randPosts(cb) {
         Post.findAll({
             attributes: ['postId', 'postTitle', 'postGuid'],
             where: {
@@ -104,7 +105,7 @@ module.exports = {
             cb(null, data);
         });
     },
-    hotPosts: function (cb) {
+    hotPosts(cb) {
         Post.findAll({
             attributes: ['postId', 'postTitle', 'postGuid'],
             where: {
@@ -124,7 +125,7 @@ module.exports = {
             cb(null, data);
         });
     },
-    getLinks: function (slug, visible, cb) {
+    getLinks(slug, visible, cb) {
         Link.findAll({
             attributes: ['linkDescription', 'linkUrl', 'linkTarget', 'linkName'],
             include: [{
@@ -151,14 +152,14 @@ module.exports = {
             cb(null, data);
         });
     },
-    getUserById: function (userId, cb) {
+    getUserById(userId, cb) {
         models.User.findByPk(userId, {
             attributes: ['userId', 'userLogin', 'userNicename', 'userEmail', 'userUrl', 'userDisplayName']
         }).then((result) => {
             cb(null, result);
         });
     },
-    createCategoryTree: function (categoryData) {
+    createCategoryTree(categoryData) {
         let catTree = {};
         let treeNodes = [];
 
@@ -196,7 +197,7 @@ module.exports = {
         iterateCategory(categoryData, '', catTree, 1);
         return catTree;
     },
-    getCategoryArray: function (catTree, outArr) {
+    getCategoryArray(catTree, outArr) {
         Object.keys(catTree).forEach((key) => {
             const curNode = catTree[key];
             outArr.push({
@@ -211,7 +212,7 @@ module.exports = {
         });
         return outArr;
     },
-    getCategoryTree: function (cb, param = {}) {
+    getCategoryTree(cb, param = {}) {
         let where = {
             taxonomy: {
                 [Op.eq]: param.type || 'post'
@@ -246,7 +247,7 @@ module.exports = {
             }
         });
     },
-    getCategoryPath: function ({catData, slug, taxonomyId}) {
+    getCategoryPath({catData, slug, taxonomyId}) {
         let catPath = [];
         if (slug) {
             // 根据slug获取ID
@@ -279,7 +280,7 @@ module.exports = {
         }
         return catPath;
     },
-    getSubCategoriesBySlug: function ({catData, slug, filterCategory}, cb) {
+    getSubCategoriesBySlug({catData, slug, filterCategory}, cb) {
         const catTree = this.createCategoryTree(catData);
         let subCatIds = [];
         // 循环获取子分类ID：父->子
@@ -343,7 +344,7 @@ module.exports = {
             cb('分类不存在');
         }
     },
-    mainNavs: function (cb) {
+    mainNavs(cb) {
         TermTaxonomy.findAll({
             attributes: ['name', 'description', 'slug', 'count', 'taxonomyId'],
             where: {
@@ -361,7 +362,7 @@ module.exports = {
             cb(null, data);
         });
     },
-    getCommentCountByPosts: function (posts, cb) {
+    getCommentCountByPosts(posts, cb) {
         let postIds = [];
         posts.forEach((v) => {
             postIds.push(v.post.postId);
@@ -385,7 +386,7 @@ module.exports = {
             cb(null, result);
         });
     },
-    getCommentsByPostId: function (postId, cb) {
+    getCommentsByPostId(postId, cb) {
         Comment.findAll({
             attributes: ['commentId', 'commentContent', 'commentAuthor', 'commentVote', 'commentCreated'],
             where: {
@@ -403,7 +404,7 @@ module.exports = {
             cb(null, data);
         });
     },
-    getPrevPost: function (postId, cb) {
+    getPrevPost(postId, cb) {
         Post.findOne({
             attributes: ['postId', 'postGuid', 'postTitle'],
             where: {
@@ -424,7 +425,7 @@ module.exports = {
             cb(null, data);
         });
     },
-    getNextPost: function (postId, cb) {
+    getNextPost(postId, cb) {
         Post.findOne({
             attributes: ['postId', 'postGuid', 'postTitle'],
             where: {

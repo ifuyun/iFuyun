@@ -1,8 +1,8 @@
 /**
  * 分类管理
  * @author fuyun
+ * @version 3.0.0(2017/06/08)
  * @since 1.0.0
- * @version 3.0.0
  */
 /** @namespace req.session */
 const xss = require('sanitizer');

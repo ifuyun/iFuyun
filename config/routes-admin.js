@@ -6,8 +6,8 @@
  * @param {Object} router 路由对象
  * @return {Object} router 路由对象
  * @author Fuyun
- * @since 1.1.0
  * @version 3.0.0
+ * @since 1.1.0
  */
 const post = require('../controllers/post');
 // const user = require('../controllers/user');
