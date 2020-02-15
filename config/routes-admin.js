@@ -1,10 +1,4 @@
 /*global console*/
-const post = require('../controllers/post');
-// const user = require('../controllers/user');
-const admin = require('../controllers/admin');
-const comment = require('../controllers/comment');
-const taxonomy = require('../controllers/taxonomy');
-const link = require('../controllers/link');
 /**
  * 后台路由
  * @module cfg_routes_admin
@@ -12,9 +6,16 @@ const link = require('../controllers/link');
  * @param {Object} router 路由对象
  * @return {Object} router 路由对象
  * @author Fuyun
- * @version 2.0.0
  * @since 1.1.0
+ * @version 3.0.0
  */
+const post = require('../controllers/post');
+// const user = require('../controllers/user');
+const admin = require('../controllers/admin');
+const comment = require('../controllers/comment');
+const taxonomy = require('../controllers/taxonomy');
+const link = require('../controllers/link');
+
 module.exports = function (app, router) {
     router.use(admin.checkAuth);
     router.get('/', admin.welcome);
@@ -39,11 +40,11 @@ module.exports = function (app, router) {
     router.post('/comment/save', comment.saveComment);
     router.post('/comment/status', comment.updateStatus);
 
-    router.get('/taxonomy', taxonomy.listTaxonomy);
-    router.get('/taxonomy/page-:page', taxonomy.listTaxonomy);
+    router.get('/taxonomy', taxonomy.listTaxonomies);
+    router.get('/taxonomy/page-:page', taxonomy.listTaxonomies);
     router.get('/taxonomy/item', taxonomy.editTaxonomy);
     router.post('/taxonomy/save', taxonomy.saveTaxonomy);
-    router.post('/taxonomy/remove', taxonomy.removeTaxonomy);
+    router.post('/taxonomy/remove', taxonomy.removeTaxonomies);
 
     router.get('/link', link.listLinks);
     router.get('/link/page-:page', link.listLinks);

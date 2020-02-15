@@ -1,35 +1,37 @@
 /**
- *
+ * 分类管理
  * @author fuyun
- * @since 2017/06/08
+ * @since 1.0.0
+ * @version 3.0.0
  */
 /** @namespace req.session */
 const async = require('async');
 const xss = require('sanitizer');
+const ERR_CODES = require('../services/error-codes');
+const constants = require('../services/constants');
 const models = require('../models/index');
 const commonService = require('../services/common');
+const taxonomyService = require('../services/taxonomy');
 const appConfig = require('../config/core');
 const util = require('../helper/util');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const idReg = /^[0-9a-fA-F]{16}$/i;
-const pagesOut = 9;
 const {TermTaxonomy, TermRelationship} = models;
 const Op = models.Sequelize.Op;
 
 module.exports = {
-    listTaxonomy: function (req, res, next) {
-        let page = parseInt(req.params.page, 10) || 1;
+    listTaxonomies(req, res, next) {
         const type = (req.query.type || 'post').toLowerCase();
 
         if (!['post', 'tag', 'link'].includes(type)) {
             logger.error(formatOpLog({
-                fn: 'listTaxonomy',
+                fn: 'listTaxonomies',
                 msg: `Taxonomy type: ${type} is not allowed.`,
                 req
             }));
             return util.catchError({
                 status: 200,
-                code: 400,
+                code: ERR_CODES.FORBIDDEN,
                 message: '不支持该操作'
             }, next);
         }
@@ -47,55 +49,19 @@ module.exports = {
                 title: '链接分类'
             }
         }[type];
-        let titleArr = [];
-        let paramArr = [`type=${type}`];
-        let where = {
-            taxonomy: {
-                [Op.eq]: type
-            }
-        };
-        if (req.query.keyword) {
-            where[Op.or] = [{
-                name: {
-                    [Op.like]: `%${req.query.keyword}%`
-                }
-            }, {
-                slug: {
-                    [Op.like]: `%${req.query.keyword}%`
-                }
-            }, {
-                description: {
-                    [Op.like]: `%${req.query.keyword}%`
-                }
-            }];
-            paramArr.push(`keyword=${req.query.keyword}`);
-            titleArr.push(req.query.keyword, '搜索');
-        }
-        async.auto({
-            options: commonService.getInitOptions,
-            count: (cb) => {
-                TermTaxonomy.count({
-                    where
-                }).then((data) => cb(null, data));
-            },
-            categories: ['count', function (result, cb) {
-                page = (page > result.count / 10 ? Math.ceil(result.count / 10) : page) || 1;
-                TermTaxonomy.findAll({
-                    where,
-                    attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'termOrder', 'count', 'created', 'modified'],
-                    order: [['termOrder', 'asc'], ['created', 'desc']],
-                    limit: 10,
-                    offset: 10 * (page - 1)
-                }).then((categories) => cb(null, categories));
-            }]
-        }, function (err, result) {
+
+        taxonomyService.listTaxonomies({
+            page: req.params.page,
+            type,
+            query: req.query
+        }, (err, result, data) => {
             if (err) {
                 logger.error(formatOpLog({
-                    fn: 'listTaxonomy',
+                    fn: 'listTaxonomies',
                     msg: err,
                     data: {
-                        where,
-                        page
+                        where: data.where,
+                        page: data.page
                     },
                     req
                 }));
@@ -113,21 +79,25 @@ module.exports = {
                 util,
                 type
             };
-            resData.paginator = util.paginator(page, Math.ceil(result.count / 10), pagesOut);
+            resData.paginator = util.paginator(data.page, Math.ceil(result.count / 10), constants.PAGINATION_SIZE);
             resData.paginator.linkUrl = '/admin/taxonomy/page-';
-            resData.paginator.linkParam = paramArr.length > 0 ? '?' + paramArr.join('&') : '';
+            resData.paginator.linkParam = data.paramArr.length > 0 ? '?' + data.paramArr.join('&') : '';
             resData.paginator.pageLimit = 10;
             resData.paginator.total = result.count;
 
-            if (page > 1) {
-                resData.meta.title = util.getTitle(titleArr.concat(['第' + page + '页', menu.title + '列表', '管理后台', result.options.site_name.optionValue]));
+            if (data.page > 1) {
+                resData.meta.title = util.getTitle(
+                    data.titleArr.concat(['第' + data.page + '页', menu.title + '列表', '管理后台', result.options.site_name.optionValue])
+                );
             } else {
-                resData.meta.title = util.getTitle(titleArr.concat([menu.title + '列表', '管理后台', result.options.site_name.optionValue]));
+                resData.meta.title = util.getTitle(
+                    data.titleArr.concat([menu.title + '列表', '管理后台', result.options.site_name.optionValue])
+                );
             }
             res.render(`${appConfig.pathViews}/admin/pages/taxonomyList`, resData);
         });
     },
-    editTaxonomy: function (req, res, next) {
+    editTaxonomy(req, res, next) {
         const action = (req.query.action || 'create').toLowerCase();
         const type = (req.query.type || 'post').toLowerCase();
 
@@ -139,7 +109,7 @@ module.exports = {
             }));
             return util.catchError({
                 status: 200,
-                code: 400,
+                code: ERR_CODES.FORBIDDEN,
                 message: '不支持该操作'
             }, next);
         }
@@ -151,7 +121,7 @@ module.exports = {
             }));
             return util.catchError({
                 status: 200,
-                code: 400,
+                code: ERR_CODES.FORBIDDEN,
                 message: '不支持该操作'
             }, next);
         }
@@ -167,30 +137,19 @@ module.exports = {
             }));
             return util.catchError({
                 status: 404,
-                code: 404,
+                code: ERR_CODES.PAGE_NOT_FOUND,
                 message: 'Taxonomy Not Found'
             }, next);
         }
-        let tasks = {
-            options: commonService.getInitOptions
-        };
-        if (action === 'edit') {
-            tasks.taxonomy = (cb) => {
-                TermTaxonomy.findByPk(taxonomyId, {
-                    attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'visible', 'created']
-                }).then((taxonomy) => cb(null, taxonomy));
-            };
-        }
-        if (type !== 'tag') {
-            tasks.categories = (cb) => {
-                commonService.getCategoryTree(cb, {type});
-            };
-        }
-        async.auto(tasks, function (err, result) {
+        taxonomyService.editTaxonomy({
+            action,
+            taxonomyId,
+            type
+        }, (err, result) => {
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'editTaxonomy',
-                    msg: err,
+                    msg: err.messageDetail || err.message,
                     data: {
                         action,
                         type,
@@ -231,7 +190,7 @@ module.exports = {
             res.render(`${appConfig.pathViews}/admin/pages/taxonomyForm`, resData);
         });
     },
-    saveTaxonomy: function (req, res, next) {
+    saveTaxonomy(req, res, next) {
         const type = (req.query.type || 'post').toLowerCase();
         if (!['post', 'tag', 'link'].includes(type)) {
             logger.error(formatOpLog({
@@ -241,12 +200,12 @@ module.exports = {
             }));
             return util.catchError({
                 status: 200,
-                code: 400,
+                code: ERR_CODES.FORBIDDEN,
                 message: '不支持该操作'
             }, next);
         }
         const param = req.body;
-        let taxonomyId = xss.sanitize(param.taxonomyId) || '';
+        let taxonomyId = util.trim(xss.sanitize(param.taxonomyId));
         let data = {};
         data.name = util.trim(xss.sanitize(param.name));
         data.slug = util.trim(xss.sanitize(param.slug));
@@ -276,53 +235,19 @@ module.exports = {
             if (rules[i].rule) {
                 return util.catchError({
                     status: 200,
-                    code: 400,
+                    code: ERR_CODES.FORM_INPUT_ERROR,
                     message: rules[i].message
                 }, next);
             }
         }
-        async.auto({
-            checkSlug: function (cb) {
-                let where = {
-                    slug: {
-                        [Op.eq]: data.slug
-                    }
-                };
-                if (taxonomyId) {
-                    where.taxonomyId = {
-                        [Op.ne]: taxonomyId
-                    };
-                }
-                TermTaxonomy.count({
-                    where
-                }).then((count) => cb(null, count));
-            },
-            taxonomy: ['checkSlug', function (result, cb) {
-                if (result.checkSlug > 0) {
-                    return cb('slug已存在');
-                }
-                const nowTime = new Date();
-                if (taxonomyId) {
-                    data.modified = nowTime;
-                    TermTaxonomy.update(data, {
-                        where: {
-                            taxonomyId: {
-                                [Op.eq]: taxonomyId
-                            }
-                        }
-                    }).then((taxonomy) => cb(null, taxonomy));
-                } else {
-                    data.taxonomyId = util.getUuid();
-                    data.created = nowTime;
-                    data.modified = nowTime;
-                    TermTaxonomy.create(data).then((taxonomy) => cb(null, taxonomy));
-                }
-            }]
-        }, function (err) {
+        taxonomyService.saveTaxonomy({
+            taxonomyId,
+            data
+        }, (err) => {
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'saveTaxonomy',
-                    msg: err,
+                    msg: err.messageDetail || err.message,
                     data,
                     req
                 }));
@@ -341,19 +266,19 @@ module.exports = {
             });
         });
     },
-    removeTaxonomy: function (req, res, next) {
+    removeTaxonomies(req, res, next) {
         let taxonomyIds = req.body.taxonomyIds;
         const type = (req.query.type || 'post').toLowerCase();
 
         if (!['post', 'tag', 'link'].includes(type)) {
             logger.error(formatOpLog({
-                fn: 'removeTaxonomy',
+                fn: 'removeTaxonomies',
                 msg: `Taxonomy type: ${type} is not allowed.`,
                 req
             }));
             return util.catchError({
                 status: 200,
-                code: 400,
+                code: ERR_CODES.FORBIDDEN,
                 message: '不支持该操作'
             }, next);
         }
@@ -361,7 +286,7 @@ module.exports = {
             taxonomyIds = xss.sanitize(taxonomyIds).split(',');
         } else if (!util.isArray(taxonomyIds)) {
             logger.error(formatOpLog({
-                fn: 'removeTaxonomy',
+                fn: 'removeTaxonomies',
                 msg: 'invalid parameters',
                 data: {
                     taxonomyIds
@@ -370,7 +295,7 @@ module.exports = {
             }));
             return util.catchError({
                 status: 200,
-                code: 400,
+                code: ERR_CODES.BAD_REQUEST,
                 message: '不支持的参数格式'
             }, next);
         }
@@ -378,85 +303,21 @@ module.exports = {
             if (!idReg.test(taxonomyIds[i])) {
                 return util.catchError({
                     status: 200,
-                    code: 400,
+                    code: ERR_CODES.BAD_REQUEST,
                     message: '参数错误'
                 }, next);
             }
         }
-        models.sequelize.transaction(function (t) {
-            let tasks = {
-                taxonomy: function (cb) {
-                    TermTaxonomy.destroy({
-                        where: {
-                            taxonomyId: {
-                                [Op.in]: taxonomyIds
-                            }
-                        },
-                        transaction: t
-                    }).then((taxonomy) => cb(null, taxonomy));
-                },
-                posts: function (cb) {
-                    if (type === 'tag') {
-                        TermRelationship.destroy({
-                            where: {
-                                termTaxonomyId: {
-                                    [Op.in]: taxonomyIds
-                                }
-                            },
-                            transaction: t
-                        }).then((termRel) => cb(null, termRel));
-                    } else {
-                        TermRelationship.update({
-                            termTaxonomyId: type === 'post' ? '0000000000000000' : '0000000000000001'
-                        }, {
-                            where: {
-                                termTaxonomyId: {
-                                    [Op.in]: taxonomyIds
-                                }
-                            },
-                            transaction: t
-                        }).then((termRel) => cb(null, termRel)).catch((e) => cb(e));
-                    }
-                }
-            };
-            if (type !== 'tag') {// 标签没有父子关系
-                tasks.children = function (cb) {
-                    TermTaxonomy.update({
-                        parent: type === 'post' ? '0000000000000000' : '0000000000000001'
-                    }, {
-                        where: {
-                            parent: {
-                                [Op.in]: taxonomyIds
-                            }
-                        },
-                        transaction: t
-                    }).then((taxonomy) => cb(null, taxonomy));
-                };
-            }
-            // 需要返回promise实例
-            return new Promise((resolve, reject) => {
-                async.auto(tasks, function (err, result) {
-                    if (err) {
-                        logger.error(formatOpLog({
-                            fn: 'removeTaxonomy',
-                            msg: err,
-                            data: {
-                                taxonomyIds
-                            },
-                            req
-                        }));
-                        reject(new Error(err));
-                    } else {
-                        logger.info(formatOpLog({
-                            fn: 'removeTaxonomy',
-                            msg: `Taxonomies: ${taxonomyIds} is removed.`,
-                            req
-                        }));
-                        resolve(result);
-                    }
-                });
-            });
-        }).then(() => {
+        taxonomyService.removeTaxonomies({
+            type,
+            taxonomyIds
+        }, () => {
+            logger.info(formatOpLog({
+                fn: 'removeTaxonomies',
+                msg: `Taxonomies: ${taxonomyIds} are removed.`,
+                req
+            }));
+
             res.type('application/json');
             res.send({
                 code: 0,
@@ -466,6 +327,12 @@ module.exports = {
                 }
             });
         }, (err) => {
+            logger.error(formatOpLog({
+                fn: 'removeTaxonomies',
+                msg: err.messageDetail || err.message,
+                data: err.data,
+                req
+            }));
             next({
                 code: 500,
                 message: err.message || err

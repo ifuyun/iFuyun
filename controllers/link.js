@@ -226,7 +226,7 @@ module.exports = {
         }, () => {
             logger.info(formatOpLog({
                 fn: 'removeLinks',
-                msg: `Link(s): ${linkIds} is removed.`,
+                msg: `Links: ${linkIds} are removed.`,
                 req
             }));
 
