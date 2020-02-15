@@ -1,6 +1,6 @@
 /*global $*/
 const service = {
-    upload: function (file) {
+    upload: (file) => {
         const $form = $('#form-media');
         const fd = new FormData();
         fd.append('mediafile', file);
@@ -18,9 +18,9 @@ const service = {
                 'x-csrf-token': $('#csrfToken').val()
             },
             dataType: 'json',
-            xhr: function () {
+            xhr: () => {
                 const xhr = $.ajaxSettings.xhr();
-                xhr.upload.addEventListener('progress', function (e) {
+                xhr.upload.addEventListener('progress', (e) => {
                     // let progress = 0;
                     // if (e.lengthComputable) {
                     //     progress = (e.loaded / file.size * 100).toFixed(2);
@@ -29,33 +29,33 @@ const service = {
                 }, false);
                 return xhr;
             },
-            success: function (d) {
+            success: (d) => {
                 if (d.status === 200 && d.code === 0) {
                     alert('upload success');
                 } else {
                     alert('upload error');
                 }
             },
-            error: function () {
+            error: () => {
                 return false;
             }
         });
         return false;
     },
-    initEvent: function () {
+    initEvent: () => {
         let file;
         $('#mediafile').on('change', (e) => {
             file = e.target.files[0];
             $('#filename').html(file.name);
         });
-        $('#form-media').on('submit', function () {
+        $('#form-media').on('submit', () => {
             service.upload(file);
             return false;
         });
     }
 };
 
-$(function () {
+$(() => {
     service.initEvent();
 });
 

@@ -6,7 +6,7 @@
  * @main app
  * @requires logger, server
  * @author Fuyun
- * @version 2.0.0
+ * @version 3.0.0
  * @since 2.0.0
  */
 const cluster = require('cluster');
@@ -19,7 +19,7 @@ if (cluster.isMaster) {
         cluster.fork();
     }
 
-    cluster.on('exit', function (worker, code, signal) {
+    cluster.on('exit', (worker, code, signal) => {
         threadLog.warn(formatOpLog({
             msg: `Worker ${worker.process.pid} exit.`,
             data: {
@@ -27,7 +27,7 @@ if (cluster.isMaster) {
                 signal
             }
         }));
-        process.nextTick(function () {
+        process.nextTick(() => {
             threadLog.info(formatOpLog({
                 msg: 'New process is forking...'
             }));

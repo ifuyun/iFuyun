@@ -4,11 +4,11 @@ require('../vendor/jquery.poshytip.min');
 require('./validate/customRules');
 
 module.exports = {
-    initValidate: function () {
+    initValidate: () => {
         const that = this;
 
         $.validator.setDefaults({
-            errorPlacement: function ($label, $inputEle) {
+            errorPlacement: ($label, $inputEle) => {
                 $inputEle.poshytip('disable');
                 $inputEle.poshytip('destroy');
                 if (!$label.is(':empty')) {
@@ -31,19 +31,19 @@ module.exports = {
                     $inputEle.poshytip('destroy');
                 }
             },
-            success: function ($label, inputEle) {
+            success: ($label, inputEle) => {
                 // $(inputEle).poshytip('disable').poshytip('destroy');
             }
         });
         // IE浏览器中下拉框的冒泡提示会导致无法选择选项，改进为点击时提示
-        $('body').on('click', 'select.error', function () {
+        $('body').on('click', 'select.error', () => {
             $(this).poshytip('show');
         });
     },
-    hideTip: function ($input) {
+    hideTip: ($input) => {
         $input.poshytip('disable').poshytip('destroy');
     },
-    showTip: function ($input, msg) {
+    showTip: ($input, msg) => {
         this.hideTip($input);
         $input.poshytip({
             content: msg,
@@ -62,7 +62,7 @@ module.exports = {
      * @param {Object} cfgObj 配置对象，包括：待监听元素选择符、是否小数、是否负数
      * @return {*} none
      */
-    filterNonNumInput: function (cfgObj) {
+    filterNonNumInput: (cfgObj) => {
         cfgObj = $.extend({
             srcEleStr: '',
             isFraction: false,
@@ -70,7 +70,7 @@ module.exports = {
             allowPlus: false
         }, cfgObj);
 
-        $('body').on('keydown', cfgObj.srcEleStr, function (e) {
+        $('body').on('keydown', cfgObj.srcEleStr, (e) => {
             const curKey = e.which;
             // Enter; <--,Tab,Delete; <-,->; Home,End
             const ctrlKeys = [13, 8, 9, 46, 37, 39, 36, 35];

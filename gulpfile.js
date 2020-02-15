@@ -176,7 +176,7 @@ gulp.task('dev-watch', (cb) => {
     gulp.watch(['./public/src/js/plugins/**', './public/src/js/admin', './public/src/js/web'], (event) => {
         gulp.series('copy-dev-js-plugin', 'copy-dev-js-admin', 'copy-dev-js-web');
     });
-    gulp.watch(['./public/src/style/**/*.less'], function (event) {
+    gulp.watch(['./public/src/style/**/*.less'], (event) => {
         gulp.series('less', 'copy-dev-style');
     });
     cb();

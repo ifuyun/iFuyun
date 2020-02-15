@@ -7,7 +7,7 @@
  * @static
  * @requires log4js
  * @author Fuyun
- * @version 2.0.0
+ * @version 3.0.0
  * @since 2.0.0
  */
 const log4js = require('log4js');
@@ -52,7 +52,7 @@ Object.keys(loggers).forEach((key) => {
 
 // ['ALL', 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL', 'OFF']
 module.exports = Object.assign({}, loggers, {
-    updateContext: function () {
+    updateContext: () => {
         const today = moment().format('YYYY-MM-DD');
         if (logDay !== today) {
             logDay = today;
@@ -75,7 +75,7 @@ module.exports = Object.assign({}, loggers, {
      * @version 3.0.0
      * @since 2.0.0
      */
-    formatOpLog: function (logObj) {
+    formatOpLog: (logObj) => {
         let logStr = '';
         let logData = [];
         if (logObj.fn) {

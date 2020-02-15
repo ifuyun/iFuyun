@@ -3,7 +3,7 @@
 require('../vendor/dialog-plus');
 
 module.exports = {
-    alert: function (data) {
+    alert: (data) => {
         window.dialog({
             fixed: false,
             cssUri: '',
@@ -15,11 +15,11 @@ module.exports = {
             showIcon: false,
             ok: true,
             okValue: '确定',
-            onclose: data.callback || function () {
-            }
+            onclose: data.callback || (() => {
+            })
         }).showModal();
     },
-    confirm: function (data) {
+    confirm: (data) => {
         var defaults = {
             fixed: false,
             cssUri: '',
@@ -29,16 +29,16 @@ module.exports = {
             showHeader: true,
             showFooter: true,
             showIcon: false,
-            ok: function () {
+            ok: () => {
             },
             okValue: '确定',
-            cancel: function () {
+            cancel: () => {
             },
             cancelValue: '取消'
         };
         window.dialog($.extend(true, {}, defaults, data)).showModal();
     },
-    custom: function (data) {
+    custom: (data) => {
         var defaults = {
             fixed: false,
             cssUri: '',
@@ -47,15 +47,15 @@ module.exports = {
             width: 360,
             showHeader: true,
             showIcon: false,
-            onshow: function () {
+            onshow: () => {
             },
-            ok: function () {
+            ok: () => {
             },
             okValue: '确定',
-            cancel: function () {
+            cancel: () => {
             },
             cancelValue: '取消',
-            onclose: function () {
+            onclose: () => {
             }
         };
         window.dialog($.extend(true, {}, defaults, data)).showModal();

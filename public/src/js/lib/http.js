@@ -1,6 +1,6 @@
 /*global $*/
 let http = {
-    ajax: function (config) {
+    ajax(config) {
         let defer = $.Deferred();
 
         config = $.extend(true, {
@@ -12,24 +12,24 @@ let http = {
         if (!config.timeout) {
             config.timeout = 10 * 60 * 1000;
         }
-        $.ajax(config).done(function () {
+        $.ajax(config).done(() => {
             defer.resolve(...arguments);
-        }).fail(function () {
+        }).fail(() => {
             defer.reject(...arguments);
         });
         return defer.promise();
     },
-    get: function (url, data) {
+    get(url, data) {
         let defer = $.Deferred();
 
-        $.get(url, data).done(function () {
+        $.get(url, data).done(() => {
             defer.resolve(...arguments);
-        }).fail(function () {
+        }).fail(() => {
             defer.reject(...arguments);
         });
         return defer.promise();
     },
-    post: function (config) {
+    post(config) {
         let defer = $.Deferred();
 
         config.data = JSON.stringify(config.data || {});
@@ -38,21 +38,21 @@ let http = {
             cache: false,
             contentType: 'application/json'
         }, config);
-        $.ajax(config).done(function () {
+        $.ajax(config).done(() => {
             defer.resolve(...arguments);
-        }).fail(function () {
+        }).fail(() => {
             defer.reject(...arguments);
         });
         return defer.promise();
     },
-    postEncoded: function (url, data) {
+    postEncoded(url, data) {
         let defer = $.Deferred();
 
         $.ajax({
             type: 'post',
             url: url,
             contentType: 'application/x-www-form-urlencoded',
-            transformRequest: function (params) {
+            transformRequest: (params) => {
                 // let str = [];
                 // let p;
                 // for (p in obj) {// 可以直接调$.param
@@ -62,9 +62,9 @@ let http = {
                 return $.param(params);
             },
             data: data
-        }).done(function () {
+        }).done(() => {
             defer.resolve(...arguments);
-        }).fail(function () {
+        }).fail(() => {
             defer.reject(...arguments);
         });
         return defer.promise();

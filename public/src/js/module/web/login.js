@@ -12,20 +12,20 @@ const $userLogin = $('#userLogin');
 const $userPass = $('#userPass');
 
 service = {
-    shake: function ($target, offset, interval, callback) {
+    shake: ($target, offset, interval, callback) => {
         $target.css({
             'margin-left': offset.shift() + 'px'
         });
         if (offset.length > 0) {
-            setTimeout(function () {
+            setTimeout(() => {
                 service.shake($target, offset, interval, callback);
             }, interval);
         } else {
             callback();
         }
     },
-    doShake: function ($input, msg, offset) {
-        service.shake($('.g-view-login'), offset, 10, function () {
+    doShake: ($input, msg, offset) => {
+        service.shake($('.g-view-login'), offset, 10, () => {
             $('.g-view-login').css({
                 'margin-left': '0px'
             });
@@ -35,7 +35,7 @@ service = {
 
         return false;
     },
-    doLogin: function () {
+    doLogin: () => {
         const userLogin = $userLogin.val();
         const userPass = $userPass.val();
         const margin = 15;
@@ -61,7 +61,7 @@ service = {
             },
             type: 'post',
             dataType: 'json',
-            success: function (d) {
+            success: (d) => {
                 if (d.code !== 0) {
                     if (d.token) {
                         $('#csrfToken').val(d.token);
@@ -72,7 +72,7 @@ service = {
                     location.replace(d.data.url);
                 }
             },
-            error: function (xhr) {
+            error: (xhr) => {
                 let d;
                 try {
                     d = JSON.parse(xhr.responseText);
@@ -92,12 +92,12 @@ service = {
 
         return false;
     },
-    initEvent: function () {
-        $('.m-form-login .u-input-login').focus(function () {
+    initEvent: () => {
+        $('.m-form-login .u-input-login').focus(() => {
             $(this).addClass('focus');
-        }).blur(function () {
+        }).blur(() => {
             $(this).removeClass('focus');
-        }).change(function () {
+        }).change(() => {
             if ($(this).val()) {
                 $(this).poshytip('disable');
             } else {
@@ -113,7 +113,7 @@ service = {
     }
 };
 
-$(function () {
+$(() => {
     service.initEvent();
 
     $userLogin.val($.cookie('username'));

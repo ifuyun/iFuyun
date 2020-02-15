@@ -1,7 +1,7 @@
 /*global $*/
-$(function () {
+$(() => {
     // 分类目录列表
-    $('.btn-delete').on('click', function () {
+    $('.btn-delete').on('click', () => {
         const $that = $(this);
         $.ajax({
             type: 'post',
@@ -13,7 +13,7 @@ $(function () {
                 'X-CSRF-Token': $('#csrfToken').val()
             },
             dataType: 'json',
-            success: function (d) {
+            success: (d) => {
                 if (d.code === 0) {
                     // location.href = d.data.url;
                     window.location.reload();
@@ -21,23 +21,21 @@ $(function () {
                     alert(d.message);
                 }
             },
-            error: function () {
-                return false;
-            }
+            error: () => false
         });
         return false;
     });
 
     // 分类目录表单
     $('#cat-name').focus();
-    $('#form-category').on('submit', function () {
+    $('#form-category').on('submit', () => {
         const $that = $(this);
         $.ajax({
             type: 'post',
             url: $that.attr('action'),
             data: $that.serialize(),
             dataType: 'json',
-            success: function (d) {
+            success: (d) => {
                 if (d.code === 0) {
                     location.href = d.data.url;
                 } else {
@@ -45,13 +43,11 @@ $(function () {
                     alert(d.message);
                 }
             },
-            error: function () {
-                return false;
-            }
+            error: () => false
         });
         return false;
     });
-    $('#form-search').on('submit', function () {
+    $('#form-search').on('submit', () => {
         location.href = $(this).attr('action') + '&' + $(this).serialize();
         return false;
     });

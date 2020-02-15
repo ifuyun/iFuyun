@@ -1,20 +1,21 @@
 /**
  * 数据转换函数库
  * @author fuyun
- * @since 2017/06/05
+ * @version 3.0.0
+ * @since 1.1.0(2017/06/05)
  */
 module.exports = {
-    commentStatus: function (status) {
+    commentStatus(status) {
         const statusMap = {
             normal: '获准',
             pending: '待审',
             reject: '驳回',
             spam: '垃圾评论',
             trash: '删除'
-        }
+        };
         return statusMap[status];
     },
-    postStatus: function (status) {
+    postStatus(status) {
         const statusMap = {
             publish: '公开',
             private: '私密',
@@ -22,10 +23,10 @@ module.exports = {
             draft: '草稿',
             'auto-draft': '草稿',
             trash: '删除'
-        }
+        };
         return statusMap[status];
     },
-    linkVisible: function (visible) {
+    linkVisible(visible) {
         const visibleMap = {
             site: '全站',
             homepage: '首页',
@@ -33,7 +34,7 @@ module.exports = {
         };
         return visibleMap[visible];
     },
-    linkTarget: function (visible) {
+    linkTarget(visible) {
         const visibleMap = {
             _blank: '新页面',
             _top: '父页面',

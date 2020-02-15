@@ -12,16 +12,16 @@ const fs = require('fs');
 const argv = require('yargs').argv;
 const isDev = argv.env === 'development';
 
-const getEntry = function () {
+const getEntry = () => {
     let entry = {};
-    glob.sync('./public/src/js/module/**/*.js').forEach(function (name) {
+    glob.sync('./public/src/js/module/**/*.js').forEach((name) => {
         var n = name.slice(name.indexOf('module/') + 7, name.length - 3);
         entry[n] = name;
     });
     return entry;
 };
-const replaceHash = function () {
-    this.plugin('done', function (stats) {
+const replaceHash = () => {
+    this.plugin('done', (stats) => {
         if (!isDev) {
             const chunks = stats.compilation.namedChunks;
             const htmlFiles = glob.sync('./.tmp/step2/views/**/*.html');

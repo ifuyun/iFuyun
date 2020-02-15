@@ -6,7 +6,7 @@
  * @main index
  * @requires redis, core, routes
  * @author Fuyun
- * @version 2.0.0
+ * @version 3.0.0
  * @since 1.0.0
  */
 const express = require('express');
@@ -38,7 +38,7 @@ if (cluster.isMaster) {
         cluster.fork();
     }
 
-    cluster.on('exit', function (worker, code, signal) {
+    cluster.on('exit', (worker, code, signal) => {
         threadLog.warn(formatOpLog({
             msg: `Worker ${worker.process.pid} exit.`,
             data: {
@@ -46,7 +46,7 @@ if (cluster.isMaster) {
                 signal
             }
         }));
-        process.nextTick(function () {
+        process.nextTick(() => {
             threadLog.info(formatOpLog({
                 msg: 'New process is forking...'
             }));
@@ -92,13 +92,13 @@ if (cluster.isMaster) {
     app.use(csrf());
     app.enable('trust proxy');
     // 设置全局响应头
-    app.use(function (req, res, next) {
+    app.use((req, res, next) => {
         // config.name:响应头不支持中文
         res.setHeader('Server', config.author + '/' + config.version);
         res.setHeader('X-Powered-By', config.domain);
         next();
     });
-    app.use(function (req, res, next) {
+    app.use((req, res, next) => {
         updateContext();
         threadLog.trace(formatOpLog({
             msg: `Request [${req.url}] is processed by Worker: ${cluster.worker.id}`
