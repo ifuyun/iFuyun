@@ -12,9 +12,9 @@ let http = {
         if (!config.timeout) {
             config.timeout = 10 * 60 * 1000;
         }
-        $.ajax(config).done(() => {
+        $.ajax(config).done(function () {
             defer.resolve(...arguments);
-        }).fail(() => {
+        }).fail(function () {
             defer.reject(...arguments);
         });
         return defer.promise();
@@ -22,9 +22,9 @@ let http = {
     get(url, data) {
         let defer = $.Deferred();
 
-        $.get(url, data).done(() => {
+        $.get(url, data).done(function () {
             defer.resolve(...arguments);
-        }).fail(() => {
+        }).fail(function () {
             defer.reject(...arguments);
         });
         return defer.promise();
@@ -38,9 +38,9 @@ let http = {
             cache: false,
             contentType: 'application/json'
         }, config);
-        $.ajax(config).done(() => {
+        $.ajax(config).done(function () {
             defer.resolve(...arguments);
-        }).fail(() => {
+        }).fail(function () {
             defer.reject(...arguments);
         });
         return defer.promise();
@@ -52,7 +52,7 @@ let http = {
             type: 'post',
             url: url,
             contentType: 'application/x-www-form-urlencoded',
-            transformRequest: (params) => {
+            transformRequest: function (params) {
                 // let str = [];
                 // let p;
                 // for (p in obj) {// 可以直接调$.param
@@ -62,9 +62,9 @@ let http = {
                 return $.param(params);
             },
             data: data
-        }).done(() => {
+        }).done(function () {
             defer.resolve(...arguments);
-        }).fail(() => {
+        }).fail(function () {
             defer.reject(...arguments);
         });
         return defer.promise();
