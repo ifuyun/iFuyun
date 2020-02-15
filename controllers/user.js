@@ -1,19 +1,19 @@
 /**
  * 用户管理
  * @author fuyun
- * @since 2017/05/23
+ * @since 1.0.0
+ * @version 3.0.0
  */
-const util = require('../helper/util');
 const xss = require('sanitizer');
-const models = require('../models/index');
-const commonService = require('../services/common');
 const appConfig = require('../config/core');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
-const {User, Usermeta} = models;
-const Op = models.Sequelize.Op;
+const util = require('../helper/util');
+const commonService = require('../services/common');
+const ERR_CODES = require('../services/error-codes');
+const userService = require('../services/user');
 
 module.exports = {
-    showLogin: function (req, res, next) {
+    showLogin(req, res, next) {
         if (req.session.user) {
             return res.redirect(util.getReferrer(req) || '/');
         }
@@ -40,29 +40,18 @@ module.exports = {
             });
         });
     },
-    login: function (req, res, next) {
+    login(req, res, next) {
         const params = req.body;
         const username = xss.sanitize(params.username);
 
-        User.findOne({
-            attributes: ['userId', 'userLogin', 'userNicename', 'userEmail', 'userLink', 'userRegistered', 'userStatus', 'userDisplayName'],
-            include: [{
-                model: Usermeta,
-                attributes: ['metaId', 'userId', 'metaKey', 'metaValue']
-            }],
-            where: {
-                userLogin: {
-                    [Op.eq]: username
-                },
-                userPass: {
-                    [Op.eq]: models.sequelize.fn('md5', models.sequelize.fn('concat', models.sequelize.col('user_pass_salt'), params.password))
-                }
-            }
-        }).then(function (result) {
+        userService.login({
+            username,
+            password: params.password
+        }, (result) => {
             if (!result) {
                 return next(util.catchError({
                     status: 200,
-                    code: 400,
+                    code: ERR_CODES.LOGIN_ERROR,
                     message: '用户名或密码错误'
                 }));
             }
@@ -125,12 +114,12 @@ module.exports = {
             });
         });
     },
-    logout: function (req, res, next) {
-        req.session.destroy(function (err) {
+    logout(req, res, next) {
+        req.session.destroy((err) => {
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'logout',
-                    msg: err,
+                    msg: err.message,
                     req
                 }));
                 return next(err);
