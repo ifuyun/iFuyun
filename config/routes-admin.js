@@ -49,7 +49,7 @@ module.exports = function (app, router) {
     router.get('/link/page-:page', link.listLinks);
     router.get('/link/item', link.editLink);
     router.post('/link/save', link.saveLink);
-    router.post('/link/remove', link.removeLink);
+    router.post('/link/remove', link.removeLinks);
 
     router.get('/settings', admin.settings);
     router.post('/settings', admin.saveSettings);

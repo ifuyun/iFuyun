@@ -38,7 +38,7 @@ module.exports = {
             },
             mainNavs: commonService.mainNavs,
             options: commonService.getInitOptions
-        }, function (err, result) {
+        }, (err, result) => {
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'getCommonData',
@@ -245,7 +245,7 @@ module.exports = {
                     filterCategory: !param.isAdmin
                 }, cb);
             },
-            post: function (cb) {
+            post: (cb) => {
                 let where = {
                     taxonomy: {
                         [Op.in]: ['post', 'tag']
@@ -270,7 +270,7 @@ module.exports = {
                         attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'visible', 'count'],
                         where
                     }]
-                }).then(function (post) {
+                }).then((post) => {
                     if (!post || !post.postId) {
                         return cb(util.catchError({
                             status: 404,
@@ -292,52 +292,51 @@ module.exports = {
                 });
             },
             comments: ['post', (result, cb) => commonService.getCommentsByPostId(result.post.postId, cb)],
-            crumb: ['commonData', 'post',
-                function (result, cb) {
-                    let post = result.post;
-                    let categories = [];
-                    post.TermTaxonomies.forEach((v) => {
-                        if (v.taxonomy === 'post') {
-                            categories.push(v);
+            crumb: ['commonData', 'post', (result, cb) => {
+                let post = result.post;
+                let categories = [];
+                post.TermTaxonomies.forEach((v) => {
+                    if (v.taxonomy === 'post') {
+                        categories.push(v);
+                    }
+                });
+                if (categories.length < 1) {
+                    return cb(util.catchError({
+                        status: 404,
+                        code: ERR_CODES.CATEGORY_NOT_EXIST,
+                        message: 'Page Not Found.',
+                        messageDetail: 'Category Not Exist.',
+                        data: {
+                            postId: post.postId,
+                            postTitle: post.postTitle
                         }
-                    });
-                    if (categories.length < 1) {
-                        return cb(util.catchError({
-                            status: 404,
-                            code: ERR_CODES.CATEGORY_NOT_EXIST,
-                            message: 'Page Not Found.',
-                            messageDetail: 'Category Not Exist.',
-                            data: {
-                                postId: post.postId,
-                                postTitle: post.postTitle
-                            }
-                        }));
-                    }
-                    let crumbCatId;
-                    for (let i = 0; i < categories.length; i += 1) {
-                        const curCat = categories[i];
-                        if (curCat.visible || param.isAdmin) {
-                            crumbCatId = curCat.taxonomyId;
-                            break;
-                        }
-                    }
-                    if (!param.isAdmin && !crumbCatId) {
-                        return cb(util.catchError({
-                            status: 404,
-                            code: ERR_CODES.CATEGORY_INVISIBLE,
-                            message: 'Page Not Found.',
-                            messageDetail: 'Category is Invisible.',
-                            data: {
-                                postId: post.postId,
-                                postTitle: post.postTitle
-                            }
-                        }));
-                    }
-                    cb(null, commonService.getCategoryPath({
-                        catData: result.commonData.categories.catData,
-                        taxonomyId: crumbCatId
                     }));
-                }],
+                }
+                let crumbCatId;
+                for (let i = 0; i < categories.length; i += 1) {
+                    const curCat = categories[i];
+                    if (curCat.visible || param.isAdmin) {
+                        crumbCatId = curCat.taxonomyId;
+                        break;
+                    }
+                }
+                if (!param.isAdmin && !crumbCatId) {
+                    return cb(util.catchError({
+                        status: 404,
+                        code: ERR_CODES.CATEGORY_INVISIBLE,
+                        message: 'Page Not Found.',
+                        messageDetail: 'Category is Invisible.',
+                        data: {
+                            postId: post.postId,
+                            postTitle: post.postTitle
+                        }
+                    }));
+                }
+                cb(null, commonService.getCategoryPath({
+                    catData: result.commonData.categories.catData,
+                    taxonomyId: crumbCatId
+                }));
+            }],
             postViewCount: (cb) => {
                 const viewCount = models.sequelize.literal('post_view_count + 1');
                 Post.update({
@@ -366,7 +365,7 @@ module.exports = {
                     filterCategory: !param.isAdmin
                 }, cb);
             },
-            post: function (cb) {
+            post: (cb) => {
                 Post.findOne({
                     attributes: [
                         'postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus',
@@ -384,7 +383,7 @@ module.exports = {
                             [Op.in]: ['post', 'page']
                         }
                     }
-                }).then(function (post) {
+                }).then((post) => {
                     if (!post || !post.postId) {
                         return cb(util.catchError({
                             status: 404,
@@ -817,7 +816,7 @@ module.exports = {
                         'postId', 'postTitle', 'postDate', 'postContent', 'postExcerpt', 'postStatus', 'postType', 'postPassword',
                         'commentFlag', 'postOriginal', 'postName', 'postAuthor', 'postModified', 'postCreated', 'postGuid', 'commentCount', 'postViewCount'],
                     include: includeOpt
-                }).then(function (post) {
+                }).then((post) => {
                     if (!post || !post.postId) {
                         return cb(util.catchError({
                             status: 404,
@@ -835,7 +834,7 @@ module.exports = {
     savePost(param, successCb, errorCb) {
         models.sequelize.transaction((t) => {
             let tasks = {
-                deleteCatRel: function (cb) {
+                deleteCatRel: (cb) => {
                     if (param.type !== 'post' || !param.postId) {
                         return cb(null);
                     }
@@ -848,7 +847,7 @@ module.exports = {
                         transaction: t
                     }).then((data) => cb(null, data));
                 },
-                checkGuid: function (cb) {
+                checkGuid: (cb) => {
                     let where = {
                         postGuid: {
                             [Op.eq]: param.data.postGuid
@@ -909,7 +908,7 @@ module.exports = {
                         const tag = param.postTag[i].trim();
                         if (tag) {
                             async.auto({
-                                taxonomy: function (innerCb) {
+                                taxonomy: (innerCb) => {
                                     models.TermTaxonomy.findAll({
                                         attributes: ['taxonomyId'],
                                         where: {
@@ -937,7 +936,7 @@ module.exports = {
                                         }).then((taxonomy) => innerCb(null, taxonomyId));
                                     });
                                 },
-                                relationship: ['taxonomy', function (innerResult, innerCb) {
+                                relationship: ['taxonomy', (innerResult, innerCb) => {
                                     models.TermRelationship.create({
                                         objectId: param.newPostId,
                                         termTaxonomyId: innerResult.taxonomy
@@ -945,7 +944,7 @@ module.exports = {
                                         transaction: t
                                     }).then((rel) => innerCb(null, rel));
                                 }]
-                            }, function (err, tags) {
+                            }, (err, tags) => {
                                 if (err) {
                                     return nextFn(err);
                                 }
@@ -961,7 +960,7 @@ module.exports = {
             }
             // 需要返回promise实例
             return new Promise((resolve, reject) => {
-                async.auto(tasks, function (err, result) {
+                async.auto(tasks, (err, result) => {
                     if (err) {
                         reject(util.catchError({
                             status: 500,
@@ -1081,10 +1080,10 @@ module.exports = {
         });
     },
     uploadFile(param, successCb, errorCb) {
-        models.sequelize.transaction(function (t) {
+        models.sequelize.transaction((t) => {
             let tasks = {
                 options: commonService.getInitOptions,
-                checkGuid: function (cb) {
+                checkGuid: (cb) => {
                     const where = {
                         postGuid: {
                             [Op.eq]: param.fileData.postGuid
@@ -1094,7 +1093,7 @@ module.exports = {
                         where
                     }).then((count) => cb(null, count));
                 },
-                post: ['options', 'checkGuid', function (result, cb) {
+                post: ['options', 'checkGuid', (result, cb) => {
                     if (result.checkGuid > 0) {
                         return cb('URL已存在');
                     }
@@ -1118,7 +1117,7 @@ module.exports = {
             }
             // 需要返回promise实例
             return new Promise((resolve, reject) => {
-                async.auto(tasks, function (err, result) {
+                async.auto(tasks, (err, result) => {
                     if (err) {
                         reject(util.catchError({
                             status: 500,

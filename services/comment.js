@@ -86,7 +86,7 @@ module.exports = {
                     if (post.commentFlag === 'closed' && !param.isAdmin) {
                         return cb(util.catchError({
                             status: 403,
-                            code: ERR_CODES.POST_CLOSE_COMMENT,
+                            code: ERR_CODES.POST_COMMENT_CLOSED,
                             message: '该文章禁止评论',
                             messageDetail: `[Forbidden]${post.postId}:${post.postTitle} is not allowed comment.`
                         }));
@@ -127,7 +127,8 @@ module.exports = {
             commentVote = models.sequelize.literal('comment_vote - 1');
             param.data.voteCount = -1;
         }
-        async.auto({// TODO: transaction
+        async.auto({
+            // TODO: transaction
             comment: (cb) => {
                 Comment.update({
                     commentVote
@@ -148,10 +149,10 @@ module.exports = {
                     cb(null, vote);
                 });
             },
-            commentVote: ['comment', function (result, cb) {
+            commentVote: ['comment', (result, cb) => {
                 Comment.findByPk(param.data.objectId, {
                     attributes: ['commentId', 'commentVote']
-                }).then(function (comment) {
+                }).then((comment) => {
                     cb(null, comment);
                 });
             }]

@@ -1,13 +1,10 @@
 /**
  * 链接
  * @author fuyun
- * @since 2017/06/10
+ * @since 1.0.0
  */
-const async = require('async');
 const xss = require('sanitizer');
 const moment = require('moment');
-const models = require('../models/index');
-const commonService = require('../services/common');
 const appConfig = require('../config/core');
 const util = require('../helper/util');
 const formatter = require('../helper/formatter');
@@ -15,11 +12,9 @@ const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const constants = require('../services/constants');
 const linkService = require('../services/link');
 const idReg = /^[0-9a-fA-F]{16}$/i;
-const {Link, TermTaxonomy, TermRelationship} = models;
-const Op = models.Sequelize.Op;
 
 module.exports = {
-    listLinks: function (req, res, next) {
+    listLinks(req, res, next) {
         linkService.listLinks({page: req.params.page}, (err, result, data) => {
             if (err) {
                 logger.error(formatOpLog({
@@ -58,7 +53,7 @@ module.exports = {
             res.render(`${appConfig.pathViews}/admin/pages/linkList`, resData);
         });
     },
-    editLink: function (req, res, next) {
+    editLink(req, res, next) {
         const action = (req.query.action || 'create').toLowerCase();
         if (!['create', 'edit'].includes(action)) {
             logger.error(formatOpLog({
@@ -80,35 +75,14 @@ module.exports = {
                 message: 'Link Not Found'
             }, next);
         }
-        let tasks = {
-            options: commonService.getInitOptions,
-            categories: (cb) => {
-                commonService.getCategoryTree(cb, {
-                    type: 'link'
-                });
-            }
-        };
-        if (action === 'edit') {
-            tasks.link = (cb) => {
-                Link.findByPk(linkId, {
-                    attributes: ['linkId', 'linkUrl', 'linkName', 'linkTarget', 'linkDescription', 'linkVisible', 'linkRating'],
-                    include: [{
-                        model: TermTaxonomy,
-                        attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'count'],
-                        where: {
-                            taxonomy: {
-                                [Op.eq]: 'link'
-                            }
-                        }
-                    }]
-                }).then((link) => cb(null, link));
-            };
-        }
-        async.auto(tasks, function (err, result) {
+        linkService.editLink({
+            action,
+            linkId
+        }, (err, result) => {
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'editLink',
-                    msg: err,
+                    msg: err.messageDetail || err.message,
                     data: {
                         action,
                         linkId
@@ -142,7 +116,7 @@ module.exports = {
             res.render(`${appConfig.pathViews}/admin/pages/linkForm`, resData);
         });
     },
-    saveLink: function (req, res, next) {
+    saveLink(req, res, next) {
         const param = req.body;
         let linkId = util.trim(xss.sanitize(param.linkId));
         const taxonomyId = util.trim(xss.sanitize(param.linkTaxonomy));
@@ -182,75 +156,20 @@ module.exports = {
                 }, next);
             }
         }
-        models.sequelize.transaction(function (t) {
-            const newLinkId = util.getUuid();
-            let tasks = {
-                link: function (cb) {
-                    if (!linkId) {
-                        data.linkId = newLinkId;
-                        Link.create(data, {
-                            transaction: t
-                        }).then((link) => {
-                            cb(null, link);
-                        });
-                    } else {
-                        Link.update(data, {
-                            where: {
-                                linkId: {
-                                    [Op.eq]: linkId
-                                }
-                            },
-                            transaction: t
-                        }).then((link) => {
-                            cb(null, link);
-                        });
-                    }
-                },
-                taxonomy: function (cb) {
-                    if (!linkId) {
-                        TermRelationship.create({
-                            objectId: newLinkId,
-                            termTaxonomyId: taxonomyId
-                        }, {
-                            transaction: t
-                        }).then((termRel) => cb(null, termRel));
-                    } else {
-                        TermRelationship.update({
-                            termTaxonomyId: taxonomyId
-                        }, {
-                            where: {
-                                objectId: {
-                                    [Op.eq]: linkId
-                                }
-                            },
-                            transaction: t
-                        }).then((termRel) => cb(null, termRel));
-                    }
-                }
-            };
-            // 需要返回promise实例
-            return new Promise((resolve, reject) => {
-                async.auto(tasks, function (err, result) {
-                    if (err) {
-                        logger.error(formatOpLog({
-                            fn: 'saveLink',
-                            msg: err,
-                            data,
-                            req
-                        }));
-                        reject(new Error(err));
-                    } else {
-                        logger.info(formatOpLog({
-                            fn: 'saveLink',
-                            msg: `Link: ${linkId || newLinkId}:${data.linkName} is saved.`,
-                            data,
-                            req
-                        }));
-                        resolve(result);
-                    }
-                });
-            });
-        }).then(() => {
+        const newLinkId = linkId || util.getUuid();
+        linkService.saveLink({
+            linkId,
+            newLinkId,
+            taxonomyId,
+            data
+        }, () => {
+            logger.info(formatOpLog({
+                fn: 'saveLink',
+                msg: `Link: ${newLinkId}:${data.linkName} is saved.`,
+                data,
+                req
+            }));
+
             const referer = req.session.linkReferer;
             delete req.session.linkReferer;
             res.type('application/json');
@@ -258,23 +177,29 @@ module.exports = {
                 code: 0,
                 message: null,
                 data: {
-                    url: referer || ('/admin/link')
+                    url: referer || '/admin/link'
                 }
             });
         }, (err) => {
+            logger.error(formatOpLog({
+                fn: 'saveLink',
+                msg: err.messageDetail || err.message,
+                data: err.data,
+                req
+            }));
             next({
                 code: 500,
-                message: err.message || err
+                message: err.message
             });
         });
     },
-    removeLink: function (req, res, next) {
+    removeLinks(req, res, next) {
         let linkIds = req.body.linkIds;
         if (typeof linkIds === 'string') {
             linkIds = xss.sanitize(linkIds).split(',');
         } else if (!util.isArray(linkIds)) {
             logger.error(formatOpLog({
-                fn: 'removeLink',
+                fn: 'removeLinks',
                 msg: 'invalid parameters',
                 data: {
                     linkIds
@@ -296,53 +221,15 @@ module.exports = {
                 }, next);
             }
         }
-        models.sequelize.transaction(function (t) {
-            let tasks = {
-                links: function (cb) {
-                    Link.destroy({
-                        where: {
-                            linkId: {
-                                [Op.in]: linkIds
-                            }
-                        },
-                        transaction: t
-                    }).then((link) => cb(null, link));
-                },
-                termRels: function (cb) {
-                    TermRelationship.destroy({
-                        where: {
-                            objectId: {
-                                [Op.in]: linkIds
-                            }
-                        },
-                        transaction: t
-                    }).then((termRel) => cb(null, termRel));
-                }
-            };
-            // 需要返回promise实例
-            return new Promise((resolve, reject) => {
-                async.auto(tasks, function (err, result) {
-                    if (err) {
-                        logger.error(formatOpLog({
-                            fn: 'removeLink',
-                            msg: err,
-                            data: {
-                                linkIds
-                            },
-                            req
-                        }));
-                        reject(new Error(err));
-                    } else {
-                        logger.info(formatOpLog({
-                            fn: 'removeLink',
-                            msg: `Links: ${linkIds} is removed.`,
-                            req
-                        }));
-                        resolve(result);
-                    }
-                });
-            });
-        }).then(() => {
+        linkService.removeLinks({
+            linkIds
+        }, () => {
+            logger.info(formatOpLog({
+                fn: 'removeLinks',
+                msg: `Link(s): ${linkIds} is removed.`,
+                req
+            }));
+
             res.type('application/json');
             res.send({
                 code: 0,
@@ -352,9 +239,15 @@ module.exports = {
                 }
             });
         }, (err) => {
+            logger.error(formatOpLog({
+                fn: 'removeLinks',
+                msg: err.messageDetail || err.message,
+                data: err.data,
+                req
+            }));
             next({
                 code: 500,
-                message: err.message || err
+                message: err.message
             });
         });
     }

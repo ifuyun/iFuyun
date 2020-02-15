@@ -4,15 +4,10 @@
  * @since 3.0.0
  */
 const async = require('async');
-const xss = require('sanitizer');
-const moment = require('moment');
+const ERR_CODES = require('./error-codes');
+const util = require('../helper/util');
 const models = require('../models/index');
 const commonService = require('../services/common');
-const appConfig = require('../config/core');
-const util = require('../helper/util');
-const formatter = require('../helper/formatter');
-const {sysLog: logger, formatOpLog} = require('../helper/logger');
-const idReg = /^[0-9a-fA-F]{16}$/i;
 const {Link, TermTaxonomy, TermRelationship} = models;
 const Op = models.Sequelize.Op;
 
@@ -24,7 +19,7 @@ module.exports = {
             count: (cb) => {
                 Link.count().then((data) => cb(null, data));
             },
-            links: ['count', function (result, cb) {
+            links: ['count', (result, cb) => {
                 page = (page > result.count / 10 ? Math.ceil(result.count / 10) : page) || 1;
                 Link.findAll({
                     attributes: ['linkId', 'linkUrl', 'linkName', 'linkTarget', 'linkDescription', 'linkVisible', 'linkRating', 'linkRss', 'linkCreated'],
@@ -38,5 +33,138 @@ module.exports = {
                 page
             });
         });
+    },
+    editLink(param, cb) {
+        let tasks = {
+            options: commonService.getInitOptions,
+            categories: (cb) => {
+                commonService.getCategoryTree(cb, {
+                    type: 'link'
+                });
+            }
+        };
+        if (param.action === 'edit') {
+            tasks.link = (cb) => {
+                Link.findByPk(param.linkId, {
+                    attributes: ['linkId', 'linkUrl', 'linkName', 'linkTarget', 'linkDescription', 'linkVisible', 'linkRating'],
+                    include: [{
+                        model: TermTaxonomy,
+                        attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'count'],
+                        where: {
+                            taxonomy: {
+                                [Op.eq]: 'link'
+                            }
+                        }
+                    }]
+                }).then((link) => cb(null, link));
+            };
+        }
+        async.auto(tasks, cb);
+    },
+    saveLink(param, successCb, errorCb) {
+        models.sequelize.transaction((t) => {
+            let tasks = {
+                link: (cb) => {
+                    if (!param.linkId) {
+                        param.data.linkId = param.newLinkId;
+                        Link.create(param.data, {
+                            transaction: t
+                        }).then((link) => {
+                            cb(null, link);
+                        });
+                    } else {
+                        Link.update(param.data, {
+                            where: {
+                                linkId: {
+                                    [Op.eq]: param.linkId
+                                }
+                            },
+                            transaction: t
+                        }).then((link) => {
+                            cb(null, link);
+                        });
+                    }
+                },
+                taxonomy: (cb) => {
+                    if (!param.linkId) {
+                        TermRelationship.create({
+                            objectId: param.newLinkId,
+                            termTaxonomyId: param.taxonomyId
+                        }, {
+                            transaction: t
+                        }).then((termRel) => cb(null, termRel));
+                    } else {
+                        TermRelationship.update({
+                            termTaxonomyId: param.taxonomyId
+                        }, {
+                            where: {
+                                objectId: {
+                                    [Op.eq]: param.linkId
+                                }
+                            },
+                            transaction: t
+                        }).then((termRel) => cb(null, termRel));
+                    }
+                }
+            };
+            // 需要返回promise实例
+            return new Promise((resolve, reject) => {
+                async.auto(tasks, (err, result) => {
+                    if (err) {
+                        reject(util.catchError({
+                            status: 500,
+                            code: ERR_CODES.LINK_SAVE_ERROR,
+                            message: 'Link Save Error.',
+                            messageDetail: `Link: ${param.newLinkId}:${param.data.linkName} save failed.`,
+                            data: param.data
+                        }));
+                    } else {
+                        resolve(result);
+                    }
+                });
+            });
+        }).then(successCb, errorCb);
+    },
+    removeLinks(param, successCb, errorCb) {
+        models.sequelize.transaction((t) => {
+            let tasks = {
+                links: (cb) => {
+                    Link.destroy({
+                        where: {
+                            linkId: {
+                                [Op.in]: param.linkIds
+                            }
+                        },
+                        transaction: t
+                    }).then((link) => cb(null, link));
+                },
+                termRels: (cb) => {
+                    TermRelationship.destroy({
+                        where: {
+                            objectId: {
+                                [Op.in]: param.linkIds
+                            }
+                        },
+                        transaction: t
+                    }).then((termRel) => cb(null, termRel));
+                }
+            };
+            // 需要返回promise实例
+            return new Promise((resolve, reject) => {
+                async.auto(tasks, (err, result) => {
+                    if (err) {
+                        reject(util.catchError({
+                            status: 500,
+                            code: ERR_CODES.LINK_REMOVE_ERROR,
+                            message: 'Link(s) Remove Error.',
+                            messageDetail: `Link(s): ${param.linkIds} remove failed.`,
+                            data: param.linkIds
+                        }));
+                    } else {
+                        resolve(result);
+                    }
+                });
+            });
+        }).then(successCb, errorCb);
     }
 };
