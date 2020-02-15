@@ -1,19 +1,15 @@
 /**
  * taxonomy services
  * @author fuyun
- * @since 2020-02-16
+ * @since 3.0.0
  * @version 3.0.0
  */
 const async = require('async');
-const xss = require('sanitizer');
 const ERR_CODES = require('./error-codes');
+const util = require('../helper/util');
 const models = require('../models/index');
 const commonService = require('../services/common');
-const appConfig = require('../config/core');
-const util = require('../helper/util');
-const {sysLog: logger, formatOpLog} = require('../helper/logger');
-const idReg = /^[0-9a-fA-F]{16}$/i;
-const pagesOut = 9;
+const constants = require('../services/constants');
 const {TermTaxonomy, TermRelationship} = models;
 const Op = models.Sequelize.Op;
 
@@ -158,7 +154,7 @@ module.exports = {
                         }).then((termRel) => cb(null, termRel));
                     } else {
                         TermRelationship.update({
-                            termTaxonomyId: param.type === 'post' ? '0000000000000000' : '0000000000000001'
+                            termTaxonomyId: param.type === 'post' ? constants.DEFAULT_POST_TAXONOMY_ID : constants.DEFAULT_LINK_TAXONOMY_ID
                         }, {
                             where: {
                                 termTaxonomyId: {
@@ -173,7 +169,7 @@ module.exports = {
             if (param.type !== 'tag') {// 标签没有父子关系
                 tasks.children = (cb) => {
                     TermTaxonomy.update({
-                        parent: param.type === 'post' ? '0000000000000000' : '0000000000000001'
+                        parent: param.type === 'post' ? constants.DEFAULT_POST_TAXONOMY_ID : constants.DEFAULT_LINK_TAXONOMY_ID
                     }, {
                         where: {
                             parent: {

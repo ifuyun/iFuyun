@@ -6,7 +6,7 @@
  * @static
  * @requires crypto
  * @author Fuyun
- * @version 2.0.0
+ * @version 3.0.0
  * @since 1.0.0
  */
 const crypto = require('crypto');
@@ -348,16 +348,21 @@ module.exports = {
      *      {Number}[status=404] HTTP状态码
      *      {Number}[code=404] 错误码
      *      {String}[message='Page Not Found'] 错误消息
+     *      {String}[messageDetail=null] 错误详细消息
+     *      {String}[data=null] 数据
      * @param {Function} next 路由对象
      * @return {Object} 错误对象
      * @author Fuyun
-     * @version 1.0.0
+     * @version 3.0.0
      * @since 1.0.0
      */
     catchError(msgObj, next = null) {
-        msgObj.message = msgObj.message || 'Page Not Found';
         msgObj.status = msgObj.status || ERR_CODES.PAGE_NOT_FOUND;
         msgObj.code = msgObj.code || ERR_CODES.PAGE_NOT_FOUND;
+        msgObj.message = msgObj.message || 'Page Not Found';
+        msgObj.messageDetail = msgObj.messageDetail || null;
+        // todo
+        // msgObj.stack = msgObj.stack || null;
         msgObj.data = msgObj.data || null;
         if (next) {
             return next(msgObj);

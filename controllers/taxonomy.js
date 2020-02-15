@@ -5,19 +5,14 @@
  * @version 3.0.0
  */
 /** @namespace req.session */
-const async = require('async');
 const xss = require('sanitizer');
+const appConfig = require('../config/core');
+const {sysLog: logger, formatOpLog} = require('../helper/logger');
+const util = require('../helper/util');
 const ERR_CODES = require('../services/error-codes');
 const constants = require('../services/constants');
-const models = require('../models/index');
-const commonService = require('../services/common');
 const taxonomyService = require('../services/taxonomy');
-const appConfig = require('../config/core');
-const util = require('../helper/util');
-const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const idReg = /^[0-9a-fA-F]{16}$/i;
-const {TermTaxonomy, TermRelationship} = models;
-const Op = models.Sequelize.Op;
 
 module.exports = {
     listTaxonomies(req, res, next) {
