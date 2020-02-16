@@ -21,7 +21,8 @@ module.exports = {
         let data = {};
         const isAdmin = util.isAdminUser(req.session.user);
         let commentId = util.trim(xss.sanitize(param.commentId));
-        const shouldCheckCaptcha = !isAdmin || !commentId;
+        let parentId = util.trim(xss.sanitize(param.parentId));
+        const shouldCheckCaptcha = !isAdmin || !commentId && !parentId;
 
         const checkCaptcha = commentService.validateCaptcha({
             param,

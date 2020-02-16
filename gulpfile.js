@@ -21,7 +21,7 @@ const uglify = require('gulp-uglify');
 const webpackConfig = require('./webpack.config');
 const compiler = webpack(webpackConfig);
 
-gulp.task('clean', () => gulp.src([config.pathDist, path.join(config.pathTmp, '**')], {
+gulp.task('clean', () => gulp.src([path.join(config.pathDist, '*'), path.join(config.pathTmp, '*')], {
     read: false
 }).pipe(clean()));
 
@@ -142,7 +142,7 @@ gulp.task('copy-build', gulp.series('copy-build-css', 'copy-build-js', 'copy-bui
 
 gulp.task('build', gulp.series('clean', 'less', 'useref', 'imagemin', 'rev-image', 'revreplace-css', 'rev-css', 'rev-js', 'revreplace-ejs', 'webpack', 'copy-build', (cb) => cb()));
 
-gulp.task('clean-dev', () => gulp.src([config.pathDev, path.join(config.pathTmp, '**')], {
+gulp.task('clean-dev', () => gulp.src([path.join(config.pathDev, '*'), path.join(config.pathTmp, '*')], {
     read: false
 }).pipe(clean()));
 
