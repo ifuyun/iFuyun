@@ -18,7 +18,7 @@ const util = require('../helper/util');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const formatter = require('../helper/formatter');
 const commonService = require('../services/common');
-const ERR_CODES = require('../services/error-codes');
+const STATUS_CODES = require('../services/status-codes');
 const postService = require('../services/post');
 const idReg = /^[0-9a-fA-F]{16}$/i;
 
@@ -101,7 +101,7 @@ module.exports = {
                     },
                     req
                 }));
-                if (err.code === ERR_CODES.POST_NOT_EXIST) {// 如果找不到post，向后判断是否page
+                if (err.code === STATUS_CODES.POST_NOT_EXIST) {// 如果找不到post，向后判断是否page
                     return next();
                 }
                 return next(err);

@@ -11,7 +11,7 @@ const util = require('../helper/util');
 const models = require('../models/index');
 const commonService = require('../services/common');
 const constants = require('../services/constants');
-const ERR_CODES = require('../services/error-codes');
+const STATUS_CODES = require('./status-codes');
 const {Post, User, Postmeta, TermTaxonomy, VTagVisibleTaxonomy} = models;
 const Op = models.Sequelize.Op;
 
@@ -280,7 +280,7 @@ module.exports = {
                     if (!post || !post.postId) {
                         return cb(util.catchError({
                             status: 404,
-                            code: ERR_CODES.POST_NOT_EXIST,
+                            code: STATUS_CODES.POST_NOT_EXIST,
                             message: 'Page Not Found.',
                             messageDetail: `Post: ${param.postId} Not Exist.`
                         }));
@@ -289,7 +289,7 @@ module.exports = {
                     if (!param.isAdmin && post.postStatus !== 'publish') {
                         return cb(util.catchError({
                             status: 404,
-                            code: ERR_CODES.UNAUTHORIZED,
+                            code: STATUS_CODES.UNAUTHORIZED,
                             message: 'Page Not Found.',
                             messageDetail: `[Unauthorized]${post.postId}:${post.postTitle} is ${post.postStatus}`
                         }));
@@ -309,7 +309,7 @@ module.exports = {
                 if (categories.length < 1) {
                     return cb(util.catchError({
                         status: 404,
-                        code: ERR_CODES.CATEGORY_NOT_EXIST,
+                        code: STATUS_CODES.CATEGORY_NOT_EXIST,
                         message: 'Page Not Found.',
                         messageDetail: 'Category Not Exist.',
                         data: {
@@ -329,7 +329,7 @@ module.exports = {
                 if (!param.isAdmin && !crumbCatId) {
                     return cb(util.catchError({
                         status: 404,
-                        code: ERR_CODES.CATEGORY_INVISIBLE,
+                        code: STATUS_CODES.CATEGORY_INVISIBLE,
                         message: 'Page Not Found.',
                         messageDetail: 'Category is Invisible.',
                         data: {
@@ -393,7 +393,7 @@ module.exports = {
                     if (!post || !post.postId) {
                         return cb(util.catchError({
                             status: 404,
-                            code: ERR_CODES.POST_NOT_EXIST,
+                            code: STATUS_CODES.POST_NOT_EXIST,
                             message: 'Page Not Found.',
                             messageDetail: `Post: ${param.reqPath} Not Exist.`
                         }));
@@ -402,7 +402,7 @@ module.exports = {
                     if (!util.isAdminUser(param.user) && post.postStatus !== 'publish') {
                         return cb(util.catchError({
                             status: 404,
-                            code: ERR_CODES.UNAUTHORIZED,
+                            code: STATUS_CODES.UNAUTHORIZED,
                             message: 'Page Not Found.',
                             messageDetail: `[Unauthorized]${post.postId}:${post.postTitle} is ${post.postStatus}`
                         }));
@@ -726,7 +726,7 @@ module.exports = {
                         if (err) {
                             return cb(util.catchError({
                                 status: 404,
-                                code: ERR_CODES.CATEGORY_QUERY_ERROR,
+                                code: STATUS_CODES.CATEGORY_QUERY_ERROR,
                                 message: err.message,
                                 messageDetail: `[listEdit.getSubCategoriesBySlug]${err.message}`,
                                 data: {
@@ -826,7 +826,7 @@ module.exports = {
                     if (!post || !post.postId) {
                         return cb(util.catchError({
                             status: 404,
-                            code: ERR_CODES.POST_NOT_EXIST,
+                            code: STATUS_CODES.POST_NOT_EXIST,
                             message: 'Page Not Found.',
                             messageDetail: `Post: ${param.postId} Not Exist`
                         }));
@@ -970,7 +970,7 @@ module.exports = {
                     if (err) {
                         reject(util.catchError({
                             status: 500,
-                            code: ERR_CODES.POST_SAVE_ERROR,
+                            code: STATUS_CODES.POST_SAVE_ERROR,
                             message: 'Post Save Error.',
                             messageDetail: `Post: ${param.newPostId}:${param.data.postTitle} save failed.`,
                             data: param.data
@@ -1127,7 +1127,7 @@ module.exports = {
                     if (err) {
                         reject(util.catchError({
                             status: 500,
-                            code: ERR_CODES.UPLOAD_ERROR,
+                            code: STATUS_CODES.UPLOAD_ERROR,
                             message: 'Upload Error.',
                             messageDetail: `File: ${param.fileData.postTitle} upload failed.`,
                             data: param.fileData

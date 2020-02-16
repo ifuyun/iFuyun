@@ -12,6 +12,7 @@ const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const util = require('../helper/util');
 const commentService = require('../services/comment');
 const constants = require('../services/constants');
+const STATUS_CODES = require('../services/status-codes');
 const idReg = /^[0-9a-fA-F]{16}$/i;
 
 module.exports = {
@@ -107,8 +108,8 @@ module.exports = {
                 req
             }));
             return util.catchError({
-                status: 500,
-                code: 500,
+                status: 200,
+                code: STATUS_CODES.BAD_REQUEST,
                 message: '参数错误'
             }, next);
         }
@@ -119,12 +120,15 @@ module.exports = {
                 req
             }));
             return util.catchError({
-                status: 500,
-                code: 500,
+                status: 200,
+                code: STATUS_CODES.BAD_REQUEST,
                 message: '参数错误'
             }, next);
         }
-        commentService.saveVote({data}, (err, result) => {
+        commentService.saveVote({
+            data,
+            type: param.type
+        }, (err, result) => {
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'saveVote',
@@ -137,7 +141,7 @@ module.exports = {
             res.type('application/json');
             res.send({
                 status: 200,
-                code: 0,
+                code: STATUS_CODES.SUCCESS,
                 message: null,
                 token: req.csrfToken(),
                 data: {

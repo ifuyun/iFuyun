@@ -5,7 +5,7 @@
  * @since 3.0.0
  */
 const async = require('async');
-const ERR_CODES = require('./error-codes');
+const STATUS_CODES = require('./status-codes');
 const util = require('../helper/util');
 const models = require('../models/index');
 const commonService = require('../services/common');
@@ -105,7 +105,7 @@ module.exports = {
                 if (result.checkSlug > 0) {
                     return cb(util.catchError({
                         status: 200,
-                        code: ERR_CODES.TAXONOMY_SLUG_DUPLICATE,
+                        code: STATUS_CODES.TAXONOMY_SLUG_DUPLICATE,
                         message: 'slug已存在',
                         messageDetail: `Taxonomy slug: ${param.data.slug} is already exist.`
                     }));
@@ -186,7 +186,7 @@ module.exports = {
                     if (err) {
                         reject(util.catchError({
                             status: 500,
-                            code: ERR_CODES.TAXONOMY_REMOVE_ERROR,
+                            code: STATUS_CODES.TAXONOMY_REMOVE_ERROR,
                             message: 'Taxonomies Remove Error.',
                             messageDetail: `Taxonomies: ${param.taxonomyIds} remove failed.`,
                             data: param.taxonomyIds

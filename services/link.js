@@ -5,7 +5,7 @@
  * @since 3.0.0
  */
 const async = require('async');
-const ERR_CODES = require('./error-codes');
+const STATUS_CODES = require('./status-codes');
 const util = require('../helper/util');
 const models = require('../models/index');
 const commonService = require('../services/common');
@@ -114,7 +114,7 @@ module.exports = {
                     if (err) {
                         reject(util.catchError({
                             status: 500,
-                            code: ERR_CODES.LINK_SAVE_ERROR,
+                            code: STATUS_CODES.LINK_SAVE_ERROR,
                             message: 'Link Save Error.',
                             messageDetail: `Link: ${param.newLinkId}:${param.data.linkName} save failed.`,
                             data: param.data
@@ -156,7 +156,7 @@ module.exports = {
                     if (err) {
                         reject(util.catchError({
                             status: 500,
-                            code: ERR_CODES.LINK_REMOVE_ERROR,
+                            code: STATUS_CODES.LINK_REMOVE_ERROR,
                             message: 'Link(s) Remove Error.',
                             messageDetail: `Link(s): ${param.linkIds} remove failed.`,
                             data: param.linkIds

@@ -1,10 +1,11 @@
 /**
- * 错误码
+ * 状态码
  * @author fuyun
  * @version 3.0.0
  * @since 3.0.0
  */
-const ERROR_CODES = {
+const STATUS_CODES = {
+    SUCCESS: 0,
     BAD_REQUEST: 400,
     UNAUTHORIZED: 401,
     FORBIDDEN: 403,
@@ -25,4 +26,4 @@ const ERROR_CODES = {
     UPLOAD_ERROR: 880
 };
 
-module.exports = ERROR_CODES;
+module.exports = STATUS_CODES;

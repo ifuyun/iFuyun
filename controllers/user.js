@@ -9,7 +9,7 @@ const appConfig = require('../config/core');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const util = require('../helper/util');
 const commonService = require('../services/common');
-const ERR_CODES = require('../services/error-codes');
+const STATUS_CODES = require('../services/status-codes');
 const userService = require('../services/user');
 
 module.exports = {
@@ -51,7 +51,7 @@ module.exports = {
             if (!result) {
                 return next(util.catchError({
                     status: 200,
-                    code: ERR_CODES.LOGIN_ERROR,
+                    code: STATUS_CODES.LOGIN_ERROR,
                     message: '用户名或密码错误'
                 }));
             }

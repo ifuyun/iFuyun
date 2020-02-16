@@ -9,7 +9,7 @@ const xss = require('sanitizer');
 const appConfig = require('../config/core');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const util = require('../helper/util');
-const ERR_CODES = require('../services/error-codes');
+const STATUS_CODES = require('../services/status-codes');
 const constants = require('../services/constants');
 const taxonomyService = require('../services/taxonomy');
 const idReg = /^[0-9a-fA-F]{16}$/i;
@@ -26,7 +26,7 @@ module.exports = {
             }));
             return util.catchError({
                 status: 200,
-                code: ERR_CODES.FORBIDDEN,
+                code: STATUS_CODES.FORBIDDEN,
                 message: '不支持该操作'
             }, next);
         }
@@ -104,7 +104,7 @@ module.exports = {
             }));
             return util.catchError({
                 status: 200,
-                code: ERR_CODES.FORBIDDEN,
+                code: STATUS_CODES.FORBIDDEN,
                 message: '不支持该操作'
             }, next);
         }
@@ -116,7 +116,7 @@ module.exports = {
             }));
             return util.catchError({
                 status: 200,
-                code: ERR_CODES.FORBIDDEN,
+                code: STATUS_CODES.FORBIDDEN,
                 message: '不支持该操作'
             }, next);
         }
@@ -132,7 +132,7 @@ module.exports = {
             }));
             return util.catchError({
                 status: 404,
-                code: ERR_CODES.PAGE_NOT_FOUND,
+                code: STATUS_CODES.PAGE_NOT_FOUND,
                 message: 'Taxonomy Not Found'
             }, next);
         }
@@ -195,7 +195,7 @@ module.exports = {
             }));
             return util.catchError({
                 status: 200,
-                code: ERR_CODES.FORBIDDEN,
+                code: STATUS_CODES.FORBIDDEN,
                 message: '不支持该操作'
             }, next);
         }
@@ -230,7 +230,7 @@ module.exports = {
             if (rules[i].rule) {
                 return util.catchError({
                     status: 200,
-                    code: ERR_CODES.FORM_INPUT_ERROR,
+                    code: STATUS_CODES.BAD_REQUEST,
                     message: rules[i].message
                 }, next);
             }
@@ -273,7 +273,7 @@ module.exports = {
             }));
             return util.catchError({
                 status: 200,
-                code: ERR_CODES.FORBIDDEN,
+                code: STATUS_CODES.FORBIDDEN,
                 message: '不支持该操作'
             }, next);
         }
@@ -290,7 +290,7 @@ module.exports = {
             }));
             return util.catchError({
                 status: 200,
-                code: ERR_CODES.BAD_REQUEST,
+                code: STATUS_CODES.BAD_REQUEST,
                 message: '不支持的参数格式'
             }, next);
         }
@@ -298,7 +298,7 @@ module.exports = {
             if (!idReg.test(taxonomyIds[i])) {
                 return util.catchError({
                     status: 200,
-                    code: ERR_CODES.BAD_REQUEST,
+                    code: STATUS_CODES.BAD_REQUEST,
                     message: '参数错误'
                 }, next);
             }

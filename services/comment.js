@@ -9,7 +9,7 @@ const xss = require('sanitizer');
 const models = require('../models/index');
 const util = require('../helper/util');
 const commonService = require('../services/common');
-const ERR_CODES = require('../services/error-codes');
+const STATUS_CODES = require('./status-codes');
 const idReg = /^[0-9a-fA-F]{16}$/i;
 const {Comment, Vote} = models;
 const Op = models.Sequelize.Op;
@@ -66,7 +66,7 @@ module.exports = {
             if (rules[i].rule) {
                 return util.catchError({
                     status: 200,
-                    code: ERR_CODES.BAD_REQUEST,
+                    code: STATUS_CODES.BAD_REQUEST,
                     message: rules[i].message,
                     messageDetail: rules[i].messageDetail || rules[i].message
                 });
@@ -84,7 +84,7 @@ module.exports = {
                     if (!post || !post.postId) {
                         return cb(util.catchError({
                             status: 404,
-                            code: ERR_CODES.POST_NOT_EXIST,
+                            code: STATUS_CODES.POST_NOT_EXIST,
                             message: 'Page Not Found.',
                             messageDetail: `Post: ${param.data.postId} Not Exist.`
                         }));
@@ -92,7 +92,7 @@ module.exports = {
                     if (post.commentFlag === 'closed' && !param.isAdmin) {
                         return cb(util.catchError({
                             status: 403,
-                            code: ERR_CODES.POST_COMMENT_CLOSED,
+                            code: STATUS_CODES.POST_COMMENT_CLOSED,
                             message: '该文章禁止评论',
                             messageDetail: `[Forbidden]${post.postId}:${post.postTitle} is not allowed comment.`
                         }));

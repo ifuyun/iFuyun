@@ -10,7 +10,7 @@
  * @since 1.0.0
  */
 const crypto = require('crypto');
-const ERR_CODES = require('../services/error-codes');
+const STATUS_CODES = require('../services/status-codes');
 
 module.exports = {
     /**
@@ -357,8 +357,8 @@ module.exports = {
      * @since 1.0.0
      */
     catchError(msgObj, next = null) {
-        msgObj.status = msgObj.status || ERR_CODES.PAGE_NOT_FOUND;
-        msgObj.code = msgObj.code || ERR_CODES.PAGE_NOT_FOUND;
+        msgObj.status = msgObj.status || STATUS_CODES.PAGE_NOT_FOUND;
+        msgObj.code = msgObj.code || STATUS_CODES.PAGE_NOT_FOUND;
         msgObj.message = msgObj.message || 'Page Not Found';
         msgObj.messageDetail = msgObj.messageDetail || null;
         // todo
