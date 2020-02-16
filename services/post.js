@@ -272,7 +272,7 @@ module.exports = {
                         model: User,
                         attributes: ['userDisplayName']
                     }, {
-                        model: models.TermTaxonomy,
+                        model: TermTaxonomy,
                         attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'visible', 'count'],
                         where
                     }]

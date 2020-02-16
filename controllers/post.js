@@ -10,6 +10,7 @@ const moment = require('moment');
 const url = require('url');
 const xss = require('sanitizer');
 const formidable = require('formidable');
+const uploader = require('./upload');
 const appConfig = require('../config/core');
 const credentials = require('../config/credentials');
 const constants = require('../services/constants');
@@ -17,10 +18,9 @@ const util = require('../helper/util');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const formatter = require('../helper/formatter');
 const commonService = require('../services/common');
+const ERR_CODES = require('../services/error-codes');
 const postService = require('../services/post');
-const uploader = require('./upload');
 const idReg = /^[0-9a-fA-F]{16}$/i;
-const pagesOut = 9;
 
 module.exports = {
     listPosts(req, res, next) {
@@ -49,7 +49,7 @@ module.exports = {
             Object.assign(resData, result.commonData);
 
             resData.posts = result.posts;
-            resData.posts.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), pagesOut);
+            resData.posts.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), constants.PAGINATION_SIZE);
             resData.posts.linkUrl = '/post/page-';
             resData.posts.linkParam = req.query.keyword ? '?keyword=' + req.query.keyword : '';
             resData.comments = result.comments;
@@ -101,6 +101,9 @@ module.exports = {
                     },
                     req
                 }));
+                if (err.code === ERR_CODES.POST_NOT_EXIST) {// 如果找不到post，向后判断是否page
+                    return next();
+                }
                 return next(err);
             }
             let resData = {
@@ -224,7 +227,7 @@ module.exports = {
             resData.curPos = util.createCrumb(result.subCategories.catPath);
 
             resData.posts = result.posts;
-            resData.posts.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), pagesOut);
+            resData.posts.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), constants.PAGINATION_SIZE);
             resData.posts.linkUrl = '/category/' + category + '/page-';
             resData.posts.linkParam = '';
             resData.comments = result.comments;
@@ -287,7 +290,7 @@ module.exports = {
             resData.curPos = util.createCrumb(crumbData);
 
             resData.posts = result.posts;
-            resData.posts.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), pagesOut);
+            resData.posts.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), constants.PAGINATION_SIZE);
             resData.posts.linkUrl = '/tag/' + tag + '/page-';
             resData.posts.linkParam = '';
             resData.comments = result.comments;
@@ -361,7 +364,7 @@ module.exports = {
             resData.curPos = util.createCrumb(crumbData);
 
             resData.posts = result.posts;
-            resData.posts.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), pagesOut);
+            resData.posts.paginator = util.paginator(page, Math.ceil(result.postsCount / 10), constants.PAGINATION_SIZE);
             resData.posts.linkUrl = `/archive/${year}${month ? '/' + month : ''}/page-`;
             resData.posts.linkParam = '';
             resData.comments = result.comments;
@@ -463,7 +466,7 @@ module.exports = {
                 formatter,
                 moment
             };
-            resData.paginator = util.paginator(data.page, Math.ceil(result.postsCount / 10), pagesOut);
+            resData.paginator = util.paginator(data.page, Math.ceil(result.postsCount / 10), constants.PAGINATION_SIZE);
             resData.paginator.linkUrl = '/admin/post/page-';
             resData.paginator.linkParam = data.paramArr.length > 0 ? '?' + data.paramArr.join('&') : '';
             resData.paginator.pageLimit = 10;
@@ -594,6 +597,7 @@ module.exports = {
         });
     },
     savePost(req, res, next) {
+        // todo: page应该限制url前缀，且postGuid必填（有默认值）
         const param = req.body;
         const type = req.query.type !== 'page' ? 'post' : 'page';
         const nowTime = new Date();
@@ -718,7 +722,7 @@ module.exports = {
                 formatter,
                 moment
             };
-            resData.paginator = util.paginator(data.page, Math.ceil(result.postsCount / 10), pagesOut);
+            resData.paginator = util.paginator(data.page, Math.ceil(result.postsCount / 10), constants.PAGINATION_SIZE);
             resData.paginator.linkUrl = '/admin/media/page-';
             resData.paginator.linkParam = data.paramArr.length > 0 ? '?' + data.paramArr.join('&') : '';
             resData.paginator.pageLimit = 10;
