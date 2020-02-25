@@ -2,7 +2,7 @@
  * 安全信息配置
  * @module cfg_credential
  * @author Fuyun
- * @version 3.0.0
+ * @version 3.1.0
  * @since 1.0.0
  */
 module.exports = {
@@ -34,5 +34,8 @@ module.exports = {
             username: '[db-prd-user]',
             password: '[db-prd-pwd]'
         }
+    },
+    book: {
+        excelPath: '[books-excel-file-path]'
     }
 };

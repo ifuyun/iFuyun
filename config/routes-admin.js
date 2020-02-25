@@ -15,6 +15,7 @@ const admin = require('../controllers/admin');
 const comment = require('../controllers/comment');
 const taxonomy = require('../controllers/taxonomy');
 const link = require('../controllers/link');
+const book = require('../controllers/book');
 
 module.exports = (app, router) => {
     router.use(admin.checkAuth);
@@ -54,6 +55,8 @@ module.exports = (app, router) => {
 
     router.get('/settings', admin.settings);
     router.post('/settings', admin.saveSettings);
+
+    router.get('/book/import', book.importBooks);
 
     return router;
 };

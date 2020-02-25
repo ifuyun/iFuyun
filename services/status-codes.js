@@ -1,7 +1,7 @@
 /**
  * 状态码
  * @author fuyun
- * @version 3.0.0
+ * @version 3.1.0
  * @since 3.0.0
  */
 const STATUS_CODES = {
@@ -23,7 +23,8 @@ const STATUS_CODES = {
     LINK_REMOVE_ERROR: 841,
     LOGIN_ERROR: 860,
     FORM_INPUT_ERROR: 870,
-    UPLOAD_ERROR: 880
+    UPLOAD_ERROR: 880,
+    BOOK_SAVE_ERROR: 900
 };
 
 module.exports = STATUS_CODES;
