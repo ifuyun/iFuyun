@@ -36,7 +36,7 @@
                         </select></span>
                         <span><select class="input" name="category">
                             <option value="">所有分类</option>
-                            <? categories.catArray.forEach(function (cat){?>
+                            <? categories.catArray.forEach(function (cat){ ?>
                                 <option value="<?= cat.slug || cat.name ?>"<? if(cat.slug === curCategory || cat.name === curCategory){?> selected="selected"<? } ?>><? for(var idx = 1; idx < cat.level; idx += 1){ ?>&nbsp;&nbsp;&nbsp;&nbsp;<? } ?><?= cat.name ?></option>
                             <? }) ?>
                         </select></span>
@@ -119,7 +119,7 @@
                     <span><input type="button" class="button" value="编辑" /></span>
                     <span><input type="button" class="button" value="删除" /></span>
                 </div>
-                <?- include('../elements/pageBar.html') -?>
+                <?- include('../elements/pagination.html') -?>
             </div>
         </div>
     </div>

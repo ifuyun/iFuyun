@@ -1,0 +1,51 @@
+<? if(posts && posts.paginator) { ?>
+<div class="m-pagination f-clearfix">
+    <ul>
+        <? if(posts.paginator.curPage > 1){ ?><li class="u-page u-page-prev"><a href="<?= posts.linkUrl + posts.paginator.prevPage + posts.linkParam ?>" title="上一页">&lt;</a></li><? } ?>
+        <? if(posts.paginator.totalPage < 10) { ?>
+            <? for(var page = 1; page <= posts.paginator.totalPage; page += 1) { ?>
+                <? if(page === posts.paginator.curPage) { ?>
+                    <li class="u-page u-page-num active"><span><?= page ?></span></li>
+                <? } else { ?>
+                    <li class="u-page u-page-num"><a href="<?= posts.linkUrl + page + posts.linkParam ?>" title="第<?= page ?>页"><?= page ?></a></li>
+                <? } ?>
+            <? } ?>
+        <? } else { ?>
+            <? if(posts.paginator.curPage <= 5) { ?>
+                <? for(var page = 1; page <= 5; page += 1) { ?>
+                    <? if(page === posts.paginator.curPage){ ?>
+                        <li class="u-page u-page-num active"><span><?= page ?></span></li>
+                    <? } else { ?>
+                        <li class="u-page u-page-num"><a href="<?= posts.linkUrl + page + posts.linkParam ?>" title="第<?= page ?>页"><?= page ?></a></li>
+                    <? } ?>
+                <? } ?>
+                <li class="u-page-split"><span>...</span></li>
+                <li class="u-page u-page-num"><a href="<?= posts.linkUrl + posts.paginator.totalPage + posts.linkParam ?>" title="第<?= posts.paginator.totalPage ?>页"><?= posts.paginator.totalPage ?></a></li>
+            <? } else if(posts.paginator.curPage >= posts.paginator.totalPage - 4) { ?>
+                <li class="u-page u-page-num"><a href="<?= posts.linkUrl + 1 + posts.linkParam ?>" title="第1页">1</a></li>
+                <li class="u-page-split"><span>...</span></li>
+                <? for(var page = posts.paginator.totalPage - 4; page <= posts.paginator.totalPage; page += 1) { ?>
+                    <? if(page === posts.paginator.curPage) { ?>
+                        <li class="u-page u-page-num active"><span><?= page ?></span></li>
+                    <? } else { ?>
+                        <li class="u-page u-page-num"><a href="<?= posts.linkUrl + page + posts.linkParam ?>" title="第<?= page ?>页"><?= page ?></a></li>
+                    <? } ?>
+                <? } ?>
+            <? } else { ?>
+                <li class="u-page u-page-num"><a href="<?= posts.linkUrl + 1 + posts.linkParam ?>" title="第1页">1</a></li>
+                <li class="u-page-split"><span>...</span></li>
+                <? for(var page = posts.paginator.curPage - 2; page <= posts.paginator.curPage + 2; page += 1) { ?>
+                    <? if(page === posts.paginator.curPage) { ?>
+                        <li class="u-page u-page-num active"><span><?= page ?></span></li>
+                    <? } else { ?>
+                        <li class="u-page u-page-num"><a href="<?= posts.linkUrl + page + posts.linkParam ?>" title="第<?= page ?>页"><?= page ?></a></li>
+                    <? } ?>
+                <? } ?>
+                <li class="u-page-split"><span>...</span></li>
+                <li class="u-page u-page-num"><a href="<?= posts.linkUrl + posts.paginator.totalPage + posts.linkParam ?>" title="第<?= posts.paginator.totalPage ?>页"><?= posts.paginator.totalPage ?></a></li>
+            <? } ?>
+        <? } ?>
+        <? if(posts.paginator.curPage < posts.paginator.endPage) { ?><li class="u-page u-page-next"><a href="<?= posts.linkUrl + posts.paginator.nextPage + posts.linkParam ?>" title="下一页">&gt;</a></li><? } ?>
+    </ul>
+</div>
+<? } ?>

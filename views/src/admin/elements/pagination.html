@@ -1,0 +1,51 @@
+<? if(paginator) { ?>
+<div class="pageBar">
+    <ul class="pageList">
+        <? if(paginator.curPage > 1){ ?><li><a href="<?= paginator.linkUrl + paginator.prevPage + paginator.linkParam ?>" title="上一页">Prev</a></li><? } ?>
+        <? if(paginator.totalPage < 10) { ?>
+            <? for(var page = 1; page <= paginator.totalPage; page += 1){ ?>
+                <? if(page === paginator.curPage){ ?>
+                    <li><span class="curPage"><?= page ?></span></li>
+                <? } else { ?>
+                    <li><a href="<?= paginator.linkUrl + page + paginator.linkParam ?>" title="第<?= page ?>页(<?= ((page - 1) * paginator.pageLimit + 1) + '-' + (page * paginator.pageLimit > paginator.total ? paginator.total : page * paginator.pageLimit) ?>)"><?= page ?></a></li>
+                <? } ?>
+            <? } ?>
+        <? } else { ?>
+            <? if(paginator.curPage <= 5) { ?>
+                <? for(var page = 1; page <= 6; page += 1){ ?>
+                    <? if(page === paginator.curPage){ ?>
+                        <li><span class="curPage"><?= page ?></span></li>
+                    <? } else { ?>
+                        <li><a href="<?= paginator.linkUrl + page + paginator.linkParam ?>" title="第<?= page ?>页(<?= ((page - 1) * paginator.pageLimit + 1) + '-' + (page * paginator.pageLimit) ?>)"><?= page ?></a></li>
+                    <? } ?>
+                <? } ?>
+                <li class="pageSplit"><span>...</span></li>
+                <li><a href="<?= paginator.linkUrl + paginator.totalPage + paginator.linkParam ?>" title="第<?= paginator.totalPage ?>页(<?= ((paginator.totalPage - 1) * paginator.pageLimit + 1) + '-' + paginator.total ?>)"><?= paginator.totalPage ?></a></li>
+            <? } else if(paginator.curPage >= paginator.totalPage - 4) { ?>
+                <li><a href="<?= paginator.linkUrl + 1 + paginator.linkParam ?>" title="第1页(<?= 1 + '-' + paginator.pageLimit ?>)">1</a></li>
+                <li class="pageSplit"><span>...</span></li>
+                <? for(var page = paginator.totalPage - 6; page <= paginator.totalPage; page += 1){ ?>
+                    <? if(page === paginator.curPage){ ?>
+                        <li><span class="curPage"><?= page ?></span></li>
+                    <? } else { ?>
+                        <li><a href="<?= paginator.linkUrl + page + paginator.linkParam ?>" title="第<?= page ?>页(<?= ((page - 1) * paginator.pageLimit + 1) + '-' + (page * paginator.pageLimit > paginator.total ? paginator.total : page * paginator.pageLimit) ?>)"><?= page ?></a></li>
+                    <? } ?>
+                <? } ?>
+            <? } else { ?>
+                <li><a href="<?= paginator.linkUrl + 1 + paginator.linkParam ?>" title="第1页(<?= 1 + '-' + paginator.pageLimit ?>)">1</a></li>
+                <li class="pageSplit"><span>...</span></li>
+                <? for(var page = paginator.curPage - 3; page <= paginator.curPage + 3; page += 1){ ?>
+                    <? if(page === paginator.curPage){ ?>
+                        <li><span class="curPage"><?= page ?></span></li>
+                    <? } else { ?>
+                        <li><a href="<?= paginator.linkUrl + page + paginator.linkParam ?>" title="第<?= page ?>页(<?= ((page - 1) * paginator.pageLimit + 1) + '-' + (page * paginator.pageLimit) ?>)"><?= page ?></a></li>
+                    <? } ?>
+                <? } ?>
+                <li class="pageSplit"><span>...</span></li>
+                <li><a href="<?= paginator.linkUrl + paginator.totalPage + paginator.linkParam ?>" title="第<?= paginator.totalPage ?>页(<?= ((paginator.totalPage - 1) * paginator.pageLimit + 1) + '-' + paginator.total ?>)"><?= paginator.totalPage ?></a></li>
+            <? } ?>
+        <? } ?>
+        <? if(paginator.curPage < paginator.endPage){ ?><li><a href="<?= paginator.linkUrl + paginator.nextPage + paginator.linkParam ?>" title="下一页">Next</a></li><? } ?>
+    </ul>
+</div>
+<? } ?>
