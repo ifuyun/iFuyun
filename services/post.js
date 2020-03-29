@@ -450,7 +450,7 @@ module.exports = {
         async.auto({
             commonData: (cb) => {
                 this.getCommonData({
-                    page: page,
+                    page,
                     from: 'category',
                     filterCategory: !param.isAdmin
                 }, cb);
@@ -527,7 +527,7 @@ module.exports = {
         async.auto({
             commonData: (cb) => {
                 this.getCommonData({
-                    page: page,
+                    page,
                     from: 'tag',
                     filterCategory: !param.isAdmin
                 }, cb);

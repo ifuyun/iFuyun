@@ -62,9 +62,9 @@ module.exports = {
                 }
             } else {
                 if (page > 1) {
-                    resData.meta.title = util.getTitle(['第' + page + '页', '文章列表', options.site_name.optionValue]);
+                    resData.meta.title = util.getTitle(['第' + page + '页', options.site_slogan.optionValue, options.site_name.optionValue]);
                 } else {
-                    resData.meta.title = util.getTitle(['爱生活，爱抚云', options.site_name.optionValue]);
+                    resData.meta.title = util.getTitle([options.site_slogan.optionValue, options.site_name.optionValue]);
                 }
             }
 
@@ -239,7 +239,7 @@ module.exports = {
                 resData.meta.title = util.getTitle([curCat, '分类目录', options.site_name.optionValue]);
             }
 
-            resData.meta.description = '[' + curCat + ']' + (page > 1 ? '(第' + page + '页)' : '') + options.site_description.option_value;
+            resData.meta.description = '[' + curCat + ']' + (page > 1 ? '(第' + page + '页)' : '') + options.site_description.optionValue;
             resData.meta.keywords = curCat + ',' + options.site_keywords.optionValue;
             resData.meta.author = options.site_author.optionValue;
 
@@ -301,7 +301,7 @@ module.exports = {
                 resData.meta.title = util.getTitle([tag, '标签', options.site_name.optionValue]);
             }
 
-            resData.meta.description = '[' + tag + ']' + (page > 1 ? '(第' + page + '页)' : '') + options.site_description.option_value;
+            resData.meta.description = '[' + tag + ']' + (page > 1 ? '(第' + page + '页)' : '') + options.site_description.optionValue;
             resData.meta.keywords = tag + ',' + options.site_keywords.optionValue;
             resData.meta.author = options.site_author.optionValue;
 
