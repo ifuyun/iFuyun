@@ -11,7 +11,7 @@ const env = (process.env.ENV && process.env.ENV.trim()) || 'development';
 const isDev = env !== 'production';
 
 module.exports = {
-    // name: '爱生活，爱抚云',
+    siteName: '爱浮云',
     version: pkgCfg.version,
     author: 'Fuyun',
     sessionSecret: credentials.sessionSecret,

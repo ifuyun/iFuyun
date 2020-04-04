@@ -90,7 +90,7 @@ service = {
             $qrcodeReward.hide();
         }).on('click', '#postContent img', function () {
             const $that = $(this);
-            const $cloneImg = $that.clone(false);
+            const $cloneImg = $that.clone(false).removeAttr('width').removeAttr('height');
             popup.custom({
                 title: ' ',
                 content: $cloneImg,

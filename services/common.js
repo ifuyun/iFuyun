@@ -6,9 +6,10 @@
  */
 const path = require('path');
 const gm = require('gm').subClass({imageMagick: true});
-const models = require('../models');
+const appConfig = require('../config/core');
 const util = require('../helper/util');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
+const models = require('../models');
 const {Link, Post, TermTaxonomy, Comment, Option, VPostDateArchive} = models;
 const Op = models.Sequelize.Op;
 
@@ -460,8 +461,8 @@ module.exports = {
         // 字体实际高度比字体大小略小≈17
         const markMarginX = 10;
         const markMarginY = 6;
-        const copy = '@抚云';
-        const site = 'www.ifuyun.com';
+        const copy = `@${appConfig.siteName}`;
+        const site = appConfig.domain;
         const fontPath = path.join(__dirname, '..', 'config', 'PingFang.ttc');
         let imgWidth;
         let imgHeight;
