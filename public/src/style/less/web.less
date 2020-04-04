@@ -210,10 +210,10 @@ html {
     margin-right: 300px;
 }
 .m-sticky, .m-excerpt, .m-pagination {
-    -webkit-box-shadow: 0 0px 2px rgba(0, 0, 0, 0.2);
+    -webkit-box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
     -moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
     -o-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
-    box-shadow: 0 0px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
     background-color: #fff;
 }
 .m-sticky {
@@ -280,7 +280,7 @@ html {
     color: #888;
     padding: 10px 0;
     &, .glyphicon {
-        font-size: 13px;
+        font-size: 12px;
     }
     a {
         color: #888;
@@ -333,18 +333,12 @@ html {
 }
 .m-pagination > ul {
     font-size: 13px;
-    text-align: right;
-
     > li {
         display: inline-block;
         line-height: 32px;
-        width: 30px;
         height: 30px;
         text-align: center;
 
-        + li {
-            margin-left: 6px;
-        }
         a {
             display: inline-block;
             width: 100%;
@@ -366,6 +360,24 @@ html {
             color: #999;
             font-weight: bold;
         }
+    }
+}
+.m-pagination > .x-pc {
+    text-align: right;
+    > li {
+        width: 30px;
+        + li {
+            margin-left: 6px;
+        }
+    }
+}
+.m-pagination > .x-mobile {
+    text-align: center;
+    .u-page-prev {
+        float: left;
+    }
+    .u-page-next {
+        float: right;
     }
 }
 .m-sidebar {
@@ -541,6 +553,9 @@ html {
             width: 33.33%;
         }
     }
+    .m-pagination .x-mobile {
+        display: none;
+    }
 }
 @media (max-width:667px) {/*680px*/
     .u-logo {
@@ -574,13 +589,8 @@ html {
     .u-textarea-comment {
         width: 250px;
     }
-    .m-pagination {
-        .u-page-prev {
-            float: left;
-        }
-        .u-page-num, .u-page-split {
-            display: none;
-        }
+    .m-pagination .x-pc {
+        display: none;
     }
     .m-archive-list {
         > li {
@@ -640,8 +650,7 @@ html {
     color: #1abc9c;
 }
 .m-article-meta {
-    margin-top: 10px;
-    margin-bottom: 10px;
+    margin: 5px 0;
     line-height: 24px;
     clear: both;
     padding: 0 20px;
@@ -784,6 +793,7 @@ html {
     background-color: #f1f1f1;
 }
 .m-article-qrcode {
+    margin-top: 10px;
     text-align: center;
     position: relative;
 }

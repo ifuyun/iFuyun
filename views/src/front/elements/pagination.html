@@ -1,6 +1,6 @@
 <? if(posts && posts.paginator) { ?>
-<div class="m-pagination f-clearfix">
-    <ul>
+<div class="m-pagination">
+    <ul class="x-pc">
         <? if(posts.paginator.curPage > 1){ ?><li class="u-page u-page-prev"><a href="<?= posts.linkUrl + posts.paginator.prevPage + posts.linkParam ?>" title="上一页">&lt;</a></li><? } ?>
         <? if(posts.paginator.totalPage < 10) { ?>
             <? for(var page = 1; page <= posts.paginator.totalPage; page += 1) { ?>
@@ -46,6 +46,11 @@
             <? } ?>
         <? } ?>
         <? if(posts.paginator.curPage < posts.paginator.endPage) { ?><li class="u-page u-page-next"><a href="<?= posts.linkUrl + posts.paginator.nextPage + posts.linkParam ?>" title="下一页">&gt;</a></li><? } ?>
+    </ul>
+    <ul class="x-mobile">
+        <? if(posts.paginator.curPage > 1){ ?><li class="u-page-prev"><a href="<?= posts.linkUrl + posts.paginator.prevPage + posts.linkParam ?>" title="上一页">&lt; 上一页</a></li><? } ?>
+        <li class="active"><span><?= posts.paginator.curPage ?></span></li>
+        <? if(posts.paginator.curPage < posts.paginator.endPage) { ?><li class="u-page-next"><a href="<?= posts.linkUrl + posts.paginator.nextPage + posts.linkParam ?>" title="下一页">下一页 &gt;</a></li><? } ?>
     </ul>
 </div>
 <? } ?>
