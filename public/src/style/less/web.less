@@ -1,17 +1,12 @@
 @charset "UTF-8";
 /* reset */
 * { margin: 0; padding: 0; }
-/**, *:before, *:after { -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; }*/
 html, body, h1, h2, h3, h4, h5, h6, div, dl, dt, dd, ul, ol, li, p, blockquote, pre, hr, figure, table, caption, th, td, form, fieldset, legend, input, button, textarea, menu, optgroup, select { margin: 0; padding: 0; }
 body { line-height: 1.42857143; font-size: 14px; }
 body { background-color: #fafafa; color: #333; font-family: "Microsoft YaHei","SimHei","Helvetica Neue",Helvetica,Arial,sans-serif; }
 article, aside, details, figcaption, figure, footer, header, hgroup, main, menu, nav, section, summary { display: block; }
 a, a:hover, a:focus { color: #2f9cf4; text-decoration: none; outline: 0; }
 img { border: 0; vertical-align: middle; }
-/*button { overflow: visible; }*/
-/*button, select { text-transform: none; }*/
-/*button, html input[type="button"], input[type="reset"], input[type="submit"] { -webkit-appearance: button; cursor: pointer; }*/
-/*input { line-height: normal; }*/
 textarea { overflow: auto; resize: none; }
 table { border-collapse: collapse; border-spacing: 0; }
 th { text-align: left; }
@@ -19,7 +14,7 @@ h1, h2, h3, h4, h5, h6 { line-height: 1.1; }
 h1 { font-size: 18px; }
 h2 { font-size: 16px; }
 h3 { font-size: 14px; }
-h4, h5, h6 { font-size: 13px; }
+h4, h5, h6 { font-size: 14px; }
 p { margin: 0; }
 ul, ol { margin-top: 0; margin-bottom: 0; }
 ul ul, ol ul, ul ol, ol ol { margin-bottom: 0; }
@@ -39,6 +34,7 @@ html {
 .f-clearfix:before, .f-clearfix:after { display: table; content: " "; }
 .f-clearfix:after { clear: both; }
 .f-float-left { float: left; }
+.f-float-right { float: right; }
 
 @font-face {
     font-family: 'Glyphicons Regular';
@@ -133,7 +129,7 @@ html {
     margin: 0 auto;
     position: relative;
 }
-.u-logo/*, .m-nav-main, .m-nav-tool*/ {
+.u-logo {
     height: 50px;
 }
 .u-logo, .m-nav-main {
@@ -212,6 +208,8 @@ html {
 }
 .m-content {
     margin-right: 300px;
+}
+.m-sticky, .m-excerpt, .m-pagination {
     -webkit-box-shadow: 0 0px 2px rgba(0, 0, 0, 0.2);
     -moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
     -o-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
@@ -221,7 +219,6 @@ html {
 .m-sticky {
     padding: 25px 8px 15px 8px;
     position: relative;
-    //margin: 15px 0;
 }
 .m-crumb-wrap + .m-sticky {
     margin-top: 0;
@@ -259,41 +256,69 @@ html {
     left: 20px;
     margin-right: 40px;
 }
+.m-excerpt, .m-pagination {
+    margin-top: 15px;
+}
 .m-excerpt {
-    padding: 15px 20px 15px 180px;
+    padding: 10px 20px;
 }
 .m-excerpt:hover {
     background-color: #fafafa;
 }
-.m-excerpt .m-excerpt-meta {
-    float: left;
-    position: relative;
-    overflow: hidden;
-    border-right: 1px solid #eee;
-    width: 140px;
-    /*margin-right: 20px;*/
-    margin-left: -160px;
-    padding: 15px 0;
-    font-size: 13px;
+.m-excerpt h3 {
+    font-size: 16px;
+    line-height: 32px;
+    height: 32px;
 }
-.m-excerpt .m-excerpt-meta li {
-    padding-left: 5px;
-    height: 28px;
-    color: #888;
-    line-height: 28px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-.m-excerpt .m-excerpt-meta li a {
-    color: #888;
-}
-.m-excerpt .m-excerpt-meta li a:hover {
+.m-excerpt a {
     color: #1abc9c;
+    &:hover {
+        text-decoration: underline;
+    }
+}
+.m-excerpt .m-excerpt-meta {
+    color: #888;
+    padding: 10px 0;
+    &, .glyphicon {
+        font-size: 13px;
+    }
+    a {
+        color: #888;
+        &:hover {
+            color: #1abc9c;
+            text-decoration: none;
+        }
+        + a {
+            margin-left: 10px;
+        }
+    }
+}
+.m-excerpt .m-excerpt-meta-post {
+    span + span {
+        margin-left: 20px;
+    }
+}
+.m-excerpt .m-excerpt-meta-taxonomy {
+    margin-top: 10px;
+    border-top: 1px dashed #eee;
+    ul {
+        padding-left: 2em;
+        li {
+            float: left;
+            margin-right: 10px;
+            a {
+                padding: 3px 6px;
+                background-color: #f1f1f1;
+            }
+        }
+    }
+    .m-meta-dynamic {
+        margin-bottom: 5px;
+    }
 }
 .m-excerpt .m-excerpt-content {
     line-height: 24px;
-    font-size: 13px;
+    font-size: 14px;
     > header a {
         display: inline-block;
         width: 100%;
@@ -301,20 +326,6 @@ html {
         white-space: nowrap;
         text-overflow: ellipsis;
     }
-}
-.m-excerpt header {
-    margin-bottom: 10px;
-}
-.m-excerpt h3 {
-    font-size: 16px;
-    line-height: 32px;
-}
-.m-excerpt a {
-    color: #1abc9c;/*5ec5b1*/
-}
-.m-excerpt a:hover {
-    /*color: #1abc9c;*/
-    text-decoration: underline;
 }
 .m-pagination {
     padding: 20px;
@@ -367,14 +378,14 @@ html {
     margin-bottom: 20px;
 }
 .u-input {
-    width: 200px;
-    border: 1px solid #d0d0d0/*c8c7c2*/;
+    width: 199px;
+    border: 1px solid #d0d0d0;
     border-radius: 0;
     outline: 0;
     color: #6a6a6a;
     padding: 5px;
-    background: #fafafa/*f8f8f8*/;
-    font-size: 13px;
+    background: #fafafa;
+    font-size: 14px;
     line-height: 20px;
 }
 .u-input:focus {
@@ -397,7 +408,7 @@ html {
 .u-btn {
     padding: 6px 15px;
     outline: 0;
-    font-size: 13px;
+    font-size: 14px;
     line-height: 20px;
     text-align: center;
     cursor: pointer;
@@ -422,7 +433,6 @@ html {
     margin-bottom: 15px;
     background-color: #fff;
     padding: 10px;
-    /*border: 1px solid #e8e8e8;*/
     border: 1px solid transparent;
     -webkit-box-shadow: 0 0px 2px rgba(0, 0, 0, 0.2);
     -moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
@@ -448,7 +458,7 @@ html {
     border-bottom: 1px dashed #eaeaea;
     padding: 3px 20px;
     color: #777;
-    font-size: 13px;
+    font-size: 14px;
 }
 .m-widget > ul > li:hover {
     background-color: #fafafa;
@@ -521,6 +531,9 @@ html {
     .m-article-footer .m-meta-dynamic {
         display: none;
     }
+    .m-excerpt-meta-taxonomy .m-meta-dynamic {
+        display: none;
+    }
 }
 @media (min-width:569px) {
     .m-archive-list {
@@ -552,16 +565,11 @@ html {
     .m-nav {
         padding: 0;
     }
-    .m-excerpt-meta {
+    .m-excerpt-meta-post .m-meta-dynamic {
         display: none;
     }
-    .m-excerpt {
-        padding-left: 20px;
-    }
     .m-nav-main > li > a {
-        //padding: 0 8px;
         line-height: 40px;
-        //font-size: 15px;
     }
     .u-textarea-comment {
         width: 250px;
@@ -626,7 +634,6 @@ html {
 }
 .m-article-title > a {
     display: inline-block;
-    //margin: 0 25px;
     color: #555;
 }
 .m-article-title > a:hover {
@@ -669,13 +676,12 @@ html {
     word-wrap: break-word;
 }
 .m-article-content a, .m-article-link a, .m-archive a {
-    color: #1abc9c;/*20aa8f*/
+    color: #1abc9c;
 }
 .m-article-content a {
     border-bottom: solid 1px;
 }
 .m-article-content a:hover, .m-article-link a:hover, .m-archive a:hover {
-    /*color: #1abc9c;*/
     color: #fe0065;
 }
 .m-article-content p {
@@ -706,21 +712,19 @@ html {
 }
 .m-article-content blockquote {
     display: block;
-    /*margin: 0 10px;*/
     padding: 5px 10px;
     overflow: auto;
-    background: #f5f2f0;/*f1f1f1*/
+    background: #f5f2f0;
     font-family: Verdana,Helvetica,Arial,sans-serif;
-    font-size: 13px;
+    font-size: 14px;
 }
 .m-article-content pre {
     margin: 5px 0;
-    /*padding: 5px;*/
     padding: 0.5em 1.5em;
     overflow: auto;
     text-indent: 0;
     background: #f5f2f0;
-    font-size: 13px;
+    font-size: 14px;
     line-height: 20px;
 }
 .m-article-content > pre {
@@ -732,8 +736,6 @@ html {
     color: #333;
 }
 .m-article-content pre > code {
-    //background: #f5f2f0;
-    //color: #333;
     padding: 0;
 }
 .m-article-content li blockquote {
@@ -786,7 +788,6 @@ html {
     position: relative;
 }
 .m-article-qrcode .m-article-qrcode-item {
-    /*display: inline-block;*/
     width: 48px;
     height: 50px;
     line-height: 50px;
@@ -829,16 +830,10 @@ html {
     margin-left: -51px;
 }
 .m-article-qrcode .m-article-qrcode-img canvas, .m-article-qrcode .m-article-qrcode-img table {
-    /*margin-top: -20px;*/
     position: absolute;
     left: 10px;
 }
 .m-article-qrcode .m-article-qrcode-arrow {
-    //border-left: 8px solid transparent;
-    //border-right: 8px solid transparent;
-    //border-top: 8px solid #d0d0d0;
-    //font-size: 0;
-    //line-height: 0;
     bottom: 0;
     position: absolute;
     margin-bottom: -8px;
@@ -887,7 +882,6 @@ html {
     text-overflow: ellipsis;
     max-width: 75%;
     display: inline-block;
-    /*vertical-align: text-bottom;*/
 }
 .m-article-link .m-article-link-prev {
     float: left;
