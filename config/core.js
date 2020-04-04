@@ -2,7 +2,7 @@
  * 基本配置信息
  * @module cfg_core
  * @author Fuyun
- * @version 2.0.0
+ * @version 3.1.1
  * @since 1.0.0
  */
 const pkgCfg = require('../package.json');
@@ -11,7 +11,7 @@ const env = (process.env.ENV && process.env.ENV.trim()) || 'development';
 const isDev = env !== 'production';
 
 module.exports = {
-    name: '爱生活，爱抚云',
+    // name: '爱生活，爱抚云',
     version: pkgCfg.version,
     author: 'Fuyun',
     sessionSecret: credentials.sessionSecret,
