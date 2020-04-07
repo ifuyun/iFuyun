@@ -4,7 +4,7 @@
         <div class="m-content-wrap">
             <div class="m-content">
                 <?- include('../elements/crumb.html') -?>
-                <div class="m-sticky">
+                <div class="m-sticky m-content-box">
                     <ul>
                         <li>
                             <img src="/style/img/cloud.jpg" alt="<?- options.site_name.optionValue ?>" />
@@ -16,7 +16,7 @@
                 </div>
                 <? posts.forEach(function(postItem){ ?>
                 <? var post = postItem.post ?>
-                <article class="m-excerpt f-clearfix">
+                <article class="m-excerpt m-content-box f-clearfix">
                     <div class="m-excerpt-content f-clearfix">
                         <header>
                             <h3><a rel="bookmark" title="<?- post.postTitle ?>" href="<?= post.postGuid ?>"><?- post.postTitle ?></a></h3>

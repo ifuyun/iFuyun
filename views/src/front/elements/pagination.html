@@ -1,5 +1,5 @@
 <? if(posts && posts.paginator) { ?>
-<div class="m-pagination">
+<div class="m-pagination m-content-box">
     <ul class="x-pc">
         <? if(posts.paginator.curPage > 1){ ?><li class="u-page u-page-prev"><a href="<?= posts.linkUrl + posts.paginator.prevPage + posts.linkParam ?>" title="上一页">&lt;</a></li><? } ?>
         <? if(posts.paginator.totalPage < 10) { ?>
