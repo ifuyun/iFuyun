@@ -217,12 +217,10 @@ html {
     background-color: #fff;
 }
 .m-sticky {
-    padding: 20px 5px;
     position: relative;
 }
 .m-sticky li {
     overflow: hidden;
-    margin: 0 20px;
 }
 .m-sticky li img {
     /*max-width: none;*/
@@ -378,15 +376,15 @@ html {
 }
 .m-sidebar {
     float: left;
-    margin-left: -270px;
-    width: 270px;
+    margin-left: -272px;
+    width: 272px;
     position: relative;
 }
 .m-search {
     margin-bottom: 15px;
 }
 .u-input {
-    width: 199px;
+    width: 201px;
     border: 1px solid #d0d0d0;
     border-radius: 0;
     outline: 0;
@@ -438,7 +436,7 @@ html {
     padding: 0;
 }
 .m-widget {
-    margin-bottom: 15px;
+    margin-top: 15px;
     background-color: #fff;
     padding: 10px;
     border: 1px solid transparent;
@@ -480,7 +478,7 @@ html {
 .m-widget .m-qrcode-wx {
     width: 240px;
     height: 240px;
-    margin: 5px 4px;
+    margin: 0 auto;
     background: url(http://s.ifuyun.com/upload/2020/03/3c94204aeddb6de3.jpg) no-repeat;
     background-size: cover;
 }
@@ -504,6 +502,11 @@ html {
     text-decoration: underline;
 }
 
+@media (min-width:980px) {
+    .g-container {
+        width: 1000px;
+    }
+}
 @media (max-width:979px) {
     .g-container {
         margin-top: 55px;
@@ -520,18 +523,21 @@ html {
     .m-nav-tool {
         display: none;
     }
+    .m-sticky {
+        margin-top: 15px;
+    }
     .m-crumb-wrap {
         display: none;
     }
     .m-article-title {
         padding-top: 20px;
     }
-}
-@media (max-width:768px) {/*767px*/
-    .m-sticky {
+    .m-ads-list, .m-ads-post {
         display: none;
     }
-    .m-sticky + .m-diag {
+}
+@media (max-width:768px) {
+    .m-sticky {
         display: none;
     }
 }
@@ -553,7 +559,7 @@ html {
         display: none;
     }
 }
-@media (max-width:667px) {/*680px*/
+@media (max-width:667px) {
     .u-logo {
         display: none;
     }
@@ -569,7 +575,7 @@ html {
         display: none;
     }
 }
-@media (max-width:568px) {/*550px*/
+@media (max-width:568px) {
     .g-container {
         margin-top: 42px;
     }
@@ -772,7 +778,7 @@ html {
     background-color: #fafafa;
 }
 .m-article-footer {
-    padding: 0 20px 20px 20px;
+    padding: 20px;
 }
 .m-article-footer .m-article-meta {
     text-align: left;
@@ -955,4 +961,7 @@ html {
 }
 .m-stat-cnzz {
     display: none;
+}
+.m-ads {
+    margin-top: 15px;
 }
