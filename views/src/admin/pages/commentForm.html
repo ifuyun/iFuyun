@@ -16,8 +16,8 @@
                             </div>
                             <? if(action === 'edit') { ?>
                             <div class="form-field">
-                                <label class="form-label-left" for="comment-content">评论内容</label>
-                                <input type="text" class="input form-input j-focus" name="commentContent" value="<?= comment.commentContent ?>" />
+                                <label class="form-label-left" for="editComment">评论内容</label>
+                                <input type="text" class="input form-input j-focus" name="commentContent" id="editComment" value="<?= comment.commentContent ?>" />
                                 <input type="hidden" name="commentId" value="<?= comment.commentId ?>" />
                             </div>
                             <? } else if(action === 'reply') { ?>
@@ -26,8 +26,8 @@
                                 <span><?= comment.commentContent ?></span>
                             </div>
                             <div class="form-field">
-                                <label class="form-label-left" for="comment-content">回复评论</label>
-                                <input type="text" class="input form-input j-focus" name="commentContent" />
+                                <label class="form-label-left" for="replyComment">回复评论</label>
+                                <input type="text" class="input form-input j-focus" name="commentContent" id="replyComment" />
                                 <input type="hidden" name="parentId" value="<?= comment.commentId ?>" />
                             </div>
                             <? } else { ?>
