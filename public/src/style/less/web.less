@@ -832,8 +832,8 @@ html {
 .m-article-qrcode .m-article-qrcode-img {
     position: absolute;
     left: 50%;
-    width: 150px;
-    height: 150px;
+    width: 160px;
+    height: 160px;
     padding: 10px;
     border: 1px solid #d0d0d0;
     border-radius: 3px;
@@ -843,10 +843,10 @@ html {
     display: none;
 }
 .m-article-qrcode .m-article-qrcode-share {
-    margin-left: -121px;
+    margin-left: -126px;
 }
 .m-article-qrcode .m-article-qrcode-reward {
-    margin-left: -51px;
+    margin-left: -56px;
 }
 .m-article-qrcode .m-article-qrcode-img canvas, .m-article-qrcode .m-article-qrcode-img table {
     position: absolute;
@@ -880,33 +880,30 @@ html {
 }
 .m-article-link {
     margin-top: 30px;
-    padding: 0 10px;
-}
-.m-article-link > div {
-    max-width: 48%;
-}
-.m-article-link a {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    width: 100%;
-    display: inline-block;
-}
-.m-article-link a > span {
-    float: left;
-}
-.m-article-link .m-article-link-text {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    max-width: 75%;
-    display: inline-block;
-}
-.m-article-link .m-article-link-prev {
-    float: left;
-}
-.m-article-link .m-article-link-next {
-    float: right;
+    > div {
+        box-sizing: border-box;
+        display: inline-block;
+        width: 49%;
+    }
+    a > span {
+        float: left;
+    }
+    .m-article-link-text {
+        display: inline-block;
+        width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+    .m-article-link-next {
+        padding-right: 10px;
+        text-align: right;
+        .u-text-arrow {
+            position: absolute;
+            display: inline-block;
+            width: 10px;
+        }
+    }
 }
 .m-archive-list {
     margin-left: 0;

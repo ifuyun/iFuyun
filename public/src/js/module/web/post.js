@@ -115,16 +115,10 @@ $(function () {
     hljs.initHighlightingOnLoad();
 
     $qrcodeShare.qrcode({
-        width: 150,
-        height: 150,
+        width: 160,
+        height: 160,
         foreground: '#5f5f5f',
         text: $qrcodeShare.attr('data-url')
-    });
-    $qrcodeReward.qrcode({
-        width: 150,
-        height: 150,
-        foreground: '#5f5f5f',
-        text: 'https://wx.tenpay.com/f2f?t=AQAAAHJba4G%2FaqEgOMVB%2FbNG3ac%3D'
     });
 
     showCaptcha();

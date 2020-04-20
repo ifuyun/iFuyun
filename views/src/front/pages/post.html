@@ -48,17 +48,24 @@
                         </div>
                         <div class="m-article-qrcode-img m-article-qrcode-reward" id="qrcodeReward">
                             <div class="m-article-qrcode-arrow"><i></i><i></i></div>
+                            <img src="/style/img/reward.jpg" width="160" height="160" alt="reward"/>
                         </div>
                         <div class="m-article-qrcode-item m-article-share" id="btnShare">分享</div>
                         <div class="m-article-qrcode-item m-article-reward" id="btnReward">打赏</div>
                     </div>
                     <div class="m-article-link f-clearfix">
-                        <? if(prevPost){ ?>
-                        <div class="m-article-link-prev"><a href="<?= prevPost.postGuid ?>" title="<?= prevPost.postTitle ?>"><span>&lt;&nbsp;上一篇：</span><span class="m-article-link-text"><?= prevPost.postTitle ?></span></a></div>
-                        <? } ?>
-                        <? if(nextPost){ ?>
-                        <div class="m-article-link-next"><a href="<?= nextPost.postGuid ?>" title="<?= nextPost.postTitle ?>"><span>下一篇：</span><span class="m-article-link-text"><?= nextPost.postTitle ?></span><span>&nbsp;&gt;</span></a></div>
-                        <? } ?>
+                        <div class="m-article-link-prev">
+                            <? if(prevPost){ ?>
+                            <a href="<?= prevPost.postGuid ?>" title="<?= prevPost.postTitle ?>">
+                                <span class="m-article-link-text">&lt; 上一篇：<?= prevPost.postTitle ?></span></a>
+                            <? } ?>
+                        </div>
+                        <div class="m-article-link-next">
+                            <? if(nextPost){ ?>
+                            <a href="<?= nextPost.postGuid ?>" title="<?= nextPost.postTitle ?>">
+                                <span class="m-article-link-text">下一篇：<?= nextPost.postTitle ?></span><span class="u-text-arrow"> &gt;</span></a>
+                            <? } ?>
+                        </div>
                     </div>
                 </footer>
                 <?- include('../elements/comment.html') -?>
