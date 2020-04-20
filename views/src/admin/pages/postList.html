@@ -101,9 +101,8 @@
                                 <td class="column-count"><?= post.commentCount ?></td>
                                 <td><a rel="author" href="/admin/post?author=<?= post.postAuthor ?>"><?- post.User.userDisplayName ?></a></td>
                                 <td><a href="/admin/post?status=<?= post.postStatus ?>"><?= formatter.postStatus(post.postStatus) ?></a></td>
-                                <td>
-                                    <!-- <input type="button" class="button button-not-last btn-edit" value="编辑" /><input type="button" class="button btn-delete" value="删除" /> -->
-                                    <a class="button button-not-last btn-edit" href="/admin/post/item?action=edit&type=<?= type ?>&postId=<?= post.postId ?>">编辑</a><a class="button btn-delete" href="javascript:">删除</a>
+                                <td class="m-col-operate">
+                                    <a href="/admin/post/item?action=edit&type=<?= type ?>&postId=<?= post.postId ?>">编辑</a><a class="btn-delete" href="javascript:">删除</a>
                                 </td>
                             </tr>
                             <? }) ?>

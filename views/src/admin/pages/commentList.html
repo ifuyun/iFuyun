@@ -34,12 +34,12 @@
                         <thead>
                             <tr>
                                 <th class="column-check"><input type="checkbox" class="checkAll" /></th>
-                                <th>评论内容</th>
-                                <th>文章</th>
-                                <th>邮箱</th>
-                                <th>日期</th>
-                                <th>作者</th>
-                                <th>状态</th>
+                                <th width="20%">评论内容</th>
+                                <th width="15%">文章</th>
+                                <th width="15%">邮箱</th>
+                                <th width="12%">日期</th>
+                                <th width="10%">作者</th>
+                                <th width="8%">状态</th>
                                 <th>操作</th>
                             </tr>
                         </thead>
@@ -66,8 +66,8 @@
                                 <td><?= moment(comment.commentCreated).format('YYYY-MM-DD HH:mm:ss') ?></td>
                                 <td><?= comment.commentAuthor ?></td>
                                 <td><a href="/admin/comment?status=<?= comment.commentStatus ?>"><?= formatter.commentStatus(comment.commentStatus) ?></a></td>
-                                <td>
-                                    <? if(comment.commentStatus === 'pending'){ ?><a class="button button-not-last btn-approve" data-id="<?= comment.commentId ?>" href="javascript:">批准</a><a class="button button-not-last btn-reject" data-id="<?= comment.commentId ?>" href="javascript:">驳回</a><a class="button button-not-last btn-spam" data-id="<?= comment.commentId ?>" href="javascript:">垃圾评论</a><? } ?><a class="button button-not-last btn-reply" href="/admin/comment/<?= comment.commentId ?>?action=reply">回复</a><a class="button button-not-last btn-edit" href="/admin/comment/<?= comment.commentId ?>?action=edit">编辑</a><a class="button btn-delete" data-id="<?= comment.commentId ?>" href="javascript:">删除</a>
+                                <td class="m-col-operate">
+                                    <? if(comment.commentStatus === 'pending'){ ?><a class="btn-approve" data-id="<?= comment.commentId ?>" href="javascript:">批准</a><a class="btn-reject" data-id="<?= comment.commentId ?>" href="javascript:">驳回</a><a class="btn-spam" data-id="<?= comment.commentId ?>" href="javascript:">垃圾评论</a><? } ?><a class="btn-reply" href="/admin/comment/<?= comment.commentId ?>?action=reply">回复</a><a class="btn-edit" href="/admin/comment/<?= comment.commentId ?>?action=edit">编辑</a><a class="btn-delete" data-id="<?= comment.commentId ?>" href="javascript:">删除</a>
                                 </td>
                             </tr>
                             <? }) ?>

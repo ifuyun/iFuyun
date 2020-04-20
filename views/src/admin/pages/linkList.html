@@ -6,13 +6,9 @@
         <div id="control-panel">
             <h2>链接</h2>
             <div class="split-line"><div class="split-corner">&nbsp;</div></div>
-            <!-- <div id="search-bar"> -->
                 <form method="get" action="#">
-                    <!-- <input type="text" class="input keyword" id="keyword" name="keyword" placeholder="搜索..." />
-                    <input type="submit" class="button" value="搜索链接" /> -->
                     <input type="hidden" name="_csrf" id="csrfToken" value="<?- token ?>" />
                 </form>
-            <!-- </div> -->
             <div class="clear-right">
                 <div class="table-nav">
                     <span><a class="button button-spacing" href="javascript:">删除</a></span>
@@ -59,8 +55,8 @@
                                 <td><?= link.linkTarget ?></td>
                                 <td><?= link.linkRating ?></td>
                                 <td><?= moment(link.linkCreated).format('YYYY-MM-DD') ?></td>
-                                <td>
-                                    <a class="button button-not-last btn-edit" href="/admin/link/item?action=edit&linkId=<?= link.linkId ?>">编辑</a><a class="button button-not-last btn-delete" href="javascript:" data-id="<?= link.linkId ?>">删除</a>
+                                <td class="m-col-operate">
+                                    <a href="/admin/link/item?action=edit&linkId=<?= link.linkId ?>">编辑</a><a class="btn-delete" href="javascript:" data-id="<?= link.linkId ?>">删除</a>
                                 </td>
                             </tr>
                             <? }) ?>
