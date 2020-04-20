@@ -646,6 +646,9 @@ module.exports = {
             data.postPassword = '';
         }
 
+        if (postId && data.postContent !== param.postRawContent) {
+            data.postModified = data.postModifiedGmt = nowTime;
+        }
         postService.savePost({
             postId,
             data,

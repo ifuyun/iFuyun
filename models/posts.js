@@ -126,7 +126,7 @@ module.exports = function (sequelize, DataTypes) {
     }, {
         tableName: 'posts',
         createdAt: 'post_created',
-        updatedAt: 'post_modified',
+        updatedAt: false,
         deletedAt: false,
         classMethods: {
         }

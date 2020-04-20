@@ -15,6 +15,7 @@
                             </div>
                             <div class="form-field">
                                 <textarea class="input" id="post-content" name="postContent"><?= post.postContent ?></textarea>
+                                <input type="hidden" name="postRawContent" value="<?= post.postContent ?>" />
                             </div>
                             <? if (page === 'post') { ?>
                             <div class="form-field form-field-box">
