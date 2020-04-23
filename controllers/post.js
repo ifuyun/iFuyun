@@ -88,9 +88,12 @@ module.exports = {
             }));
             return next();
         }
+        let referer = util.getReferrer(req) || '';
+        referer = referer.split('?')[0].split('#')[0];
         postService.showPost({
             isAdmin,
-            postId
+            postId,
+            referer
         }, (err, result) => {
             if (err) {
                 logger.error(formatOpLog({

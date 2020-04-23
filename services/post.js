@@ -318,13 +318,15 @@ module.exports = {
                         }
                     }));
                 }
+                categories = categories.filter((item) => item.visible || param.isAdmin);
                 let crumbCatId;
-                for (let i = 0; i < categories.length; i += 1) {
-                    const curCat = categories[i];
-                    if (curCat.visible || param.isAdmin) {
-                        crumbCatId = curCat.taxonomyId;
-                        break;
+                if (categories.length > 0) {
+                    // todo: parent category
+                    const crumbCats = categories.filter((item) => param.referer.endsWith(`/${item.slug}`));
+                    if (crumbCats.length > 0) {
+                        crumbCatId = crumbCats[0].taxonomyId;
                     }
+                    crumbCatId = crumbCatId || categories[0].taxonomyId;
                 }
                 if (!param.isAdmin && !crumbCatId) {
                     return cb(util.catchError({
