@@ -1,9 +1,8 @@
 @charset "UTF-8";
 /* reset */
-* { margin: 0; padding: 0; }
 html, body, h1, h2, h3, h4, h5, h6, div, dl, dt, dd, ul, ol, li, p, blockquote, pre, hr, figure, table, caption, th, td, form, fieldset, legend, input, button, textarea, menu, optgroup, select { margin: 0; padding: 0; }
-body { line-height: 1.42857143; font-size: 14px; }
-body { background-color: #fafafa; color: #333; font-family: "Microsoft YaHei","SimHei","Helvetica Neue",Helvetica,Arial,sans-serif; }
+html { font-size:100%; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100% }
+body { font-size: 14px; line-height: 1.42857143; background-color: #fafafa; color: #333; font-family: "Microsoft YaHei","SimHei","Helvetica Neue",Helvetica,Arial,sans-serif; }
 article, aside, details, figcaption, figure, footer, header, hgroup, main, menu, nav, section, summary { display: block; }
 a, a:hover, a:focus { color: #2f9cf4; text-decoration: none; outline: 0; }
 img { border: 0; vertical-align: middle; }
@@ -20,11 +19,6 @@ ul, ol { margin-top: 0; margin-bottom: 0; }
 ul ul, ol ul, ul ol, ol ol { margin-bottom: 0; }
 li { list-style: none; line-height: 24px; }
 button, input, select, textarea { line-height: inherit; font-family: inherit; font-size: inherit; }
-html {
-    font-size:100%;
-    -webkit-text-size-adjust:100%;
-    -ms-text-size-adjust:100%
-}
 ::selection {
     background: #72d0eb;
     color: #fff;
@@ -35,6 +29,7 @@ html {
 .f-clearfix:after { clear: both; }
 .f-float-left { float: left; }
 .f-float-right { float: right; }
+.f-d-none { display: none; }
 
 @font-face {
     font-family: 'Glyphicons Regular';
@@ -123,84 +118,156 @@ html {
     height: 5px;
     background-color: #1abc9c;
 }
-.m-nav {
-    width: 1000px;
-    background: #f2f2f2;
-    margin: 0 auto;
-    position: relative;
-}
-.u-logo {
-    height: 50px;
-}
-.u-logo, .m-nav-main {
-    float: left;
-}
 .u-logo {
     float: left;
     width: 135px;
+    height: 50px;
     background: url("/style/img/logo.png") no-repeat 50% 50%;
+    background-size: cover;
     overflow: hidden;
-    margin-right: 20px;
 }
-.u-article-end {
-    display: inline-block;
-    margin-top: 10px;
-    text-indent: 0;
-    font-size: 24px;
+.m-nav {
+    width: 1000px;
+    margin: 0 auto;
+    .u-logo {
+        margin-right: 20px;
+    }
+    .m-nav-sub {
+        display: none;
+        background-color: #f2f2f2;
+        position: absolute;
+        border: solid 1px #e3e3e3;
+        > li > a {
+            padding: 3px 40px 3px 20px;
+            display: inline-block;
+            line-height: 24px;
+            text-align: left;
+            font-size: 13px;
+            min-width: 80px;
+        }
+    }
+}
+.m-nav-wap {
+    @nav-border: 1px solid #eee;
+    .u-logo {
+        margin-left: 15px;
+    }
+    .u-icon-list {
+        display: inline-block;
+        float: right;
+        height: 1em;
+        margin-right: 8px;
+        padding: 11px 4px;
+        font-size: 2em;
+        color: #666;
+    }
+    .u-icon-arrow {
+        float: right;
+        margin-top: 2px;
+        margin-right: 10px;
+    }
+    .u-nav-split {
+        position: absolute;
+        width: 2px;
+        border-left: @nav-border;
+        border-right: @nav-border;
+        top: 0;
+        bottom: 0;
+        left: 110px;
+    }
+    .m-nav-wrap {
+        position: absolute;
+        left: 0;
+        right: 0;
+        min-width: 320px;
+        padding: 10px 15px;
+        border-top: @nav-border;
+        z-index: 100;
+        background: #fff;
+    }
+    .m-nav-wrap, .m-nav-mask {
+        top: 55px;
+    }
+    .m-nav-list, .m-nav-sublist {
+        float: left;
+        li {
+            line-height: 2em;
+            height: 2em;
+        }
+        a {
+            color: #666;
+        }
+    }
+    .m-nav-list {
+        a {
+            display: inline-block;
+            width: 100px;
+        }
+    }
+    .m-nav-sublist {
+        display: none;
+        margin-left: 15px;
+
+        &.m-nav-wp {
+            width: 55%;
+            max-width: 240px;
+        }
+    }
+    .m-nav-mask {
+        background: #333;
+        opacity: 0.6;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        overflow: hidden;
+        user-select: none;
+        z-index: 99;
+    }
+}
+.m-nav-main {
+    float: left;
+    > li {
+        > a {
+            padding: 0 20px;
+        }
+        &:hover .m-nav-sub {
+            display: block;
+        }
+    }
 }
 .m-nav-tool {
     float: right;
+    > li > a {
+        padding: 0 15px;
+    }
 }
 .m-nav-main > li, .m-nav-tool > li {
     float: left;
-}
-.m-nav-main > li, .m-nav-tool > li {
     text-align: center;
     position: relative;
+    > a {
+        line-height: 50px;
+        display: block;
+        font-size: 15px;
+    }
 }
-.m-nav-main > li > a {
-    padding: 0 20px;
-}
-.m-nav-tool > li > a {
-    padding: 0 15px;
-}
-.m-nav-main > li > a, .m-nav-tool > li > a {
-    line-height: 50px;
-    display: block;
-    font-size: 15px;
-}
-.m-nav-main li a, .m-nav-tool li a {
-    color: #666;
-    background: transparent;
-}
-.m-nav-main li.active > a, .m-nav-main li:hover > a, .m-nav-tool li:hover > a {
-    color: #fff;
-    background-color: #1abc9c;
-}
-.m-nav-main > li:hover .m-nav-sub {
-    display: block;
-}
-.m-nav-sub {
-    display: none;
-    background-color: #f2f2f2;
-    position: absolute;
-    border: solid 1px #e3e3e3;
-}
-.m-nav-sub > li > a {
-    padding: 3px 40px 3px 20px;
-    display: inline-block;
-    line-height: 24px;
-    text-align: left;
-    font-size: 13px;
-    min-width: 80px;
+.m-nav-main, .m-nav-tool {
+    li a {
+        color: #666;
+        background: transparent;
+    }
+    li.active, li:hover {
+        > a {
+            color: #fff;
+            background-color: #1abc9c;
+        }
+    }
 }
 .g-container {
     position: relative;
     max-width: 1000px;
-    margin: 0 auto;
-}
-.g-container {
-    margin-top: 80px;
+    margin: 80px auto 0 auto;
 }
 .m-content-wrap {
     width: 100%;
@@ -366,7 +433,7 @@ html {
         }
     }
 }
-.m-pagination > .x-mobile {
+.m-pagination > .x-wap {
     text-align: center;
     .u-page-prev {
         float: left;
@@ -436,6 +503,12 @@ html {
     border: 0;
     padding: 0;
 }
+//.u-article-end {
+//    display: inline-block;
+//    margin-top: 10px;
+//    text-indent: 0;
+//    font-size: 24px;
+//}
 .m-widget {
     margin-top: 15px;
     background-color: #fff;
@@ -546,10 +619,26 @@ html {
     }
 }
 @media (min-width:668px) {
+    .m-nav-wap {
+        display: none;
+    }
     .m-article-footer .m-meta-dynamic {
         display: none;
     }
     .m-excerpt-meta-taxonomy .m-meta-dynamic {
+        display: none;
+    }
+}
+@media (max-width:667px) {
+    .m-nav {
+        display: none;
+    }
+    .m-nav-main > li > a {
+        padding: 0 10px;
+        line-height: 45px;
+        font-size: 15px;
+    }
+    .m-article-header .m-meta-dynamic {
         display: none;
     }
 }
@@ -559,44 +648,22 @@ html {
             width: 33.33%;
         }
     }
-    .m-pagination .x-mobile {
+    .m-pagination .x-wap {
         display: none;
     }
     .m-pagination {
         padding: 20px;
     }
 }
-@media (max-width:667px) {
-    .u-logo {
-        display: none;
-    }
-    .m-nav-main > li > a {
-        padding: 0 10px;
-        line-height: 45px;
-        font-size: 15px;
-    }
-    .g-container {
-        margin-top: 51px;
-    }
-    .m-article-header .m-meta-dynamic {
-        display: none;
-    }
-}
 @media (max-width:568px) {
-    .g-container {
-        margin-top: 42px;
-    }
     .m-nav {
         padding: 0;
-    }
-    .m-excerpt-meta-post .m-meta-dynamic {
-        display: none;
     }
     .m-nav-main > li > a {
         line-height: 40px;
     }
-    .u-textarea-comment {
-        width: 250px;
+    .m-excerpt-meta-post .m-meta-dynamic {
+        display: none;
     }
     .m-pagination .x-pc {
         display: none;
@@ -609,6 +676,9 @@ html {
             width: 50%;
         }
     }
+    .u-textarea-comment {
+        width: 250px;
+    }
 }
 @media (max-width:320px) {
     .m-nav-main > li > a {
@@ -616,13 +686,13 @@ html {
         line-height: 36px;
         font-size: 14px;
     }
-    .u-textarea-comment {
-        width: 200px;
-    }
     .m-archive-list {
         > li {
             width: 100%;
         }
+    }
+    .u-textarea-comment {
+        width: 200px;
     }
 }
 
