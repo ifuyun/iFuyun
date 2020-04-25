@@ -109,6 +109,14 @@ module.exports = {
     hotPosts(cb) {
         vPostViewsAverage.findAll({
             attributes: ['postId', 'postTitle', 'postGuid'],
+            where: {
+                postStatus: {
+                    [Op.eq]: 'publish'
+                },
+                postType: {
+                    [Op.eq]: 'post'
+                }
+            },
             order: [
                 ['viewsAverage', 'desc']
             ],

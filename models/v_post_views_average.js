@@ -10,11 +10,23 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: false,
             field: 'post_title'
         },
+        postStatus: {
+            type: DataTypes.ENUM('publish', 'private', 'pending', 'draft', 'auto-draft', 'inherit', 'trash'),
+            allowNull: false,
+            defaultValue: 'publish',
+            field: 'post_status'
+        },
         postGuid: {
             type: DataTypes.STRING(255),
             allowNull: false,
             defaultValue: '',
             field: 'post_guid'
+        },
+        postType: {
+            type: DataTypes.ENUM('post', 'page'),
+            allowNull: false,
+            defaultValue: 'post',
+            field: 'post_type'
         },
         postCreated: {
             type: DataTypes.DATE,
