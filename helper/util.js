@@ -6,10 +6,12 @@
  * @static
  * @requires crypto
  * @author Fuyun
- * @version 3.0.0
+ * @version 3.2.3
  * @since 1.0.0
  */
 const crypto = require('crypto');
+const appConfig = require('../config/core');
+const constants = require('../services/constants');
 const STATUS_CODES = require('../services/status-codes');
 
 module.exports = {
@@ -63,7 +65,7 @@ module.exports = {
      * @param {Number} [pagesOut=9] 每页显示页数
      * @return {Object} 分页对象
      * @author Fuyun
-     * @version 2.0.0
+     * @version 3.2.3
      * @since 1.0.0
      */
     paginator(page, pages, pagesOut) {
@@ -72,7 +74,7 @@ module.exports = {
         }
         page = page || 1;
         pages = pages || 1;
-        pagesOut = pagesOut || 9;
+        pagesOut = pagesOut || constants.PAGINATION_SIZE;
         page = page > pages ? pages : page;
 
         const pageData = this.formatPages(page, pages, pagesOut);
@@ -86,12 +88,18 @@ module.exports = {
             totalPage: pages
         };
     },
+    /**
+     * 生成面包屑
+     * @param {Array} crumbData 面包屑数据
+     * @param {string} separator 分隔符
+     * @returns {string} 面包屑HTML
+     */
     createCrumb(crumbData, separator) {
         let crumbArr = [];
         separator = separator || '&nbsp;→&nbsp;';
         crumbData.unshift({
             'title': '首页',
-            'tooltip': 'iFuyun',
+            'tooltip': appConfig.siteName,
             'url': '/',
             'headerFlag': false
         });
@@ -146,7 +154,7 @@ module.exports = {
      * @param {Number} cutLength 指定长度
      * @return {String} 截取结果字符串
      * @author Fuyun
-     * @version 1.0.0
+     * @version 3.2.3
      * @since 1.0.0
      */
     cutStr(srcStr, cutLength) {
@@ -154,6 +162,7 @@ module.exports = {
         let i = 0;
         let n = 0;
         let curChar;
+        const half = 0.5;
 
         srcStr = srcStr || '';
         srcStr = typeof srcStr === 'string' ? srcStr : '';
@@ -166,7 +175,7 @@ module.exports = {
                     i += 1;
                 }
             } else {// 其余字符计为半个
-                n += 0.5;
+                n += half;
                 i += 1;
             }
         }

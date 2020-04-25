@@ -1,7 +1,7 @@
 /**
  * common services
  * @author fuyun
- * @version 3.0.0
+ * @version 3.2.4
  * @since 1.0.0(2017/04/13)
  */
 const path = require('path');
@@ -10,7 +10,7 @@ const appConfig = require('../config/core');
 const util = require('../helper/util');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const models = require('../models');
-const {Link, Post, TermTaxonomy, Comment, Option, VPostDateArchive} = models;
+const {Link, Post, TermTaxonomy, Comment, Option, VPostDateArchive, vPostViewsAverage} = models;
 const Op = models.Sequelize.Op;
 
 module.exports = {
@@ -107,18 +107,10 @@ module.exports = {
         });
     },
     hotPosts(cb) {
-        Post.findAll({
+        vPostViewsAverage.findAll({
             attributes: ['postId', 'postTitle', 'postGuid'],
-            where: {
-                postStatus: {
-                    [Op.eq]: 'publish'
-                },
-                postType: {
-                    [Op.eq]: 'post'
-                }
-            },
             order: [
-                ['postViewCount', 'desc']
+                ['viewsAverage', 'desc']
             ],
             limit: 10,
             offset: 0
