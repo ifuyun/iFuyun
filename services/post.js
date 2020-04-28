@@ -78,12 +78,21 @@ module.exports = {
          * sequelize有一个Bug：
          * 关联查询去重时，通过group by方式无法获取关联表的多行数据（如：此例的文章分类，只能返回第一条，并没有返回所有的分类）*/
         let where = {
-            taxonomy: {
-                [Op.in]: ['post', 'tag']
-            }
+            [Op.or]: [{
+                taxonomy: {
+                    [Op.eq]: 'post'
+                }
+            }, {
+                taxonomy: {
+                    [Op.eq]: 'tag'
+                },
+                visible: {
+                    [Op.eq]: 1
+                }
+            }]
         };
         if (filterCategory) {
-            where.visible = {
+            where[Op.or][0].visible = {
                 [Op.eq]: 1
             };
         }
@@ -253,12 +262,21 @@ module.exports = {
             },
             post: (cb) => {
                 let where = {
-                    taxonomy: {
-                        [Op.in]: ['post', 'tag']
-                    }
+                    [Op.or]: [{
+                        taxonomy: {
+                            [Op.eq]: 'post'
+                        }
+                    }, {
+                        taxonomy: {
+                            [Op.eq]: 'tag'
+                        },
+                        visible: {
+                            [Op.eq]: 1
+                        }
+                    }]
                 };
                 if (!param.isAdmin) {
-                    where.visible = {
+                    where[Op.or][0].visible = {
                         [Op.eq]: 1
                     };
                 }
@@ -810,11 +828,20 @@ module.exports = {
             if (param.query.type !== 'page') {
                 includeOpt.push({
                     model: models.TermTaxonomy,
-                    attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'count'],
+                    attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'visible', 'count'],
                     where: {
-                        taxonomy: {
-                            [Op.in]: ['post', 'tag']
-                        }
+                        [Op.or]: [{
+                            taxonomy: {
+                                [Op.eq]: 'post'
+                            }
+                        }, {
+                            taxonomy: {
+                                [Op.eq]: 'tag'
+                            },
+                            visible: {
+                                [Op.eq]: 1
+                            }
+                        }]
                     }
                 });
             }
