@@ -1,4 +1,7 @@
 @charset "UTF-8";
+@theme-color-bg: #1ba6f0;//#1abc9c
+@theme-color-dark: #1373ae;//#00ac8a
+@theme-color-text: #1373ae;
 /* reset */
 html, body, h1, h2, h3, h4, h5, h6, div, dl, dt, dd, ul, ol, li, p, blockquote, pre, hr, figure, table, caption, th, td, form, fieldset, legend, input, button, textarea, menu, optgroup, select { margin: 0; padding: 0; }
 html { font-size:100%; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100% }
@@ -116,7 +119,7 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
 }
 .m-header-bg {
     height: 5px;
-    background-color: #1abc9c;
+    background-color: @theme-color-bg;
 }
 .u-logo {
     float: left;
@@ -190,8 +193,8 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
     .m-nav-list, .m-nav-sublist {
         float: left;
         li {
-            line-height: 2em;
-            height: 2em;
+            line-height: 2.2857em;
+            height: 2.2857em;
         }
         a {
             color: #666;
@@ -262,7 +265,7 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
     li.active, li:hover {
         > a {
             color: #fff;
-            background-color: #1abc9c;
+            background-color: @theme-color-bg;
         }
     }
 }
@@ -334,7 +337,7 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
     height: 32px;
 }
 .m-excerpt a {
-    color: #1abc9c;
+    color: @theme-color-text;
     &:hover {
         text-decoration: underline;
     }
@@ -348,7 +351,7 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
     a {
         color: #888;
         &:hover {
-            color: #1abc9c;
+            color: @theme-color-text;
             text-decoration: none;
         }
         + a {
@@ -415,7 +418,7 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
             border: solid 1px #cfcfcf;
             background-color: #EFF2E9;
             &:hover {
-                border: solid 1px #1abc9c;
+                border: solid 1px @theme-color-bg;
                 background-color: #fafafa;
             }
         }
@@ -466,7 +469,7 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
 }
 .u-input:focus {
     color: #585858;
-    border-color: #1abc9c;
+    border-color: @theme-color-bg;
 }
 .u-input-search {
     border-right: none;
@@ -493,11 +496,11 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
     -webkit-appearance: button;
 }
 .u-btn:hover {
-    background-color: #00ac8a;
+    background-color: @theme-color-dark;
 }
 .u-btn-submit {
     color: #fff;
-    background-color: #1abc9c;
+    background-color: @theme-color-bg;
     letter-spacing: 1px;
 }
 /*修复FF宽高不一致问题*/
@@ -549,7 +552,7 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
     color: #777;
 }
 .m-widget > ul > li > a:hover {
-    color: #1abc9c;
+    color: @theme-color-text;
 }
 .m-widget .m-qrcode-wx {
     width: 240px;
@@ -574,7 +577,7 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
     color: #7e7e7e;
 }
 .m-footer a:hover {
-    color: #1abc9c;
+    color: @theme-color-text;
     text-decoration: underline;
 }
 
@@ -708,7 +711,7 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
     font-weight: normal;
 }
 .m-crumb a:hover {
-    color: #1abc9c;
+    color: @theme-color-text;
 }
 .m-crumb h3 {
     display: inline-block;
@@ -728,7 +731,7 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
     color: #555;
 }
 .m-article-title > a:hover {
-    color: #1abc9c;
+    color: @theme-color-text;
 }
 .m-article-meta {
     margin: 5px 0;
@@ -744,7 +747,7 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
     margin-left: 10px;
 }
 .m-article-meta a:hover {
-    color: #1abc9c;
+    color: @theme-color-text;
 }
 .m-article-meta > span + span {
     margin-left: 20px;
@@ -766,7 +769,7 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
     word-wrap: break-word;
 }
 .m-article-content a, .m-article-link a, .m-archive a {
-    color: #1abc9c;
+    color: @theme-color-text;
 }
 .m-article-content a {
     border-bottom: solid 1px;
@@ -885,7 +888,7 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
     line-height: 50px;
     border: 0;
     border-radius: 2px;
-    background: #1abc9c;
+    background: @theme-color-bg;
     color: #fff;
     text-align: center;
     cursor: pointer;
@@ -896,7 +899,7 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
     left: 50%;
 }
 .m-article-qrcode .m-article-qrcode-item:hover {
-    background-color: #00ac8a;
+    background-color: @theme-color-dark;
 }
 .m-article-qrcode .m-article-share {
     margin-right: 20px;
@@ -1030,7 +1033,7 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
     color: #999;
 }
 .m-comment-list .m-comment-action a:hover, .m-comment-list .m-comment-action a:focus {
-    color: #1abc9c;
+    color: @theme-color-text;
 }
 .m-comment-list .m-diag {
     left: 0;
