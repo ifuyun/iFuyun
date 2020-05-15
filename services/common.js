@@ -221,7 +221,7 @@ module.exports = {
         };
         if (param.status !== undefined) {
             where.status = {
-                [Op.eq]: param.status
+                [Op.in]: param.status
             };
         }
         TermTaxonomy.findAll({

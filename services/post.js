@@ -39,8 +39,10 @@ module.exports = {
             quickLinks: (cb) => commonService.getLinks('quicklink', ['homepage', 'site'], cb),
             categories: (cb) => {
                 commonService.getCategoryTree(cb, param.filterCategory === true ? {
-                    status: 1
-                } : {});
+                    status: [1]
+                } : {
+                    status: [0, 1]
+                });
             },
             mainNavs: commonService.mainNavs,
             options: commonService.getInitOptions
