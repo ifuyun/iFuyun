@@ -8,6 +8,7 @@
 const xss = require('sanitizer');
 const appConfig = require('../config/core');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
+const formatter = require('../helper/formatter');
 const util = require('../helper/util');
 const STATUS_CODES = require('../services/status-codes');
 const constants = require('../services/constants');
@@ -72,7 +73,8 @@ module.exports = {
                 options: result.options,
                 categories: result.categories,
                 util,
-                type
+                type,
+                formatter
             };
             resData.paginator = util.paginator(data.page, Math.ceil(result.count / 10), constants.PAGINATION_SIZE);
             resData.paginator.linkUrl = '/admin/taxonomy/page-';

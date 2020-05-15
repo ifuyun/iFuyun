@@ -51,7 +51,7 @@ module.exports = {
                 page = (page > result.count / 10 ? Math.ceil(result.count / 10) : page) || 1;
                 TermTaxonomy.findAll({
                     where,
-                    attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'termOrder', 'count', 'created', 'modified'],
+                    attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'status', 'termOrder', 'count', 'created', 'modified'],
                     order: [['termOrder', 'asc'], ['created', 'desc']],
                     limit: 10,
                     offset: 10 * (page - 1)
@@ -133,7 +133,9 @@ module.exports = {
         models.sequelize.transaction((t) => {
             let tasks = {
                 taxonomy: (cb) => {
-                    TermTaxonomy.destroy({
+                    TermTaxonomy.update({
+                        status: 2
+                    }, {
                         where: {
                             taxonomyId: {
                                 [Op.in]: param.taxonomyIds

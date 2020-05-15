@@ -26,6 +26,10 @@ module.exports = {
         };
         return statusMap[status];
     },
+    taxonomyStatus(status) {
+        const statusMap = ['不公开', '公开', '删除'];
+        return statusMap[status];
+    },
     linkVisible(visible) {
         const visibleMap = {
             site: '全站',

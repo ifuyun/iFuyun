@@ -23,25 +23,15 @@
                         <thead>
                             <tr>
                                 <th width="2%" class="column-check"><input type="checkbox" class="checkAll" /></th>
-                                <th width="15%">名称</th>
-                                <th width="16%">别名</th>
+                                <th width="14%">名称</th>
+                                <th width="14%">别名</th>
                                 <th width="20%">描述</th>
                                 <th width="10%">排序</th>
+                                <th width="10%">状态</th>
                                 <th width="10%" class="column-count">总数</th>
-                                <th width="27%">操作</th>
-                            </tr>
-                        </thead>
-                        <tfoot>
-                            <tr>
-                                <th class="column-check"><input type="checkbox" class="checkAll" /></th>
-                                <th>名称</th>
-                                <th>别名</th>
-                                <th>描述</th>
-                                <th>排序</th>
-                                <th class="column-count">总数</th>
                                 <th>操作</th>
                             </tr>
-                        </tfoot>
+                        </thead>
                         <tbody>
                             <? if(categories && categories.length > 0) { ?>
                             <? categories.forEach(function(cat, rowIdx){ ?>
@@ -51,6 +41,7 @@
                                 <td><?= cat.slug ?></td>
                                 <td><?= util.cutStr(cat.description, 20) ?></td>
                                 <td><?= cat.termOrder ?></td>
+                                <td><?= formatter.taxonomyStatus(cat.status) ?></td>
                                 <td class="column-count"><?= cat.count ?></td>
                                 <td class="m-col-operate">
                                     <? if(type !== 'tag') { ?><a href="/admin/taxonomy/item?action=create&type=<?= type ?>&parent=<?= cat.taxonomyId ?>">新增子类</a><? } ?><a href="/admin/taxonomy/item?action=edit&type=<?= type ?>&taxonomyId=<?= cat.taxonomyId ?>">编辑</a><a class="btn-delete" href="javascript:" data-type="<?= type ?>" data-taxonomy="<?= cat.taxonomyId ?>">删除</a><? if(type !== 'link') { ?><a href="/admin/post?<?- type === 'post' ? 'category' : 'tag' ?>=<?- cat.slug ?>">查看</a><? } ?>
@@ -64,9 +55,6 @@
                             <? } ?>
                         </tbody>
                     </table>
-                </div>
-                <div class="table-nav">
-                    <span><a class="button" href="javascript:">删除</a></span>
                 </div>
                 <?- include('../elements/pagination.html') -?>
             </div>
