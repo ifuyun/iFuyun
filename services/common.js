@@ -52,10 +52,10 @@ module.exports = {
         };
         if (typeof param.filterCategory === 'boolean') {
             queryOpt.attributes.push([models.sequelize.fn('count', 1), 'count']);
-            queryOpt.group = ['linkDate', 'visible'];
+            queryOpt.group = ['linkDate', 'status'];
             if (param.filterCategory === true) {
                 queryOpt.having = {
-                    visible: {
+                    status: {
                         [Op.eq]: 1
                     }
                 };
@@ -184,7 +184,7 @@ module.exports = {
                             count: curNode.count,
                             taxonomyId: curNode.taxonomyId,
                             parentId: curNode.parent,
-                            visible: curNode.visible,
+                            status: curNode.status,
                             level,
                             children: {}
                         };
@@ -219,13 +219,13 @@ module.exports = {
                 [Op.eq]: param.type || 'post'
             }
         };
-        if (param.visible !== undefined) {
-            where.visible = {
-                [Op.eq]: param.visible
+        if (param.status !== undefined) {
+            where.status = {
+                [Op.eq]: param.status
             };
         }
         TermTaxonomy.findAll({
-            attributes: ['name', 'description', 'slug', 'count', 'taxonomyId', 'parent', 'visible'],
+            attributes: ['name', 'description', 'slug', 'count', 'taxonomyId', 'parent', 'status'],
             where,
             order: [
                 ['termOrder', 'asc']
@@ -323,7 +323,7 @@ module.exports = {
                 break;
             }
         }
-        if ((!filterCategory || rootNode && rootNode.visible) && subCatIds.length > 0) {// 分类可见，并且子分类（含）存在
+        if ((!filterCategory || rootNode && rootNode.status === 1) && subCatIds.length > 0) {// 分类可见，并且子分类（含）存在
             cb(null, {
                 subCatIds,
                 catPath: this.getCategoryPath({
@@ -339,7 +339,7 @@ module.exports = {
                 data: {
                     catData,
                     slug,
-                    visible: rootNode && rootNode.visible
+                    visible: rootNode && rootNode.status === 1
                 }
             }));
             cb('分类不存在');

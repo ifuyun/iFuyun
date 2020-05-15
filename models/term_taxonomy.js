@@ -44,11 +44,11 @@ module.exports = function (sequelize, DataTypes) {
             defaultValue: '0',
             field: 'term_order'
         },
-        visible: {
+        status: {
             type: DataTypes.INTEGER(1).UNSIGNED,
             allowNull: false,
             defaultValue: '1',
-            field: 'visible'
+            field: 'status'
         },
         termGroup: {
             type: DataTypes.BIGINT,

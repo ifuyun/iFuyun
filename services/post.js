@@ -39,7 +39,7 @@ module.exports = {
             quickLinks: (cb) => commonService.getLinks('quicklink', ['homepage', 'site'], cb),
             categories: (cb) => {
                 commonService.getCategoryTree(cb, param.filterCategory === true ? {
-                    visible: 1
+                    status: 1
                 } : {});
             },
             mainNavs: commonService.mainNavs,
@@ -81,23 +81,26 @@ module.exports = {
             [Op.or]: [{
                 taxonomy: {
                     [Op.eq]: 'post'
+                },
+                status: {
+                    [Op.in]: [0, 1]
                 }
             }, {
                 taxonomy: {
                     [Op.eq]: 'tag'
                 },
-                visible: {
-                    [Op.eq]: 1
+                status: {
+                    [Op.in]: [0, 1]
                 }
             }]
         };
         if (filterCategory) {
-            where[Op.or][0].visible = {
+            where[Op.or][0].status = where[Op.or][1].status = {
                 [Op.eq]: 1
             };
         }
         models.TermTaxonomy.findAll({
-            attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'visible', 'count'],
+            attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'status', 'count'],
             include: [{
                 model: models.TermRelationship,
                 attributes: ['objectId', 'termTaxonomyId'],
@@ -211,9 +214,9 @@ module.exports = {
         }
         let includeOpt = [{
             model: TermTaxonomy,
-            attributes: ['taxonomyId', 'visible'],
+            attributes: ['taxonomyId', 'status'],
             where: {
-                visible: {
+                status: {
                     [Op.in]: param.isAdmin ? [0, 1] : [1]
                 },
                 taxonomy: {
@@ -270,13 +273,13 @@ module.exports = {
                         taxonomy: {
                             [Op.eq]: 'tag'
                         },
-                        visible: {
+                        status: {
                             [Op.eq]: 1
                         }
                     }]
                 };
                 if (!param.isAdmin) {
-                    where[Op.or][0].visible = {
+                    where[Op.or][0].status = {
                         [Op.eq]: 1
                     };
                 }
@@ -291,7 +294,7 @@ module.exports = {
                         attributes: ['userDisplayName']
                     }, {
                         model: TermTaxonomy,
-                        attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'visible', 'count'],
+                        attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'status', 'count'],
                         where
                     }]
                 }).then((post) => {
@@ -336,7 +339,7 @@ module.exports = {
                         }
                     }));
                 }
-                categories = categories.filter((item) => item.visible || param.isAdmin);
+                categories = categories.filter((item) => item.status === 1 || param.isAdmin);
                 let crumbCatId;
                 if (categories.length > 0) {
                     // todo: parent category
@@ -460,9 +463,9 @@ module.exports = {
         };
         let includeOpt = [{
             model: TermTaxonomy,
-            attributes: ['taxonomyId', 'visible'],
+            attributes: ['taxonomyId', 'status'],
             where: {
-                visible: {
+                status: {
                     [Op.eq]: 1
                 }
             }
@@ -596,9 +599,9 @@ module.exports = {
         };
         let includeOpt = [{
             model: TermTaxonomy,
-            attributes: ['taxonomyId', 'visible'],
+            attributes: ['taxonomyId', 'status'],
             where: {
-                visible: {
+                status: {
                     [Op.in]: param.isAdmin ? [0, 1] : [1]
                 },
                 taxonomy: {
@@ -828,7 +831,7 @@ module.exports = {
             if (param.query.type !== 'page') {
                 includeOpt.push({
                     model: models.TermTaxonomy,
-                    attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'visible', 'count'],
+                    attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'status', 'count'],
                     where: {
                         [Op.or]: [{
                             taxonomy: {
@@ -838,7 +841,7 @@ module.exports = {
                             taxonomy: {
                                 [Op.eq]: 'tag'
                             },
-                            visible: {
+                            status: {
                                 [Op.eq]: 1
                             }
                         }]
@@ -949,6 +952,9 @@ module.exports = {
                                         where: {
                                             slug: {
                                                 [Op.eq]: tag
+                                            },
+                                            status: {
+                                                [Op.in]: [0, 1]
                                             }
                                         }
                                     }).then((tags) => {

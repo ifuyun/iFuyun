@@ -208,7 +208,7 @@ module.exports = {
         data.parent = (type === 'post' || type === 'link') ? util.trim(xss.sanitize(param.parent)) : '';
         data.termOrder = xss.sanitize(param.termOrder);
         data.taxonomy = type;
-        data.visible = param.visible ? 1 : 0;
+        data.status = param.visible ? 1 : 0;
 
         if (!idReg.test(taxonomyId)) {
             taxonomyId = '';

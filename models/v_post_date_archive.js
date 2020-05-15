@@ -33,11 +33,11 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: true,
             field: 'display_date'
         },
-        visible: {
+        status: {
             type: DataTypes.INTEGER(1).UNSIGNED,
             allowNull: true,
             defaultValue: '1',
-            field: 'visible'
+            field: 'status'
         }
     }, {
         tableName: 'v_post_date_archive'
