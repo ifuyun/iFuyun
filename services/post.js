@@ -101,7 +101,7 @@ module.exports = {
                 [Op.eq]: 1
             };
         }
-        models.TermTaxonomy.findAll({
+        TermTaxonomy.findAll({
             attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'status', 'count'],
             include: [{
                 model: models.TermRelationship,
@@ -721,7 +721,7 @@ module.exports = {
                 }
             };
             includeOpt.push({
-                model: models.TermTaxonomy,
+                model: TermTaxonomy,
                 attributes: ['taxonomyId'],
                 where: tagWhere
             });
@@ -832,7 +832,7 @@ module.exports = {
             }];
             if (param.query.type !== 'page') {
                 includeOpt.push({
-                    model: models.TermTaxonomy,
+                    model: TermTaxonomy,
                     attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'status', 'count'],
                     where: {
                         [Op.or]: [{
@@ -949,23 +949,32 @@ module.exports = {
                         if (tag) {
                             async.auto({
                                 taxonomy: (innerCb) => {
-                                    models.TermTaxonomy.findAll({
-                                        attributes: ['taxonomyId'],
+                                    TermTaxonomy.findAll({
+                                        attributes: ['taxonomyId', 'status'],
                                         where: {
                                             slug: {
                                                 [Op.eq]: tag
-                                            },
-                                            status: {
-                                                [Op.in]: [0, 1]
                                             }
                                         }
                                     }).then((tags) => {
                                         if (tags.length > 0) {// 已存在标签
+                                            if (tags[0].status !== 1) {// 非正常显示标签
+                                                return TermTaxonomy.update({
+                                                    status: 1
+                                                }, {
+                                                    where: {
+                                                        slug: {
+                                                            [Op.eq]: tag
+                                                        }
+                                                    },
+                                                    transaction: t
+                                                }).then(() => innerCb(null, tags[0].taxonomyId));
+                                            }
                                             return innerCb(null, tags[0].taxonomyId);
                                         }
                                         const taxonomyId = util.getUuid();
                                         // sequelize对事务中的created、modified处理有bug，会保存为invalid date，因此取消默认的行为，改为显式赋值
-                                        models.TermTaxonomy.create({
+                                        TermTaxonomy.create({
                                             taxonomyId: taxonomyId,
                                             taxonomy: 'tag',
                                             name: tag,
@@ -976,7 +985,7 @@ module.exports = {
                                             modified: param.nowTime
                                         }, {
                                             transaction: t
-                                        }).then((taxonomy) => innerCb(null, taxonomyId));
+                                        }).then(() => innerCb(null, taxonomyId));
                                     });
                                 },
                                 relationship: ['taxonomy', (innerResult, innerCb) => {
