@@ -276,6 +276,9 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
         &, .glyphicon {
             font-size: 12px;
         }
+        .glyphicon {
+            margin-right: 5px;
+        }
         a {
             color: #888;
             &:hover {
@@ -296,18 +299,6 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
         margin-top: 10px;
         padding-bottom: 0;
         border-top: 1px dashed #eee;
-        ul {
-            padding-left: 2em;
-            li {
-                float: left;
-                margin-right: 10px;
-                padding: 1px 0;
-                a {
-                    padding: 3px 6px;
-                    background-color: #f1f1f1;
-                }
-            }
-        }
         .m-meta-dynamic {
             margin-bottom: 5px;
         }
@@ -322,6 +313,24 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
             white-space: nowrap;
             text-overflow: ellipsis;
         }
+    }
+}
+.m-article-taxonomy {
+    .m-meta-icon {
+        line-height: 26px;
+    }
+    ul {
+        padding-left: 2em;
+        li {
+            float: left;
+            margin-right: 10px;
+            padding: 1px 0;
+        }
+    }
+    a {
+        padding: 4px 6px;
+        background-color: #efefef;
+        border-radius: 2px;
     }
 }
 .m-pagination {
@@ -557,12 +566,8 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
     .glyphicon {
         margin-right: 5px;
     }
-    ul {
+    .m-meta-time {
         padding-left: 2em;
-        li {
-            float: left;
-            margin-right: 10px;
-        }
     }
 }
 .m-article-content, .m-archive {
@@ -658,14 +663,7 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
     .m-article-meta {
         text-align: left;
         padding: 0;
-        > span {
-            margin-right: 10px;
-        }
     }
-}
-.m-article-tag a {
-    padding: 3px 6px;
-    background-color: #f1f1f1;
 }
 .m-article-qrcode {
     margin-top: 10px;

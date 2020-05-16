@@ -35,12 +35,12 @@
                         </div>
                         <p><?- post.postExcerpt || util.cutStr(util.filterHtmlTag(post.postContent), 120) ?><a title="<?- post.postTitle ?>" href="<?= post.postGuid ?>">[阅读全文]</a></p>
                         <div class="m-excerpt-meta m-excerpt-meta-taxonomy">
-                            <div class="m-meta-dynamic">
-                                <div class="f-float-left"><i class="glyphicon glyphicons-folder-closed"></i></div>
+                            <div class="m-article-taxonomy m-meta-dynamic">
+                                <div class="m-meta-icon f-float-left"><i class="glyphicon glyphicons-folder-closed"></i></div>
                                 <ul class="f-clearfix"><? postItem.categories.forEach(function(category){ ?><li><a title="查看 <?- category.name ?> 中的全部文章" rel="category" href="/category/<?= category.slug ? category.slug : category.name ?>"><?- category.name ?></a></li><? }) ?></ul>
                             </div>
-                            <div>
-                                <div class="f-float-left"><i class="glyphicon glyphicons-tag"></i></div>
+                            <div class="m-article-taxonomy">
+                                <div class="m-meta-icon f-float-left"><i class="glyphicon glyphicons-tag"></i></div>
                                 <ul class="f-clearfix"><? postItem.tags.forEach(function(tag){ ?><li><a title="查看 <?- tag.name ?> 中的全部文章" rel="category" href="/tag/<?= tag.slug ? tag.slug : tag.name ?>"><?- tag.name ?></a></li><? }) ?></ul>
                             </div>
                         </div>

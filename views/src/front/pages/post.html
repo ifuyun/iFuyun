@@ -28,19 +28,19 @@
                 <div class="m-ads m-ads-post _bzpoa6vpy8p"></div>
                 <div class="m-ads m-ads-wap _lv97l1y0ppc"></div>
                 <footer class="m-article-footer">
-                    <div class="m-article-meta m-article-tag m-meta-dynamic">
-                        <div class="f-float-left"><i class="glyphicon glyphicons-folder-closed"></i></div>
+                    <div class="m-article-meta m-article-taxonomy m-meta-dynamic">
+                        <div class="m-meta-icon f-float-left"><i class="glyphicon glyphicons-folder-closed"></i></div>
                         <ul class="f-clearfix"><? postCats.forEach(function(category){ ?><li><a title="查看 <?- category.name ?> 中的全部文章" rel="category" href="/category/<?= category.slug ? category.slug : category.name ?>"><?- category.name ?></a></li><? }) ?></ul>
                     </div>
                     <? if(postTags.length > 0){ ?>
-                    <div class="m-article-meta m-article-tag">
-                        <div class="f-float-left"><i class="glyphicon glyphicons-tag"></i></div>
+                    <div class="m-article-meta m-article-taxonomy">
+                        <div class="m-meta-icon f-float-left"><i class="glyphicon glyphicons-tag"></i></div>
                         <ul class="f-clearfix"><? postTags.forEach(function(tag){ ?><li><a title="查看 <?= tag.name ?> 中的全部文章" rel="category" href="/tag/<?= tag.slug || tag.name ?>"><?= tag.name ?></a></li><? }) ?></ul>
                     </div>
                     <? } ?>
                     <div class="m-article-meta">
-                        <i class="glyphicon glyphicons-clock"></i>
-                        <span title="更新于: <?= moment(post.postModified || post.postCreated).format('YYYY-MM-DD HH:mm') ?>">最后更新：<?= moment(post.postModified || post.postCreated).format('YYYY-MM-DD HH:mm') ?></span>
+                        <div class="f-float-left"><i class="glyphicon glyphicons-clock"></i></div>
+                        <div class="m-meta-time"><span title="更新于: <?= moment(post.postModified || post.postCreated).format('YYYY-MM-DD HH:mm') ?>">最后更新：<?= moment(post.postModified || post.postCreated).format('YYYY-MM-DD HH:mm') ?></span></div>
                     </div>
                     <div class="m-article-qrcode f-clearfix">
                         <div class="m-article-qrcode-img m-article-qrcode-share" id="qrcodeShare" data-url="<?= urlShare ?>">
