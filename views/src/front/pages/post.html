@@ -57,13 +57,13 @@
                         <div class="m-article-link-prev">
                             <? if(prevPost){ ?>
                             <a href="<?= prevPost.postGuid ?>" title="<?= prevPost.postTitle ?>">
-                                <span class="m-article-link-text">&lt; 上一篇：<?= prevPost.postTitle ?></span></a>
+                                <span class="m-article-link-text">&lt; <span>上一篇：<?= prevPost.postTitle ?></span></span></a>
                             <? } ?>
                         </div>
                         <div class="m-article-link-next">
                             <? if(nextPost){ ?>
                             <a href="<?= nextPost.postGuid ?>" title="<?= nextPost.postTitle ?>">
-                                <span class="m-article-link-text">下一篇：<?= nextPost.postTitle ?></span><span class="u-text-arrow"> &gt;</span></a>
+                                <span class="m-article-link-text"><span>下一篇：<?= nextPost.postTitle ?></span></span><span class="u-text-arrow"> &gt;</span></a>
                             <? } ?>
                         </div>
                     </div>
