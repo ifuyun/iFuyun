@@ -7,7 +7,7 @@
 }
 .datepicker * {
   font-size: 12px;
-  font-family: "宋体,Arial";
+  font-family: "宋体", Arial, sans-serif;
 }
 .dateDiv {
   clear: both;
@@ -21,7 +21,6 @@
   text-align: center;
   font-weight: normal;
 }
-/*.dateDiv td {cursor:pointer;}*/
 .dateDiv .weekTitle {
   background: #C4E9FF;
 }

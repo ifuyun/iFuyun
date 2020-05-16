@@ -50,7 +50,6 @@
 .ui-dialog-footer {
   padding: 0;
   border: 0 none;
-  /*text-align: right;*/
   text-align: center;
   background: transparent;
 }
@@ -63,8 +62,6 @@
   position: relative;
   _position: absolute;
   float: right;
-  /*top: 13px;
-    right: 13px;*/
   top: 7px;
   right: 8px;
   _height: 26px;
@@ -95,29 +92,18 @@
   margin: 0;
   line-height: 1.42857143;
   min-height: 16.42857143px;
-  /*padding: 15px;*/
   padding: 10px;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  /*font-weight: normal;*/
   cursor: default;
   color: #666;
   text-align: left;
-  /*font-size: 14px;*/
 }
 .ui-dialog-body {
   padding: 15px 20px;
   text-align: center;
 }
-/*.ui-dialog-icon {
-    display: inline-block;
-    width: 50px;
-    height: 50px;
-    background: url(/style/img/dialog-alert.png) no-repeat 0 0;
-    float: left;
-    margin-right: 20px;
-}*/
 .ui-dialog-content {
   display: inline-block;
   position: relative;
@@ -126,14 +112,12 @@
   *display: inline;
   text-align: left;
   margin-top: 4px;
-  /*line-height: 200%;*/
   line-height: 20px;
   color: #333;
   overflow-y: auto;
 }
 .ui-dialog-footer {
   padding: 0 20px 20px;
-  /*border-top: 1px solid #cdd2d4;*/
 }
 .ui-dialog-statusbar {
   float: left;
@@ -152,7 +136,6 @@
   vertical-align: middle;
 }
 .ui-dialog-button {
-  /*float: right;*/
   white-space: nowrap;
 }
 .ui-dialog-footer button + button {
@@ -160,31 +143,19 @@
   margin-left: 20px;
 }
 .ui-dialog-footer button {
-  /*width:auto;*/
-  /*overflow:visible;*/
   display: inline-block;
   padding: 6px 36px;
-  /*_margin-left: 5px;*/
   margin-bottom: 0;
   font-size: 14px;
   font-weight: normal;
   line-height: 1.42857143;
   text-align: center;
-  /*white-space: nowrap;*/
-  /*vertical-align: middle;*/
   cursor: pointer;
-  /*background-image: none;*/
   border: 1px solid transparent;
   border-radius: 2px;
   letter-spacing: 2px;
-  /*-webkit-user-select: none;
-     -moz-user-select: none;
-      -ms-user-select: none;
-       -o-user-select: none;
-          user-select: none;*/
 }
 .ui-dialog-footer button:focus {
-  outline: thin dotted #333;
   outline: 5px auto -webkit-focus-ring-color;
   outline-offset: -2px;
 }
@@ -411,11 +382,11 @@
   color: #666;
 }
 .ui-dialog-loading {
-  width: 100%\9;
-  text-indent: 0\9;
-  line-height: 32px\9;
-  text-align: center\9;
-  font-size: 12px\9;
+  width: 100% \9;
+  text-indent: 0 \9;
+  line-height: 32px \9;
+  text-align: center \9;
+  font-size: 12px \9;
 }
 .ui-dialog-loading::after {
   position: absolute;
@@ -429,5 +400,5 @@
   -webkit-animation: ui-dialog-loading 1.5s infinite linear;
   transform: rotate(360deg);
   animation: ui-dialog-loading 1.5s infinite linear;
-  display: none\9;
+  display: none \9;
 }
