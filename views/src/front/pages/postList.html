@@ -17,7 +17,7 @@
                 <? posts.forEach(function(postItem){ ?>
                 <? var post = postItem.post ?>
                 <article class="m-excerpt m-content-box f-clearfix">
-                    <div class="m-excerpt-content f-clearfix">
+                    <div class="m-excerpt-detail f-clearfix">
                         <header>
                             <h3><a rel="bookmark" title="<?- post.postTitle ?>" href="<?= post.postGuid ?>"><?- post.postTitle ?></a></h3>
                         </header>
@@ -33,7 +33,7 @@
                                 <i class="glyphicon glyphicons-conversation"></i><? if(post.commentFlag === 'closed'){ ?>评论关闭<? } else { ?><? if(comments[post.postId] > 0){ ?><a title="《<?= post.postTitle ?>》上的评论" href="<?= post.postGuid ?>#comments"><?= comments[post.postId] ?> 条评论</a><? } else { ?><a title="《<?= post.postTitle ?>》上的评论" href="<?= post.postGuid ?>#respond">抢沙发</a><? } ?><? } ?>
                             </span>
                         </div>
-                        <p><?- post.postExcerpt || util.cutStr(util.filterHtmlTag(post.postContent), 120) ?><a title="<?- post.postTitle ?>" href="<?= post.postGuid ?>">[阅读全文]</a></p>
+                        <p class="m-excerpt-content"><?- post.postExcerpt || util.cutStr(util.filterHtmlTag(post.postContent), 120) ?><a title="<?- post.postTitle ?>" href="<?= post.postGuid ?>">[阅读全文]</a></p>
                         <div class="m-excerpt-meta m-excerpt-meta-taxonomy">
                             <div class="m-article-taxonomy m-meta-dynamic">
                                 <div class="m-meta-icon f-float-left"><i class="glyphicon glyphicons-folder-closed"></i></div>

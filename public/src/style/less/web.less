@@ -259,15 +259,27 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
     &:hover {
         background-color: #fafafa;
     }
-    h3 {
-        font-size: 16px;
-        line-height: 32px;
-        height: 32px;
-    }
-    a {
-        color: @theme-color-text;
-        &:hover {
-            text-decoration: underline;
+    .m-excerpt-detail {
+        line-height: 24px;
+        font-size: 14px;
+        > header {
+            h3 {
+                font-size: 16px;
+                line-height: 32px;
+                height: 32px;
+            }
+            a {
+                display: inline-block;
+                max-width: 100%;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
+        }
+        h3, .m-excerpt-content {
+            a:hover {
+                text-decoration: underline;
+            }
         }
     }
     .m-excerpt-meta {
@@ -280,11 +292,7 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
             margin-right: 5px;
         }
         a {
-            color: #888;
-            &:hover {
-                color: @theme-color-text;
-                text-decoration: none;
-            }
+            color: #777;
             + a {
                 margin-left: 10px;
             }
@@ -294,6 +302,10 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
         span + span {
             margin-left: 20px;
         }
+        a:hover {
+            color: @theme-color-text;
+            text-decoration: none;
+        }
     }
     .m-excerpt-meta-taxonomy {
         margin-top: 10px;
@@ -301,17 +313,6 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
         border-top: 1px dashed #eee;
         .m-meta-dynamic {
             margin-bottom: 5px;
-        }
-    }
-    .m-excerpt-content {
-        line-height: 24px;
-        font-size: 14px;
-        > header a {
-            display: inline-block;
-            max-width: 100%;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
         }
     }
 }
@@ -329,8 +330,12 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
     }
     a {
         padding: 4px 6px;
-        background-color: #efefef;
+        background-color: #eee;
         border-radius: 2px;
+        &:hover {
+            color: #fff;
+            background: #777;
+        }
     }
 }
 .m-pagination {
@@ -342,26 +347,27 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
             line-height: 32px;
             height: 30px;
             text-align: center;
+            vertical-align: middle;
 
             a {
                 display: inline-block;
                 width: 100%;
                 height: 100%;
                 &, &:hover {
-                    color: #888;
+                    color: #777;
                 }
             }
             &.u-page {
                 border: solid 1px #cfcfcf;
-                background-color: #EFF2E9;
+                background-color: #eee;
                 &:hover {
                     border: solid 1px @theme-color-bg;
-                    background-color: #fafafa;
+                    background-color: #fff;
                 }
             }
             &.active {
                 background-color: #fff;
-                color: #999;
+                color: #888;
                 font-weight: bold;
             }
         }
@@ -456,14 +462,15 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
     -o-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
     box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
     h3 {
-        font-size: 16px;
+        font-size: 15px;
         font-weight: normal;
-        color: #555;
-        line-height: 20px;
+        color: #333;
+        line-height: 24px;
         margin-bottom: 10px;
     }
     .glyphicon {
         margin-right: 6px;
+        color: #666;
     }
     > ul > li {
         overflow: hidden;
@@ -476,11 +483,11 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
         color: #777;
         font-size: 14px;
         &:hover {
-            background-color: #fafafa;
+            background-color: #f6f6f6;
         }
     }
     > ul > li > a {
-        color: #777;
+        color: #666;
         &:hover {
             color: @theme-color-text;
         }
@@ -518,7 +525,7 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
     padding: 10px 25px;
 }
 .m-crumb, .m-crumb a {
-    color: #666;
+    color: #333;
     font-size: 14px;
     font-weight: normal;
 }
@@ -535,29 +542,29 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
 .m-article-title {
     font-size: 20px;
     font-weight: normal;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     line-height: 32px;
     > a {
         display: inline-block;
-        color: #555;
+        color: #333;
         &:hover {
             color: @theme-color-text;
         }
     }
 }
 .m-article-meta {
-    margin: 5px 0;
+    margin-bottom: 5px;
+    padding: 0 20px;
     line-height: 24px;
     clear: both;
-    padding: 0 20px;
     &, & a {
-        color: #999;
+        color: #777;
         font-size: 12px;
     }
     a + a {
         margin-left: 10px;
     }
-    a:hover {
+    &.m-article-meta-post a:hover {
         color: @theme-color-text;
     }
     > span + span {
@@ -571,7 +578,7 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
     }
 }
 .m-article-content, .m-archive {
-    padding: 15px 30px;
+    padding: 15px 25px;
     line-height: 2em;
     word-wrap: break-word;
     letter-spacing: .038em;
@@ -875,7 +882,10 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
         display: none;
     }
     .m-article-title {
-        padding-top: 20px;
+        padding-top: 10px;
+    }
+    .m-article-content {
+        padding: 15px 20px;
     }
     .m-ads-list, .m-ads-post {
         display: none;

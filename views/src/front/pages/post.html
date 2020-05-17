@@ -9,7 +9,7 @@
                     <h1 class="m-article-title">
                         <a rel="bookmark" title="<?- post.postTitle ?>" href="<?= post.postGuid ?>"><?- post.postTitle ?></a>
                     </h1>
-                    <div class="m-article-meta">
+                    <div class="m-article-meta m-article-meta-post">
                         <span title="写作时间: <?= moment(post.postDate).format('YYYY-MM-DD') ?>"><i class="glyphicon glyphicons-calendar"></i><?= moment(post.postDate).format('YYYY-MM-DD') ?></span>
                         <span class="m-meta-dynamic"><i class="glyphicon glyphicons-folder-closed"></i><? postCats.forEach(function(category){ ?><a title="查看 <?- category.name ?> 中的全部文章" rel="category" href="/category/<?= category.slug ? category.slug : category.name ?>"><?- category.name ?></a><? }) ?></span>
                         <span title="作者： <?- post.User.userDisplayName ?>"><i class="glyphicon glyphicons-user"></i><?- post.User.userDisplayName ?></span>
