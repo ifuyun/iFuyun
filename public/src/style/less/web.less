@@ -452,15 +452,17 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
     border: 0;
     padding: 0;
 }
-.m-widget {
+.m-widget, .m-ads-widget {
     margin-top: 15px;
-    background-color: #fff;
-    padding: 10px;
     border: 1px solid transparent;
+    background-color: #fff;
     -webkit-box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
-    -moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
-    -o-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    -moz-box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
+    -o-box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
     box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
+}
+.m-widget {
+    padding: 10px;
     h3 {
         font-size: 15px;
         font-weight: normal;
@@ -592,6 +594,7 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
         margin: 15px 0;
     }
     img {
+        box-sizing: border-box;
         display: block;
         margin: 0 auto;
         max-width: 100%;
@@ -853,7 +856,13 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
     display: none;
 }
 .m-ads {
+    text-align: center;
+}
+.m-ads-post {
     margin-top: 15px;
+}
+.m-ads-widget {
+    padding: 10px 0;
 }
 
 @media (min-width:980px) {
@@ -891,6 +900,9 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
     }
     .m-article-content {
         padding: 15px 20px;
+    }
+    .m-article-footer {
+        padding: 0 20px;
     }
     .m-ads-list, .m-ads-post {
         display: none;
