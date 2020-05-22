@@ -140,7 +140,7 @@ module.exports = {
 
             resData.meta.title = util.getTitle([result.post.postTitle, options.site_name.optionValue]);
             resData.meta.description = result.post.postExcerpt || util.cutStr(util.filterHtmlTag(result.post.postContent), constants.POST_SUMMARY_LENGTH);
-            resData.meta.keywords = keywords.join(',') + ',' + options.site_keywords.optionValue;
+            resData.meta.keywords = keywords.join(',');
             resData.meta.author = options.site_author.optionValue;
             resData.post = result.post;
             resData.prevPost = result.prevPost;
