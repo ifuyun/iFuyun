@@ -111,6 +111,7 @@ module.exports = {
      */
     globalError(server) {
         return (req, res, next) => {
+            // todo: domain is deprecated
             const d = domain.create();
             const killTimeout = 5000;
 
@@ -131,10 +132,10 @@ module.exports = {
 
                 const curWorker = cluster.worker;
                 try {// because server could already closed, need try catch the error: `Error: Not running`
+                    server.close();
                     if (curWorker) {
                         curWorker.disconnect();
                     }
-                    server.close();
                 } catch (serverErr) {
                     logger.error(formatOpLog({
                         msg: `Error on server: [pid: ${process.pid}] close or worker: [id: ${(curWorker && curWorker.id) || '-'}] disconnect. \n${serverErr.stack}`,

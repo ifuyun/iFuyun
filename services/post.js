@@ -950,7 +950,7 @@ module.exports = {
                             async.auto({
                                 taxonomy: (innerCb) => {
                                     TermTaxonomy.findAll({
-                                        attributes: ['taxonomyId', 'status'],
+                                        attributes: ['taxonomyId', 'taxonomy', 'status'],
                                         where: {
                                             slug: {
                                                 [Op.eq]: tag
@@ -970,6 +970,9 @@ module.exports = {
                                                     transaction: t
                                                 }).then(() => innerCb(null, tags[0].taxonomyId));
                                             }
+                                            if (tags[0].taxonomy !== 'tag') {
+                                                return innerCb(`已存在同名的分类、标签：${tag}`, tags[0].taxonomyId);
+                                            }
                                             return innerCb(null, tags[0].taxonomyId);
                                         }
                                         const taxonomyId = util.getUuid();
@@ -985,7 +988,7 @@ module.exports = {
                                             modified: param.nowTime
                                         }, {
                                             transaction: t
-                                        }).then(() => innerCb(null, taxonomyId));
+                                        }).then(() => innerCb(null, taxonomyId)).catch(innerCb);
                                     });
                                 },
                                 relationship: ['taxonomy', (innerResult, innerCb) => {
@@ -994,7 +997,7 @@ module.exports = {
                                         termTaxonomyId: innerResult.taxonomy
                                     }, {
                                         transaction: t
-                                    }).then((rel) => innerCb(null, rel));
+                                    }).then((rel) => innerCb(null, rel)).catch(innerCb);
                                 }]
                             }, (err, tags) => {
                                 if (err) {
@@ -1017,7 +1020,7 @@ module.exports = {
                         reject(util.catchError({
                             status: 500,
                             code: STATUS_CODES.POST_SAVE_ERROR,
-                            message: 'Post Save Error.',
+                            message: typeof err === 'string' ? err : 'Post Save Error.',
                             messageDetail: `Post: ${param.newPostId}:${param.data.postTitle} save failed.`,
                             data: param.data
                         }));
@@ -1026,7 +1029,7 @@ module.exports = {
                     }
                 });
             });
-        }).then(successCb, errorCb);
+        }).then(successCb).catch(errorCb);
     },
     listMedia(param, cb) {
         let page = parseInt(param.page, 10) || 1;
