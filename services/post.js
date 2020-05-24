@@ -298,6 +298,9 @@ module.exports = {
                         model: TermTaxonomy,
                         attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'status', 'count'],
                         where
+                    }, {
+                        model: Postmeta,
+                        attributes: ['metaKey', 'metaValue']
                     }]
                 }).then((post) => {
                     if (!post || !post.postId) {
@@ -923,6 +926,29 @@ module.exports = {
                             transaction: t
                         }).then((post) => cb(null, post));
                     }
+                }],
+                removePostMeta: ['post', (result, cb) => {
+                    Postmeta.destroy({
+                        where: {
+                            postId: {
+                                [Op.eq]: param.newPostId
+                            },
+                            metaKey: {
+                                [Op.eq]: 'show_wechat_card'
+                            }
+                        },
+                        transaction: t
+                    }).then((postMeta) => cb(null, postMeta));
+                }],
+                insertPostMeta: ['removePostMeta', (result, cb) => {
+                    Postmeta.create({
+                        metaId: util.getUuid(),
+                        postId: param.newPostId,
+                        metaKey: 'show_wechat_card',
+                        metaValue: param.showWechatCard === '1' ? '1' : '0'
+                    }, {
+                        transaction: t
+                    }).then((postMeta) => cb(null, postMeta));
                 }]
             };
             // 对于异步的循环，若中途其他操作出现报错，将触发rollback，但循环并未中断，从而导致事务执行报错，因此需要强制加入依赖关系，改为顺序执行
@@ -1163,7 +1189,7 @@ module.exports = {
                     Postmeta.create({
                         metaId: util.getUuid(),
                         postId: param.fileData.postId,
-                        metaKey: 'cloudPath',
+                        metaKey: 'cloud_path',
                         metaValue: param.cloudPath
                     }, {
                         transaction: t

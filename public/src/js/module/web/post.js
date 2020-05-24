@@ -1,5 +1,5 @@
 /*global $,hljs*/
-/* jslint nomen:true */
+/*jslint nomen:true*/
 import http from '../../lib/http';
 
 require('../../vendor/jquery.poshytip.min');

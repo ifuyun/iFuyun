@@ -138,11 +138,19 @@ module.exports = {
             });
             keywords.push(options.site_keywords.optionValue);
 
+            const postMeta = {};
+            if (result.post.Postmeta) {
+                result.post.Postmeta.forEach((meta) => {
+                    postMeta[meta.metaKey] = meta.metaValue;
+                });
+            }
+
             resData.meta.title = util.getTitle([result.post.postTitle, options.site_name.optionValue]);
             resData.meta.description = result.post.postExcerpt || util.cutStr(util.filterHtmlTag(result.post.postContent), constants.POST_SUMMARY_LENGTH);
             resData.meta.keywords = keywords.join(',');
             resData.meta.author = options.site_author.optionValue;
             resData.post = result.post;
+            resData.postMeta = postMeta;
             resData.prevPost = result.prevPost;
             resData.nextPost = result.nextPost;
             resData.comments = result.comments;
@@ -608,16 +616,17 @@ module.exports = {
         postId = idReg.test(postId) ? postId : '';
         const newPostId = postId || util.getUuid();
 
+        // todo: 防纂改
         let data = {
             postTitle: util.trim(xss.sanitize(param.postTitle)),
             postContent: util.trim(param.postContent),
             postExcerpt: util.trim(xss.sanitize(param.postExcerpt)),
             postGuid: util.trim(xss.sanitize(param.postGuid)) || '/post/' + newPostId,
             postAuthor: req.session.user.userId,
-            postStatus: param.postStatus,
+            postStatus: util.trim(xss.sanitize(param.postStatus)),
             postPassword: util.trim(param.postPassword),
-            postOriginal: param.postOriginal,
-            commentFlag: util.trim(param.commentFlag),
+            postOriginal: util.trim(xss.sanitize(param.postOriginal)),
+            commentFlag: util.trim(xss.sanitize(param.commentFlag)),
             postDate: param.postDate ? new Date(+moment(param.postDate)) : nowTime,
             postType: type
         };
@@ -660,7 +669,8 @@ module.exports = {
             nowTime,
             type,
             postCategory,
-            postTag
+            postTag,
+            showWechatCard: util.trim(xss.sanitize(param.showWechatCard))
         }, () => {
             logger.info(formatOpLog({
                 fn: 'savePost',
