@@ -590,7 +590,7 @@ module.exports = {
                 commentFlag: 'verify'
             };
             resData.postMeta = {
-                'show_wechat_card': '1'
+                'show_wechat_card': '0'
             };
             if (result.post && result.post.Postmeta) {
                 result.post.Postmeta.forEach((meta) => {
