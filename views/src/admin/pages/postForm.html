@@ -75,8 +75,9 @@
                                 <div class="form-field-box-sub">
                                     <div class="form-field-text">插入名片</div>
                                     <div class="form-field-input">
-                                        <label for="post-wechat-on"><input type="radio" name="showWechatCard" id="post-wechat-on" value="1" checked="checked" />&nbsp;是</label><br />
-                                        <label for="post-wechat-off"><input type="radio" name="showWechatCard" id="post-wechat-off" value="0" />&nbsp;否</label>
+                                        <label for="post-wechat-on"><input type="radio" name="showWechatCard" id="post-wechat-on" value="1"<? if(postMeta.show_wechat_card === '1'){ ?> checked="checked" <? } ?> />&nbsp;带分隔线</label><br />
+                                        <label for="post-wechat-split"><input type="radio" name="showWechatCard" id="post-wechat-split" value="2"<? if(postMeta.show_wechat_card === '2'){ ?> checked="checked" <? } ?> />&nbsp;仅名片</label><br />
+                                        <label for="post-wechat-off"><input type="radio" name="showWechatCard" id="post-wechat-off" value="0"<? if(postMeta.show_wechat_card === '0'){ ?> checked="checked" <? } ?> />&nbsp;否</label>
                                     </div>
                                 </div>
                                 <div class="form-field-box-sub">

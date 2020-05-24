@@ -138,10 +138,10 @@ module.exports = {
             });
             keywords.push(options.site_keywords.optionValue);
 
-            const postMeta = {};
+            resData.postMeta = {};
             if (result.post.Postmeta) {
                 result.post.Postmeta.forEach((meta) => {
-                    postMeta[meta.metaKey] = meta.metaValue;
+                    resData.postMeta[meta.metaKey] = meta.metaValue;
                 });
             }
 
@@ -150,7 +150,6 @@ module.exports = {
             resData.meta.keywords = keywords.join(',');
             resData.meta.author = options.site_author.optionValue;
             resData.post = result.post;
-            resData.postMeta = postMeta;
             resData.prevPost = result.prevPost;
             resData.nextPost = result.nextPost;
             resData.comments = result.comments;
@@ -590,6 +589,14 @@ module.exports = {
                 postOriginal: 1,
                 commentFlag: 'verify'
             };
+            resData.postMeta = {
+                'show_wechat_card': '1'
+            };
+            if (result.post && result.post.Postmeta) {
+                result.post.Postmeta.forEach((meta) => {
+                    resData.postMeta[meta.metaKey] = meta.metaValue;
+                });
+            }
             resData.postCategories = [];
             resData.postTags = '';
             let tagArr = [];

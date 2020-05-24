@@ -832,6 +832,9 @@ module.exports = {
             let includeOpt = [{
                 model: User,
                 attributes: ['userDisplayName']
+            }, {
+                model: Postmeta,
+                attributes: ['metaKey', 'metaValue']
             }];
             if (param.query.type !== 'page') {
                 includeOpt.push({
@@ -945,7 +948,7 @@ module.exports = {
                         metaId: util.getUuid(),
                         postId: param.newPostId,
                         metaKey: 'show_wechat_card',
-                        metaValue: param.showWechatCard === '1' ? '1' : '0'
+                        metaValue: param.showWechatCard || '0'
                     }, {
                         transaction: t
                     }).then((postMeta) => cb(null, postMeta));
