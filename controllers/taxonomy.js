@@ -207,10 +207,12 @@ module.exports = {
         data.name = util.trim(xss.sanitize(param.name));
         data.slug = util.trim(xss.sanitize(param.slug));
         data.description = util.trim(xss.sanitize(param.description));
-        data.parent = (type === 'post' || type === 'link') ? util.trim(xss.sanitize(param.parent)) : '';
+        data.parent = ['post', 'link'].includes(type) ? util.trim(xss.sanitize(param.parent)) : '';
         data.termOrder = xss.sanitize(param.termOrder);
         data.taxonomy = type;
-        data.status = param.visible ? 1 : 0;
+        if (['0', '1', '2'].includes(param.status)) {
+            data.status = param.status;
+        }
 
         if (!idReg.test(taxonomyId)) {
             taxonomyId = '';

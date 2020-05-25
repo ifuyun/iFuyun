@@ -11,10 +11,10 @@
                     <div class="form-wrap form-box">
                         <div class="form-basic">
                             <div>
-                                <input type="text" class="input input-normal" id="post-title" name="postTitle" placeholder="在此输入标题" value="<?= post.postTitle ?>" />
+                                <label><input type="text" class="input input-normal" id="post-title" name="postTitle" placeholder="在此输入标题" value="<?= post.postTitle ?>" /></label>
                             </div>
                             <div class="form-field">
-                                <textarea class="input" id="post-content" name="postContent"><?= post.postContent ?></textarea>
+                                <label><textarea class="input" id="post-content" name="postContent"><?= post.postContent ?></textarea></label>
                                 <input type="hidden" name="postRawContent" value="<?= post.postContent ?>" />
                             </div>
                             <? if (page === 'post') { ?>
@@ -59,38 +59,38 @@
                                 <div class="form-field-box-sub">
                                     <div class="form-field-text">来源</div>
                                     <div class="form-field-input">
-                                        <label for="post-original-true"><input type="radio" name="postOriginal" id="post-original-true" value="1"<? if(post.postOriginal === 1){ ?> checked="checked" <? } ?> />&nbsp;原创</label><br />
-                                        <label for="post-original-false"><input type="radio" name="postOriginal" id="post-original-false" value="0"<? if(post.postOriginal === 0){ ?> checked="checked" <? } ?> />&nbsp;转载</label>
+                                        <label><input type="radio" name="postOriginal" value="1"<? if(post.postOriginal === 1){ ?> checked="checked" <? } ?> />&nbsp;原创</label><br />
+                                        <label><input type="radio" name="postOriginal" value="0"<? if(post.postOriginal === 0){ ?> checked="checked" <? } ?> />&nbsp;转载</label>
                                     </div>
                                 </div>
                                 <? } ?>
                                 <div class="form-field-box-sub">
                                     <div class="form-field-text">评论状态</div>
                                     <div class="form-field-input">
-                                        <label for="post-comment-on"><input type="radio" name="commentFlag" id="post-comment-on" value="open"<? if(post.commentFlag === 'open'){ ?> checked="checked" <? } ?> />&nbsp;允许</label><br />
-                                        <label for="post-comment-verify"><input type="radio" name="commentFlag" id="post-comment-verify" value="verify"<? if(post.commentFlag === 'verify'){ ?> checked="checked" <? } ?> />&nbsp;审核</label><br />
-                                        <label for="post-comment-off"><input type="radio" name="commentFlag" id="post-comment-off" value="closed"<? if(post.commentFlag === 'closed'){ ?> checked="checked" <? } ?> />&nbsp;禁止</label>
+                                        <label><input type="radio" name="commentFlag" value="open"<? if(post.commentFlag === 'open'){ ?> checked="checked" <? } ?> />&nbsp;允许</label><br />
+                                        <label><input type="radio" name="commentFlag" value="verify"<? if(post.commentFlag === 'verify'){ ?> checked="checked" <? } ?> />&nbsp;审核</label><br />
+                                        <label><input type="radio" name="commentFlag" value="closed"<? if(post.commentFlag === 'closed'){ ?> checked="checked" <? } ?> />&nbsp;禁止</label>
                                     </div>
                                 </div>
                                 <div class="form-field-box-sub">
                                     <div class="form-field-text">插入名片</div>
                                     <div class="form-field-input">
-                                        <label for="post-wechat-on"><input type="radio" name="showWechatCard" id="post-wechat-on" value="1"<? if(postMeta.show_wechat_card === '1'){ ?> checked="checked" <? } ?> />&nbsp;带分隔线</label><br />
-                                        <label for="post-wechat-split"><input type="radio" name="showWechatCard" id="post-wechat-split" value="2"<? if(postMeta.show_wechat_card === '2'){ ?> checked="checked" <? } ?> />&nbsp;仅名片</label><br />
-                                        <label for="post-wechat-off"><input type="radio" name="showWechatCard" id="post-wechat-off" value="0"<? if(postMeta.show_wechat_card === '0'){ ?> checked="checked" <? } ?> />&nbsp;否</label>
+                                        <label><input type="radio" name="showWechatCard" value="1"<? if(postMeta.show_wechat_card === '1'){ ?> checked="checked" <? } ?> />&nbsp;带分隔线</label><br />
+                                        <label><input type="radio" name="showWechatCard" value="2"<? if(postMeta.show_wechat_card === '2'){ ?> checked="checked" <? } ?> />&nbsp;仅名片</label><br />
+                                        <label><input type="radio" name="showWechatCard" value="0"<? if(postMeta.show_wechat_card === '0'){ ?> checked="checked" <? } ?> />&nbsp;否</label>
                                     </div>
                                 </div>
                                 <div class="form-field-box-sub">
                                     <div class="form-field-text">更新时间</div>
                                     <div class="form-field-input">
-                                        <label for="post-modified-on"><input type="radio" name="updateModified" id="post-modified-on" value="1" />&nbsp;是</label><br />
-                                        <label for="post-modified-off"><input type="radio" name="updateModified" id="post-modified-off" value="0" checked="checked" />&nbsp;否</label>
+                                        <label><input type="radio" name="updateModified" value="1" />&nbsp;是</label><br />
+                                        <label><input type="radio" name="updateModified" value="0" checked="checked" />&nbsp;否</label>
                                     </div>
                                 </div>
                                 <div class="form-field-box-sub">
                                     <div class="form-field-text">发布时间</div>
                                     <div class="form-field-input">
-                                        <input type="text" class="input" name="postDate" id="post-date" maxlength="10" placeholder="Y-m-d" value="<?= moment(post.postDate).format('YYYY-MM-DD') ?>" />
+                                        <label><input type="text" class="input" name="postDate" id="post-date" maxlength="10" placeholder="Y-m-d" value="<?= moment(post.postDate).format('YYYY-MM-DD') ?>" /></label>
                                     </div>
                                 </div>
                             </div>
