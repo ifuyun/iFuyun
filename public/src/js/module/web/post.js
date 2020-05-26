@@ -130,6 +130,20 @@ service = {
             $(this).addClass('f-d-none');
             $('.j-nav-list').addClass('f-d-none');
         });
+    },
+    checkAds: function () {
+        const $adsEle = $('.m-ads-widget');
+        let counter = 0;
+        const timer = setInterval(function () {
+            const hasChildren = !!$adsEle.children().length;
+            counter += 1;
+            if (hasChildren) {
+                $adsEle.show();
+            }
+            if (hasChildren || counter >= 20) {
+                clearInterval(timer);
+            }
+        }, 100);
     }
 };
 
@@ -147,6 +161,7 @@ $(function () {
     });
 
     showCaptcha();
+    service.checkAds();
 });
 
 module.exports = () => {
