@@ -1248,8 +1248,8 @@ module.exports = {
                 rule: postCategory.length > constants.POST_CATEGORY_LIMIT,
                 message: `目录数应不大于${constants.POST_CATEGORY_LIMIT}个`
             }, {
-                rule: postTag.length > 10,
-                message: '标签数应不大于10个'
+                rule: postTag.length > constants.POST_TAG_LIMIT,
+                message: `标签数应不大于${constants.POST_TAG_LIMIT}个`
             }]);
         } else {
             rules.push({

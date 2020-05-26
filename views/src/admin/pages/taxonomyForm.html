@@ -38,9 +38,9 @@
                             </div>
                             <? } ?>
                             <div class="form-field">
-                                <label class="form-label-left">是否可见</label>
-                                <label><input type="radio" name="status" value="0"<? if(taxonomy.status === 0){ ?> checked="checked" <? } ?> />&nbsp;不显示</label>
-                                <label><input type="radio" name="status" value="1"<? if(taxonomy.status === 1){ ?> checked="checked" <? } ?> />&nbsp;显示</label>
+                                <label class="form-label-left">状态</label>
+                                <label><input type="radio" name="status" value="0"<? if(taxonomy.status === 0){ ?> checked="checked" <? } ?> />&nbsp;不公开</label>
+                                <label><input type="radio" name="status" value="1"<? if(taxonomy.status === 1){ ?> checked="checked" <? } ?> />&nbsp;公开</label>
                                 <label><input type="radio" name="status" value="2" disabled="disabled"<? if(taxonomy.status === 2){ ?> checked="checked" <? } ?> />&nbsp;删除</label>
                             </div>
                             <div class="form-field">
