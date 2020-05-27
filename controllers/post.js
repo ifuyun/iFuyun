@@ -147,7 +147,7 @@ module.exports = {
 
             resData.meta.title = util.getTitle([result.post.postTitle, options.site_name.optionValue]);
             resData.meta.description = result.post.postExcerpt || util.cutStr(util.filterHtmlTag(result.post.postContent), constants.POST_SUMMARY_LENGTH);
-            resData.meta.keywords = keywords.join(',');
+            resData.meta.keywords = util.uniqueTags(keywords.join(','));
             resData.meta.author = options.site_author.optionValue;
             resData.post = result.post;
             resData.prevPost = result.prevPost;
@@ -196,7 +196,7 @@ module.exports = {
 
             resData.meta.title = util.getTitle([result.post.postTitle, options.site_name.optionValue]);
             resData.meta.description = result.post.postExcerpt || util.cutStr(util.filterHtmlTag(result.post.postContent), constants.POST_SUMMARY_LENGTH);
-            resData.meta.keywords = result.post.postTitle + ',' + options.site_keywords.optionValue;
+            resData.meta.keywords = util.uniqueTags(result.post.postTitle + ',' + options.site_keywords.optionValue);
             resData.meta.author = options.site_author.optionValue;
 
             resData.post = result.post;
@@ -250,7 +250,7 @@ module.exports = {
             }
 
             resData.meta.description = '[' + curCat + ']' + (page > 1 ? '(第' + page + '页)' : '') + options.site_description.optionValue;
-            resData.meta.keywords = curCat + ',' + options.site_keywords.optionValue;
+            resData.meta.keywords = util.uniqueTags(curCat + ',' + options.site_keywords.optionValue);
             resData.meta.author = options.site_author.optionValue;
 
             resData.util = util;
@@ -312,7 +312,7 @@ module.exports = {
             }
 
             resData.meta.description = '[' + tag + ']' + (page > 1 ? '(第' + page + '页)' : '') + options.site_description.optionValue;
-            resData.meta.keywords = tag + ',' + options.site_keywords.optionValue;
+            resData.meta.keywords = util.uniqueTags(tag + ',' + options.site_keywords.optionValue);
             resData.meta.author = options.site_author.optionValue;
 
             resData.util = util;

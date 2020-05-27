@@ -10,6 +10,7 @@
  * @since 1.0.0
  */
 const crypto = require('crypto');
+const unique = require('lodash/uniq');
 const appConfig = require('../config/core');
 const constants = require('../services/constants');
 const STATUS_CODES = require('../services/status-codes');
@@ -567,5 +568,19 @@ module.exports = {
         }
 
         return captchaStr;
+    },
+    /**
+     * 标签去重
+     * @method uniqueTags
+     * @static
+     * @param {String} tagStr tag string
+     * @return {String} tag string
+     * @author Fuyun
+     * @version 3.3.3
+     * @since 3.3.3
+     */
+    uniqueTags(tagStr) {
+        const tags = tagStr.split(',');
+        return unique(tags).join(',');
     }
 };
