@@ -22,25 +22,25 @@
                 </div>
                 <div id="search-bar">
                     <form id="form-search" method="get" action="/admin/post?type=<?= type ?>">
-                        <input type="text" class="input keyword" id="keyword" name="keyword" placeholder="搜索..." value="<?= curKeyword ?>" />
+                        <label><input type="text" class="input keyword" id="keyword" name="keyword" placeholder="搜索..." value="<?= curKeyword ?>" /></label>
                         <input type="submit" class="button" value="<?= type === 'post' ? '搜索文章' : '搜索页面' ?>" />
                     </form>
                 </div>
                 <div class="table-nav clear-both">
                     <form id="form-filter" method="get" action="/admin/post?type=<?= type ?>">
-                        <span><input type="button" class="button" value="编辑" /></span>
-                        <span><input type="button" class="button button-spacing" value="删除" /></span>
-                        <span><select class="input" name="date">
+                        <label><input type="button" class="button" value="编辑" /></label>
+                        <label><input type="button" class="button button-spacing" value="删除" /></label>
+                        <label><select class="input" name="date">
                             <option value="">全部日期</option>
                             <? archiveDates.forEach(function(archive){ archive = archive.get(); ?><option value="<?= archive.linkDate ?>"<? if(archive.linkDate === curDate){?> selected="selected"<? } ?>><?= archive.displayDate ?></option><? }) ?>
-                        </select></span>
-                        <span><select class="input" name="category">
+                        </select></label>
+                        <label><select class="input" name="category">
                             <option value="">所有分类</option>
                             <? categories.catArray.forEach(function (cat){ ?>
                                 <option value="<?= cat.slug || cat.name ?>"<? if(cat.slug === curCategory || cat.name === curCategory){?> selected="selected"<? } ?>><? for(var idx = 1; idx < cat.level; idx += 1){ ?>&nbsp;&nbsp;&nbsp;&nbsp;<? } ?><?= cat.name ?></option>
                             <? }) ?>
-                        </select></span>
-                        <span><input type="submit" class="button" value="筛选" /></span>
+                        </select></label>
+                        <label><input type="submit" class="button" value="筛选" /></label>
                     </form>
                 </div>
                 <div>

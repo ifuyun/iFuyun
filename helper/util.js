@@ -6,7 +6,7 @@
  * @static
  * @requires crypto
  * @author Fuyun
- * @version 3.2.3
+ * @version 3.3.3
  * @since 1.0.0
  */
 const crypto = require('crypto');

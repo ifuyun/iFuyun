@@ -1,7 +1,7 @@
 /**
  * 分类管理
  * @author fuyun
- * @version 3.0.0(2017/06/08)
+ * @version 3.3.3
  * @since 1.0.0
  */
 /** @namespace req.session */
@@ -69,7 +69,6 @@ module.exports = {
                 meta: {},
                 page: menu.name,
                 title: menu.title,
-                token: req.csrfToken(),
                 options: result.options,
                 categories: result.categories,
                 util,

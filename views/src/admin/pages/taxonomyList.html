@@ -8,9 +8,8 @@
             <div class="split-line"><div class="split-corner">&nbsp;</div></div>
             <div id="search-bar">
                 <form id="form-search" method="get" action="/admin/taxonomy?type=<?= type ?>">
-                    <input type="text" class="input keyword" id="keyword" name="keyword" placeholder="搜索..." />
+                    <label><input type="text" class="input keyword" id="keyword" name="keyword" placeholder="搜索..." /></label>
                     <input type="submit" class="button" value="搜索<?= title ?>" />
-                    <!--<input type="hidden" name="_csrf" id="csrfToken" value="<?- token ?>" />-->
                 </form>
             </div>
             <div class="clear-right">
