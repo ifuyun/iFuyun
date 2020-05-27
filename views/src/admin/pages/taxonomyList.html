@@ -10,7 +10,7 @@
                 <form id="form-search" method="get" action="/admin/taxonomy?type=<?= type ?>">
                     <input type="text" class="input keyword" id="keyword" name="keyword" placeholder="搜索..." />
                     <input type="submit" class="button" value="搜索<?= title ?>" />
-                    <input type="hidden" name="_csrf" id="csrfToken" value="<?- token ?>" />
+                    <!--<input type="hidden" name="_csrf" id="csrfToken" value="<?- token ?>" />-->
                 </form>
             </div>
             <div class="clear-right">
@@ -37,8 +37,24 @@
                             <? categories.forEach(function(cat, rowIdx){ ?>
                             <tr<? if(rowIdx % 2 === 0) { ?> class="alternate"<? } ?>>
                                 <td class="column-check"><input type="checkbox" class="checkRow" /></td>
-                                <td><?= util.cutStr(cat.name, 20) ?></td>
-                                <td><?= cat.slug ?></td>
+                                <td>
+                                    <? if(type === 'tag') { ?>
+                                    <a rel="category" href="/admin/post?tag=<?= encodeURIComponent(cat.slug ? cat.slug : cat.name) ?>"><?= util.cutStr(cat.name, 20) ?></a>
+                                    <? } else if(type === 'post') { ?>
+                                    <a rel="category" href="/admin/post?category=<?= cat.slug ? cat.slug : cat.name ?>"><?= util.cutStr(cat.name, 20) ?></a>
+                                    <? } else { ?>
+                                    <?= util.cutStr(cat.name, 20) ?>
+                                    <? } ?>
+                                </td>
+                                <td>
+                                    <? if(type === 'tag') { ?>
+                                    <a rel="category" href="/admin/post?tag=<?= encodeURIComponent(cat.slug ? cat.slug : cat.name) ?>"><?= cat.slug ?></a>
+                                    <? } else if(type === 'post') { ?>
+                                    <a rel="category" href="/admin/post?category=<?= cat.slug ? cat.slug : cat.name ?>"><?= cat.slug ?></a>
+                                    <? } else { ?>
+                                    <?= cat.slug ?>
+                                    <? } ?>
+                                </td>
                                 <td><?= util.cutStr(cat.description, 20) ?></td>
                                 <td><?= cat.termOrder ?></td>
                                 <td><?= formatter.taxonomyStatus(cat.status) ?></td>
