@@ -11,6 +11,7 @@
  */
 const crypto = require('crypto');
 const unique = require('lodash/uniq');
+const xss = require('sanitizer');
 const appConfig = require('../config/core');
 const constants = require('../services/constants');
 const STATUS_CODES = require('../services/status-codes');
@@ -582,5 +583,27 @@ module.exports = {
     uniqueTags(tagStr) {
         const tags = tagStr.split(',');
         return unique(tags).join(',');
+    },
+    /**
+     * 表单数据预处理
+     * @method sanitizeField
+     * @static
+     * @param {String} str source string
+     * @param {Boolean} trimFlag should trim
+     * @param {*} defaultValue default value
+     * @returns {String} formatted string
+     * @author Fuyun
+     * @version 3.3.3
+     * @since 3.3.3
+     */
+    sanitizeField(str, trimFlag = true, defaultValue) {
+        str = xss.sanitize(str);
+        if (trimFlag) {
+            str = this.trim(str);
+        }
+        if (defaultValue !== undefined) {
+            str = str || defaultValue;
+        }
+        return str;
     }
 };

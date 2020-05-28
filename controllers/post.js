@@ -1,15 +1,15 @@
 /**
  * 文章
  * @author fuyun
- * @version 3.0.0
+ * @version 3.3.3
  * @since 1.0.0(2017/04/12)
  */
 const fs = require('fs');
+const formidable = require('formidable');
 const path = require('path');
 const moment = require('moment');
 const url = require('url');
 const xss = require('sanitizer');
-const formidable = require('formidable');
 const uploader = require('./upload');
 const appConfig = require('../config/core');
 const credentials = require('../config/credentials');
@@ -193,6 +193,13 @@ module.exports = {
             }
             const options = result.commonData.options;
             Object.assign(resData, result.commonData);
+
+            resData.postMeta = {};
+            if (result.post.Postmeta) {
+                result.post.Postmeta.forEach((meta) => {
+                    resData.postMeta[meta.metaKey] = meta.metaValue;
+                });
+            }
 
             resData.meta.title = util.getTitle([result.post.postTitle, options.site_name.optionValue]);
             resData.meta.description = result.post.postExcerpt || util.cutStr(util.filterHtmlTag(result.post.postContent), constants.POST_SUMMARY_LENGTH);
@@ -619,21 +626,21 @@ module.exports = {
         const param = req.body;
         const type = req.query.type !== 'page' ? 'post' : 'page';
         const nowTime = new Date();
-        let postId = util.trim(xss.sanitize(param.postId));
+        let postId = util.sanitizeField(param.postId);
         postId = idReg.test(postId) ? postId : '';
         const newPostId = postId || util.getUuid();
 
         // todo: 防纂改
         let data = {
-            postTitle: util.trim(xss.sanitize(param.postTitle)),
+            postTitle: util.sanitizeField(param.postTitle),
             postContent: util.trim(param.postContent),
-            postExcerpt: util.trim(xss.sanitize(param.postExcerpt)),
-            postGuid: util.trim(xss.sanitize(param.postGuid)) || '/post/' + newPostId,
+            postExcerpt: util.sanitizeField(param.postExcerpt),
+            postGuid: util.sanitizeField(param.postGuid, true, '/post/' + newPostId),
             postAuthor: req.session.user.userId,
-            postStatus: util.trim(xss.sanitize(param.postStatus)),
+            postStatus: util.sanitizeField(param.postStatus),
             postPassword: util.trim(param.postPassword),
-            postOriginal: util.trim(xss.sanitize(param.postOriginal)),
-            commentFlag: util.trim(xss.sanitize(param.commentFlag)),
+            postOriginal: util.sanitizeField(param.postOriginal, true, 1),
+            commentFlag: util.sanitizeField(param.commentFlag),
             postDate: param.postDate ? new Date(+moment(param.postDate)) : nowTime,
             postType: type
         };
@@ -647,8 +654,8 @@ module.exports = {
             }
             return param;
         };
-        const postCategory = toArray(util.trim(xss.sanitize(param.postCategory)));
-        const postTag = toArray(util.trim(xss.sanitize(param.postTag)));
+        const postCategory = toArray(util.sanitizeField(param.postCategory));
+        const postTag = toArray(util.sanitizeField(param.postTag));
 
         const checkResult = postService.validatePostFields({
             data,

@@ -408,6 +408,9 @@ module.exports = {
                     include: [{
                         model: User,
                         attributes: ['userDisplayName']
+                    }, {
+                        model: Postmeta,
+                        attributes: ['metaKey', 'metaValue']
                     }],
                     where: {
                         postGuid: {
