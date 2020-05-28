@@ -132,15 +132,22 @@ service = {
         });
     },
     checkAds: function () {
-        const $adsEle = $('.m-ads-widget');
+        const $adsEle = $('.m-ads');
+        const count = $adsEle.length;
         let counter = 0;
+        let visibleCount = 0;
+        const visibleFlag = [];
         const timer = setInterval(function () {
-            const hasChildren = !!$adsEle.children().length;
             counter += 1;
-            if (hasChildren) {
-                $adsEle.show();
-            }
-            if (hasChildren || counter >= 20) {
+            $adsEle.each(function (i, ele) {
+                const hasChildren = !!$(ele).children().length;
+                if (!visibleFlag[i] && hasChildren) {
+                    visibleFlag[i] = true;
+                    visibleCount += 1;
+                    $adsEle.removeClass('f-d-none');
+                }
+            });
+            if (count === visibleCount || counter >= 20) {
                 clearInterval(timer);
             }
         }, 100);
