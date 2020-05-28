@@ -11,6 +11,14 @@
             <div class="m-diag">&nbsp;</div>
             <article class="m-article-content" id="postContent">
                 <?- post.postContent ?>
+                <? if(postMeta.show_wechat_card === '1'){ ?>
+                <hr />
+                <? } ?>
+                <? if(postMeta.show_wechat_card === '1' || postMeta.show_wechat_card === '2'){ ?>
+                <div class="m-wechat-card">
+                    <img style="border-radius: 10px; border: 2px solid #1ba6ff;" src="http://s.ifuyun.com/upload/2020/05/3d8904097cf0fc41.jpg" alt="公众号：黑匣子思维" width="420" />
+                </div>
+                <? } ?>
             </article>
             <div class="m-ads m-ads-post f-d-none _bzpoa6vpy8p"></div>
             <div class="m-ads m-ads-wap f-d-none _lv97l1y0ppc"></div>
