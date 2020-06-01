@@ -281,6 +281,9 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
                 text-decoration: underline;
             }
         }
+        .m-excerpt-content {
+            word-wrap: break-word;
+        }
     }
     .m-excerpt-meta {
         color: #888;
@@ -805,7 +808,8 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
         float: left;
         box-sizing: border-box;
         padding: 3px 20px;
-        line-height: 200%;
+        height: 2.5em;
+        line-height: 2em;
         list-style: none;
         border-bottom: 1px dashed #eaeaea;
         text-indent: 0;
@@ -813,6 +817,9 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
         > a {
             display: inline-block;
             width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
             &:hover {
                 text-decoration: underline;
             }
