@@ -1,7 +1,7 @@
 /**
  * 文章
  * @author fuyun
- * @version 3.3.3
+ * @version 3.3.4
  * @since 1.0.0(2017/04/12)
  */
 const fs = require('fs');
@@ -572,7 +572,8 @@ module.exports = {
                 util,
                 moment
             };
-            let title;
+            let title = [];
+            let postTitle;
             const pageTitle = {
                 page: '撰写新页面',
                 post: '撰写新文章'
@@ -581,21 +582,27 @@ module.exports = {
                 page: '编辑页面',
                 post: '编辑文章'
             };
-            if (postId) {
+            if (result.post) {
                 resData.page = result.post.postType;
-                title = editTitle[result.post.postType];
+                resData.post = result.post;
+
+                postTitle = editTitle[result.post.postType];
+                title.push(postTitle);
+                title.unshift(result.post.postTitle);
             } else {
                 resData.page = req.query.type === 'page' ? 'page' : 'post';
-                title = pageTitle[resData.page];
-            }
-            resData.title = title;
-            resData.meta.title = util.getTitle([title, '管理后台', result.options.site_name.optionValue]);
+                resData.post = {
+                    postStatus: 'publish',
+                    postOriginal: 1,
+                    commentFlag: 'verify'
+                };
 
-            resData.post = result.post || {
-                postStatus: 'publish',
-                postOriginal: 1,
-                commentFlag: 'verify'
-            };
+                postTitle = pageTitle[resData.page];
+                title.push(postTitle);
+            }
+
+            resData.postTitle = postTitle;
+            resData.meta.title = util.getTitle(title.concat('管理后台', result.options.site_name.optionValue));
             resData.postMeta = {
                 'show_wechat_card': '0'
             };
@@ -672,7 +679,7 @@ module.exports = {
             data.postPassword = '';
         }
 
-        const updateModified = util.trim(xss.sanitize(param.updateModified)) || '1';
+        const updateModified = util.sanitizeField(param.updateModified, true, '1');
         if (postId && data.postContent !== param.postRawContent && updateModified === '1') {
             data.postModified = data.postModifiedGmt = nowTime;
         }
