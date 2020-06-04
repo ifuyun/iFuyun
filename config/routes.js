@@ -1,5 +1,5 @@
 /* jslint nomen:true es5:true */
-/* global console,process,__dirname */
+/* global console,__dirname */
 /**
  * 路由定义，含错误路由
  * @module cfg_routes
@@ -7,16 +7,16 @@
  * @param {Object} express express对象
  * @return {void}
  * @author Fuyun
- * @version 3.0.0
+ * @version 3.3.4
  * @since 1.0.0
  */
 const path = require('path');
-const base = require('./routes-base');
+const routesBase = require('./routes-base');
+const routesAdmin = require('./routes-admin');
 const post = require('../controllers/post');
 const user = require('../controllers/user');
 const comment = require('../controllers/comment');
 const captcha = require('../controllers/captcha');
-const routesAdmin = require('./routes-admin');
 const config = require('./core');
 
 module.exports = (app, express) => {
@@ -26,7 +26,7 @@ module.exports = (app, express) => {
     app.use(express.static(path.join(__dirname, '..', 'public', 'static')));
     app.use(express.static(path.join(__dirname, '..', 'public', config.isDev ? 'dev' : 'dist')));
 
-    app.use(base.init);
+    app.use(routesBase.init);
     app.get('/', post.listPosts);
     app.get('/page-:page', post.listPosts);
     app.get('/post/page-:page', post.listPosts);
@@ -56,5 +56,5 @@ module.exports = (app, express) => {
     // 独立页面
     app.use(post.showPage);
     // 错误路由
-    app.use(base.error);
+    app.use(routesBase.error);
 };

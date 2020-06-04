@@ -1,14 +1,13 @@
 /**
  * 图书
  * @author fuyun
- * @since 3.1.0(2020-02-22)
  * @version 3.1.0
+ * @since 3.1.0(2020-02-22)
  */
 const Excel = require('exceljs');
 const config = require('../config/credentials');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const bookService = require('../services/book');
-const STATUS_CODES = require('../services/status-codes');
 
 module.exports = {
     importBooks(req, res, next) {
