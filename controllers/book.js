@@ -8,6 +8,7 @@ const Excel = require('exceljs');
 const config = require('../config/credentials');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const bookService = require('../services/book');
+const STATUS_CODES = require('../services/status-codes');
 
 module.exports = {
     importBooks(req, res, next) {
@@ -49,7 +50,7 @@ module.exports = {
                 res.type('application/json');
                 res.send({
                     status: 200,
-                    code: 0,
+                    code: STATUS_CODES.SUCCESS,
                     message: null,
                     data: {
                         count: booksCount
@@ -64,7 +65,7 @@ module.exports = {
                 }));
                 next({
                     status: 200,
-                    code: 500,
+                    code: STATUS_CODES.SERVER_ERROR,
                     message: err.message
                 });
             });

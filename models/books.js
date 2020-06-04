@@ -88,7 +88,7 @@ module.exports = function (sequelize, DataTypes) {
         deletedAt: false
     });
     Book.associate = function (models) {
-        Book.hasMany(models.Comment, {
+        Book.hasMany(models.Note, {
             foreignKey: 'noteBookId',
             sourceKey: 'bookId'
         });

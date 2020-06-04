@@ -1,15 +1,14 @@
 /**
  * book services
  * @author fuyun
- * @since 2020-02-22
  * @version 3.1.0
+ * @since 2020-02-22
  */
 const async = require('async');
 const util = require('../helper/util');
 const models = require('../models/index');
 const STATUS_CODES = require('./status-codes');
 const {Book} = models;
-const Op = models.Sequelize.Op;
 
 module.exports = {
     saveBooks(param, successCb, errorCb) {
