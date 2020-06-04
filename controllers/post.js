@@ -10,9 +10,7 @@ const path = require('path');
 const moment = require('moment');
 const url = require('url');
 const xss = require('sanitizer');
-const uploader = require('./upload');
 const appConfig = require('../config/core');
-const credentials = require('../config/credentials');
 const constants = require('../services/constants');
 const formatter = require('../helper/formatter');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
@@ -892,98 +890,71 @@ module.exports = {
             fileData.postGuid = '/' + curYear + '/' + curMonth + '/' + filename;
             fileData.postModifiedGmt = fileData.postDateGmt = fileData.postDate = nowTime;
 
-            const saveDb = (cloudPath) => {
-                postService.uploadFile({
-                    fileData,
-                    cloudPath
-                }, () => {
-                    logger.info(formatOpLog({
-                        fn: 'uploadFile',
-                        msg: `File: ${filename}:${fileData.postTitle} is uploaded.`,
-                        data: {
-                            uploadPath,
-                            filename: files.mediafile.name,
-                            original: fields.original === '1',
-                            watermark: fields.watermark === '1',
-                            uploadCloud: fields.uploadCloud === '1'
-                        },
-                        req
-                    }));
-
-                    const response = (err) => {
-                        if (err) {
-                            logger.error(formatOpLog({
-                                fn: 'uploadFile',
-                                msg: `水印处理失败: ${err.message}`,
-                                data: {
-                                    uploadPath,
-                                    filename: files.mediafile.name,
-                                    watermark: fields.watermark === '1',
-                                    uploadCloud: fields.uploadCloud === '1'
-                                },
-                                req
-                            }));
-                            return res.send({
-                                status: 200,
-                                code: 600,
-                                message: `水印处理失败: ${err.message}`,
-                                token: req.csrfToken()
-                            });
-                        }
-                        const referer = req.session.uploadReferer;
-                        delete req.session.uploadReferer;
-                        res.send({
-                            status: 200,
-                            code: 0,
-                            message: null,
-                            data: {
-                                url: referer || '/admin/media'
-                            }
-                        });
-                    };
-                    if (fields.watermark !== '0') {// 默认开启水印
-                        commonService.watermark(filepath, response);
-                    } else {
-                        response();
-                    }
-                }, (err) => {
-                    logger.error(formatOpLog({
-                        fn: 'uploadFile',
-                        msg: err.messageDetail || err.message,
-                        data: err.data,
-                        req
-                    }));
-                    res.send({
-                        status: 200,
-                        code: 500,
-                        message: typeof err === 'string' ? err : err.message,
-                        token: req.csrfToken()
-                    });
-                });
-            };
             res.type('application/json');
-
-            if (credentials.upload && fields.uploadCloud === '1') {// 云+不带水印
-                uploader.init({
-                    upload: {
-                        appAccessKey: credentials.upload.appAccessKey,
-                        appSecretKey: credentials.upload.appSecretKey,
-                        bucket: credentials.upload.bucket
+            postService.uploadFile({
+                fileData
+            }, () => {
+                logger.info(formatOpLog({
+                    fn: 'uploadFile',
+                    msg: `File: ${filename}:${fileData.postTitle} is uploaded.`,
+                    data: {
+                        uploadPath,
+                        filename: files.mediafile.name,
+                        original: fields.original === '1',
+                        watermark: fields.watermark === '1'
                     },
-                    onSuccess: saveDb,
-                    onError: (err) => {
-                        res.send({
+                    req
+                }));
+
+                const response = (err) => {
+                    if (err) {
+                        logger.error(formatOpLog({
+                            fn: 'uploadFile',
+                            msg: `水印处理失败: ${err.message}`,
+                            data: {
+                                uploadPath,
+                                filename: files.mediafile.name,
+                                watermark: fields.watermark === '1'
+                            },
+                            req
+                        }));
+                        return res.send({
                             status: 200,
-                            code: 500,
-                            message: typeof err === 'string' ? err : err.message,
+                            code: 600,
+                            message: `水印处理失败: ${err.message}`,
                             token: req.csrfToken()
                         });
                     }
+                    const referer = req.session.uploadReferer;
+                    delete req.session.uploadReferer;
+                    res.send({
+                        status: 200,
+                        code: 0,
+                        message: null,
+                        data: {
+                            url: referer || '/admin/media'
+                        }
+                    });
+                };
+                if (fields.watermark !== '0') {// 默认开启水印
+                    commonService.watermark(filepath, response);
+                } else {
+                    response();
+                }
+            }, (err) => {
+                logger.error(formatOpLog({
+                    fn: 'uploadFile',
+                    msg: err.messageDetail || err.message,
+                    data: err.data,
+                    req
+                }));
+                res.send({
+                    status: 200,
+                    code: 500,
+                    message: typeof err === 'string' ? err : err.message,
+                    token: req.csrfToken()
                 });
-                uploader.upload(filepath);
-            } else {
-                saveDb();
-            }
+            });
         });
     }
 };

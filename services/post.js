@@ -1190,18 +1190,6 @@ module.exports = {
                     }).then((post) => cb(null, post));
                 }]
             };
-            if (param.cloudPath) {
-                tasks.postMeta = (cb) => {
-                    Postmeta.create({
-                        metaId: util.getUuid(),
-                        postId: param.fileData.postId,
-                        metaKey: 'cloud_path',
-                        metaValue: param.cloudPath
-                    }, {
-                        transaction: t
-                    }).then((postMeta) => cb(null, postMeta));
-                };
-            }
             // 需要返回promise实例
             return new Promise((resolve, reject) => {
                 async.auto(tasks, (err, result) => {

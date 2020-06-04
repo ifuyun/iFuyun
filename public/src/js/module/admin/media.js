@@ -6,7 +6,6 @@ const service = {
         fd.append('mediafile', file);
         fd.append('original', $('#original').is(':checked') ? 1 : 0);
         fd.append('watermark', $('#watermark').is(':checked') ? 1 : 0);
-        fd.append('uploadCloud', $('#uploadCloud').is(':checked') ? 1 : 0);
 
         $.ajax({
             type: 'post',

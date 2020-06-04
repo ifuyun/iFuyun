@@ -2,21 +2,12 @@
  * 安全信息配置
  * @module cfg_credential
  * @author Fuyun
- * @version 3.1.0
+ * @version 3.3.4
  * @since 1.0.0
  */
 module.exports = {
     sessionSecret: '[session-secret]',
     cookieSecret: '[cookie-secret]',
-    upload: {
-        initUrl: '[url-init]',
-        targetUrl: '[url-get-target]',
-        bucket: '[bucket]',
-        appKey: '[app-key]',
-        appSecret: '[app-secret]',
-        appAccessKey: '[app-access-key]',
-        appSecretKey: '[app-secret-key]'
-    },
     redis: {
         development: {
             password: '[redis-dev-pwd]'
