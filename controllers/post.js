@@ -54,19 +54,19 @@ module.exports = {
 
             if (req.query.keyword) {
                 if (page > 1) {
-                    resData.meta.title = util.getTitle([req.query.keyword, '第' + page + '页', '搜索结果', options.site_name.optionValue]);
+                    resData.meta.title = util.getTitle([req.query.keyword, `第${page}页`, '搜索结果', options.site_name.optionValue]);
                 } else {
                     resData.meta.title = util.getTitle([req.query.keyword, '搜索结果', options.site_name.optionValue]);
                 }
             } else {
                 if (page > 1) {
-                    resData.meta.title = util.getTitle(['第' + page + '页', options.site_slogan.optionValue, options.site_name.optionValue]);
+                    resData.meta.title = util.getTitle([`第${page}页`, options.site_slogan.optionValue, options.site_name.optionValue]);
                 } else {
                     resData.meta.title = util.getTitle([options.site_slogan.optionValue, options.site_name.optionValue]);
                 }
             }
 
-            resData.meta.description = (page > 1 ? '[文章列表](第' + page + '页)' : '') + options.site_description.optionValue;
+            resData.meta.description = (page > 1 ? `${options.site_name.optionValue}文章列表(第${page}页)；` : '') + options.site_description.optionValue;
             resData.meta.keywords = options.site_keywords.optionValue;
             resData.meta.author = options.site_author.optionValue;
 
@@ -249,12 +249,12 @@ module.exports = {
 
             const curCat = result.subCategories.catPath[result.subCategories.catPath.length - 1].title;
             if (page > 1) {
-                resData.meta.title = util.getTitle(['第' + page + '页', curCat, '分类目录', options.site_name.optionValue]);
+                resData.meta.title = util.getTitle([`第${page}页`, curCat, '分类目录', options.site_name.optionValue]);
             } else {
                 resData.meta.title = util.getTitle([curCat, '分类目录', options.site_name.optionValue]);
             }
 
-            resData.meta.description = '[' + curCat + ']' + (page > 1 ? '(第' + page + '页)' : '') + options.site_description.optionValue;
+            resData.meta.description = `「${curCat}」相关文章` + (page > 1 ? `(第${page}页)` : '') + '；' + options.site_description.optionValue;
             resData.meta.keywords = util.uniqueTags(curCat + ',' + options.site_keywords.optionValue);
             resData.meta.author = options.site_author.optionValue;
 
@@ -311,12 +311,12 @@ module.exports = {
             resData.comments = result.comments;
 
             if (page > 1) {
-                resData.meta.title = util.getTitle(['第' + page + '页', tag, '标签', options.site_name.optionValue]);
+                resData.meta.title = util.getTitle([`第${page}页`, tag, '标签', options.site_name.optionValue]);
             } else {
                 resData.meta.title = util.getTitle([tag, '标签', options.site_name.optionValue]);
             }
 
-            resData.meta.description = '[' + tag + ']' + (page > 1 ? '(第' + page + '页)' : '') + options.site_description.optionValue;
+            resData.meta.description = `「${tag}」相关文章` + (page > 1 ? `(第${page}页)` : '') + '；' + options.site_description.optionValue;
             resData.meta.keywords = util.uniqueTags(tag + ',' + options.site_keywords.optionValue);
             resData.meta.author = options.site_author.optionValue;
 
@@ -386,12 +386,12 @@ module.exports = {
 
             const title = `${year}年${month ? month + '月' : ''}`;
             if (page > 1) {
-                resData.meta.title = util.getTitle(['第' + page + '页', title, '文章归档', options.site_name.optionValue]);
+                resData.meta.title = util.getTitle([`第${page}页`, title, '文章归档', options.site_name.optionValue]);
             } else {
                 resData.meta.title = util.getTitle([title, '文章归档', options.site_name.optionValue]);
             }
 
-            resData.meta.description = `[${title}]` + (page > 1 ? '(第' + page + '页)' : '') + options.site_description.optionValue;
+            resData.meta.description = `${options.site_name.optionValue}${title}文章` + (page > 1 ? `(第${page}页)` : '') + '；' + options.site_description.optionValue;
             resData.meta.keywords = options.site_keywords.optionValue;
             resData.meta.author = options.site_author.optionValue;
 
@@ -436,7 +436,7 @@ module.exports = {
             resData.curPos = util.createCrumb(crumbData);
 
             resData.meta.title = util.getTitle(['文章归档', options.site_name.optionValue]);
-            resData.meta.description = '[文章归档]' + options.site_description.optionValue;
+            resData.meta.description = `${options.site_name.optionValue}文章归档，查看${options.site_name.optionValue}全部历史文章；` + options.site_description.optionValue;
             resData.meta.keywords = options.site_keywords.optionValue;
             resData.meta.author = options.site_author.optionValue;
 
