@@ -263,11 +263,13 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
         line-height: 24px;
         font-size: 14px;
         > header {
-            h3 {
-                font-size: 16px;
-                line-height: 32px;
-                height: 32px;
-            }
+            position: relative;
+        }
+        h3 {
+            font-size: 16px;
+            line-height: 32px;
+            height: 32px;
+            margin-right: 80px;
             a {
                 display: inline-block;
                 max-width: 100%;
@@ -283,6 +285,26 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
         }
         .m-excerpt-content {
             word-wrap: break-word;
+        }
+        .m-excerpt-comment {
+            position: absolute;
+            right: 0;
+            top: 0;
+            font-size: 13px;
+            color: #888;
+            line-height: 32px;
+            i {
+                top: 3px;
+                margin-right: 5px;
+                font-size: 13px;
+            }
+            a {
+                color: #888;
+                &:hover, &:hover i {
+                    color: @theme-color-text;
+                    text-decoration: none;
+                }
+            }
         }
     }
     .m-excerpt-meta {
@@ -977,7 +999,7 @@ button, input, select, textarea { line-height: inherit; font-family: inherit; fo
     .m-nav-main > li > a {
         line-height: 40px;
     }
-    .m-excerpt-meta-post .m-meta-dynamic {
+    .m-excerpt-meta-post .m-meta-dynamic, .m-excerpt-comment {
         display: none;
     }
     .m-pagination .x-pc {

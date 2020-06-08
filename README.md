@@ -1,7 +1,7 @@
 # iFuyun
 
 ## 介绍
-iFuyun是基于Node.js和MySQL开发的博客系统。在线体验，请访问：[抚云生活](http://www.ifuyun.com/ "抚云生活")。
+iFuyun是基于Node.js和MySQL开发的博客系统。在线体验，请访问：[爱浮云](http://www.ifuyun.com/ "爱浮云")。
 
 ## 安装
 
