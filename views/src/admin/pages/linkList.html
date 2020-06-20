@@ -30,19 +30,6 @@
                                 <th width="17%">操作</th>
                             </tr>
                         </thead>
-                        <tfoot>
-                            <tr>
-                                <th class="column-check"><input type="checkbox" class="checkAll" /></th>
-                                <th>名称</th>
-                                <th>URL</th>
-                                <th>描述</th>
-                                <th>可见性</th>
-                                <th>打开方式</th>
-                                <th>排序</th>
-                                <th>添加时间</th>
-                                <th>操作</th>
-                            </tr>
-                        </tfoot>
                         <tbody>
                             <? if(links && links.length > 0) { ?>
                             <? links.forEach(function(link, rowIdx){ ?>
@@ -67,9 +54,6 @@
                             <? } ?>
                         </tbody>
                     </table>
-                </div>
-                <div class="table-nav">
-                    <span><a class="button" href="javascript:">删除</a></span>
                 </div>
                 <?- include('../elements/pagination.html') -?>
             </div>
