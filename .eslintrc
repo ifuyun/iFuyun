@@ -518,6 +518,6 @@
         "yield-star-spacing": 2
     },
     "parserOptions": {
-        "ecmaVersion": 6
+        "ecmaVersion": 8
     }
 }

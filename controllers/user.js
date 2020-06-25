@@ -1,14 +1,14 @@
 /**
  * 用户管理
  * @author fuyun
- * @version 3.0.0
+ * @version 3.3.5
  * @since 1.0.0(2017/05/23)
  */
 const xss = require('sanitizer');
 const appConfig = require('../config/core');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const util = require('../helper/util');
-const commonService = require('../services/common');
+const optionService = require('../services/option');
 const STATUS_CODES = require('../services/status-codes');
 const userService = require('../services/user');
 
@@ -19,7 +19,7 @@ module.exports = {
         }
         req.session.loginReferer = util.getReferrer(req);
 
-        commonService.getInitOptions((err, result) => {
+        optionService.getInitOptions((err, result) => {
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'showLogin.getInitOptions',

@@ -1,7 +1,7 @@
 /**
  * post services
  * @author fuyun
- * @version 3.3.4
+ * @version 3.3.5
  * @since 3.0.0
  */
 const async = require('async');
@@ -11,6 +11,7 @@ const util = require('../helper/util');
 const models = require('../models/index');
 const commonService = require('../services/common');
 const constants = require('../services/constants');
+const optionService = require('../services/option');
 const STATUS_CODES = require('./status-codes');
 const {Post, User, Postmeta, TermTaxonomy, VTagVisibleTaxonomy} = models;
 const Op = models.Sequelize.Op;
@@ -45,7 +46,7 @@ module.exports = {
                 });
             },
             mainNavs: commonService.mainNavs,
-            options: commonService.getInitOptions
+            options: optionService.getInitOptions
         }, (err, result) => {
             if (err) {
                 logger.error(formatOpLog({
@@ -738,7 +739,7 @@ module.exports = {
         paramArr.push(`type=${where.postType}`);
 
         async.auto({
-            options: commonService.getInitOptions,
+            options: optionService.getInitOptions,
             archiveDates: (cb) => {
                 commonService.archiveDates(cb, {
                     postType: where.postType
@@ -829,7 +830,7 @@ module.exports = {
     editPost(param, cb) {
         let tasks = {
             categories: commonService.getCategoryTree.bind(commonService),
-            options: commonService.getInitOptions
+            options: optionService.getInitOptions
         };
         if (param.postId) {
             let includeOpt = [{
@@ -1120,7 +1121,7 @@ module.exports = {
         paramArr.push(`type=${where.postType}`);
 
         async.auto({
-            options: commonService.getInitOptions,
+            options: optionService.getInitOptions,
             archiveDates: (cb) => {
                 commonService.archiveDates(cb, {
                     postType: where.postType
@@ -1169,7 +1170,7 @@ module.exports = {
     uploadFile(param, successCb, errorCb) {
         models.sequelize.transaction((t) => {
             let tasks = {
-                options: commonService.getInitOptions,
+                options: optionService.getInitOptions,
                 checkGuid: (cb) => {
                     const where = {
                         postGuid: {

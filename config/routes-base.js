@@ -4,7 +4,7 @@
  * @module c_base
  * @static
  * @author Fuyun
- * @version 3.0.0
+ * @version 3.3.5
  * @since 1.0.0
  */
 const domain = require('domain');
@@ -26,13 +26,13 @@ module.exports = {
      * @param {Function} next 路由对象
      * @return {void}
      * @author Fuyun
-     * @version 1.1.0
+     * @version 3.3.5
      * @since 1.0.0
      */
     init(req, res, next) {
         const rememberMe = req.cookies.rememberMe;
         const curUser = req.session.user;
-        res.locals.isLogin = curUser ? !!curUser : false;
+        res.locals.isLogin = !!curUser;
         if (res.locals.isLogin && rememberMe && rememberMe === '1') {// 2015-07-28：不能regenerate，否则将导致后续请求无法设置session
             req.session.cookie.expires = new Date(Date.now() + appConfig.cookieExpires);
             req.session.cookie.maxAge = appConfig.cookieExpires;

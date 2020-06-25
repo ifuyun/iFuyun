@@ -1,7 +1,7 @@
 /**
  * link services
  * @author fuyun
- * @version 3.0.0
+ * @version 3.3.5
  * @since 3.0.0
  */
 const async = require('async');
@@ -9,6 +9,7 @@ const STATUS_CODES = require('./status-codes');
 const util = require('../helper/util');
 const models = require('../models/index');
 const commonService = require('../services/common');
+const optionService = require('../services/option');
 const {Link, TermTaxonomy, TermRelationship} = models;
 const Op = models.Sequelize.Op;
 
@@ -16,7 +17,7 @@ module.exports = {
     listLinks(param, cb) {
         let page = parseInt(param.page, 10) || 1;
         async.auto({
-            options: commonService.getInitOptions,
+            options: optionService.getInitOptions,
             count: (cb) => {
                 Link.count().then((data) => cb(null, data));
             },
@@ -37,7 +38,7 @@ module.exports = {
     },
     editLink(param, cb) {
         let tasks = {
-            options: commonService.getInitOptions,
+            options: optionService.getInitOptions,
             categories: (cb) => {
                 commonService.getCategoryTree(cb, {
                     type: 'link'

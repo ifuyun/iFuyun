@@ -1,16 +1,18 @@
 /**
  * 状态码
  * @author fuyun
- * @version 3.1.0
+ * @version 3.3.5
  * @since 3.0.0
  */
 const STATUS_CODES = {
     SUCCESS: 0,
+    HTTP_SUCCESS: 200,
     BAD_REQUEST: 400,
     UNAUTHORIZED: 401,
     FORBIDDEN: 403,
     PAGE_NOT_FOUND: 404,
     SERVER_ERROR: 500,
+    UNKNOWN_ERROR: 599,
     POST_NOT_EXIST: 800,
     POST_SAVE_ERROR: 801,
     POST_COMMENT_CLOSED: 802,

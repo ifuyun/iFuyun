@@ -1,5 +1,5 @@
 module.exports = function (sequelize, DataTypes) {
-    const Option = sequelize.define('Option', {
+    return sequelize.define('Option', {
         optionId: {
             type: DataTypes.CHAR(16),
             allowNull: false,
@@ -34,6 +34,4 @@ module.exports = function (sequelize, DataTypes) {
         tableName: 'options',
         timestamps: false
     });
-
-    return Option;
 };

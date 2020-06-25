@@ -1,17 +1,13 @@
 /**
  * 设置
  * @author fuyun
- * @version 3.0.0
+ * @version 3.3.5
  * @since 1.1.0(2017-05-25)
  */
-const async = require('async');
 const xss = require('sanitizer');
 const util = require('../helper/util');
-const models = require('../models/index');
-const commonService = require('../services/common');
+const optionService = require('../services/option');
 const appConfig = require('../config/core');
-const {Option} = models;
-const Op = models.Sequelize.Op;
 
 module.exports = {
     welcome(req, res) {
@@ -42,7 +38,7 @@ module.exports = {
                 message: '不支持该操作'
             }, next);
         }
-        commonService.getInitOptions((err, options) => {
+        optionService.getInitOptions((err, options) => {
             if (err) {
                 return next(err);
             }
@@ -121,29 +117,9 @@ module.exports = {
                 }, next);
             }
         }
-        models.sequelize.transaction((t) =>
-            // 需要返回promise实例
-            new Promise((resolve, reject) => {
-                async.times(settings.length, (i, nextFn) => {
-                    Option.update({
-                        optionValue: settings[i].value
-                    }, {
-                        where: {
-                            optionName: {
-                                [Op.eq]: settings[i].name
-                            }
-                        },
-                        transaction: t
-                    }).then((option) => nextFn(null, option));
-                }, (err, result) => {
-                    if (err) {
-                        reject(new Error(err));
-                    } else {
-                        resolve(result);
-                    }
-                });
-            })
-        ).then(() => {
+        optionService.saveOptions({
+            settings
+        }, () => {
             res.type('application/json');
             res.send({
                 code: 0,

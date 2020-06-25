@@ -1,7 +1,7 @@
 /**
  * common services
  * @author fuyun
- * @version 3.2.4
+ * @version 3.3.5
  * @since 1.0.0(2017/04/13)
  */
 const path = require('path');
@@ -10,29 +10,10 @@ const appConfig = require('../config/core');
 const util = require('../helper/util');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const models = require('../models');
-const {Link, Post, TermTaxonomy, Comment, Option, VPostDateArchive, vPostViewsAverage} = models;
+const {Link, Post, TermTaxonomy, Comment, VPostDateArchive, vPostViewsAverage} = models;
 const Op = models.Sequelize.Op;
 
 module.exports = {
-    getInitOptions(cb) {
-        Option.findAll({
-            attributes: ['blogId', 'optionName', 'optionValue', 'autoload'],
-            where: {
-                autoload: {
-                    [Op.eq]: 1
-                }
-            }
-        }).then((data) => {
-            let tmpObj = {};
-            data.forEach((item) => {
-                tmpObj[item.optionName] = {
-                    blogId: item.blogId,
-                    optionValue: item.optionValue
-                };
-            });
-            cb(null, tmpObj);
-        });
-    },
     archiveDates(cb, param) {
         // 模型定义之外（别名）的属性需要通过.get()方式访问
         // 查询count时根据link_date、visible分组，其他情况只查询唯一的link_date

@@ -1,14 +1,14 @@
 /**
  * comment services
  * @author fuyun
- * @version 3.0.0
+ * @version 3.3.5
  * @since 3.0.0
  */
 const async = require('async');
 const xss = require('sanitizer');
 const models = require('../models/index');
 const util = require('../helper/util');
-const commonService = require('../services/common');
+const optionService = require('../services/option');
 const STATUS_CODES = require('./status-codes');
 const idReg = /^[0-9a-fA-F]{16}$/i;
 const {Comment, Vote} = models;
@@ -189,7 +189,7 @@ module.exports = {
             titleArr.push(param.query.keyword, '搜索');
         }
         async.auto({
-            options: commonService.getInitOptions,
+            options: optionService.getInitOptions,
             commentsCount: (cb) => {
                 Comment.count({
                     where
@@ -230,7 +230,7 @@ module.exports = {
     },
     editComment(param, cb) {
         async.parallel({
-            options: commonService.getInitOptions,
+            options: optionService.getInitOptions,
             comment(cb) {
                 Comment.findByPk(param.commentId, {
                     attributes: ['commentId', 'postId', 'commentContent', 'commentStatus', 'commentAuthor', 'commentAuthorEmail', 'commentIp', 'commentCreated', 'commentModified'],

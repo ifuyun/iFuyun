@@ -1,7 +1,7 @@
 /**
  * 文章
  * @author fuyun
- * @version 3.3.4
+ * @version 3.3.5
  * @since 1.0.0(2017/04/12)
  */
 const fs = require('fs');
@@ -11,12 +11,13 @@ const moment = require('moment');
 const url = require('url');
 const xss = require('sanitizer');
 const appConfig = require('../config/core');
-const constants = require('../services/constants');
 const formatter = require('../helper/formatter');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const util = require('../helper/util');
+const constants = require('../services/constants');
 const commonService = require('../services/common');
 const STATUS_CODES = require('../services/status-codes');
+const optionService = require('../services/option');
 const postService = require('../services/post');
 const idReg = /^[0-9a-fA-F]{16}$/i;
 
@@ -804,7 +805,7 @@ module.exports = {
         });
     },
     createMedia(req, res, next) {
-        commonService.getInitOptions((err, options) => {
+        optionService.getInitOptions((err, options) => {
             if (err) {
                 logger.error(formatOpLog({
                     fn: 'createMedia.getInitOptions',

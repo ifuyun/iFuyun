@@ -1,7 +1,7 @@
 /**
  * taxonomy services
  * @author fuyun
- * @version 3.0.0
+ * @version 3.3.5
  * @since 3.0.0
  */
 const async = require('async');
@@ -10,6 +10,7 @@ const util = require('../helper/util');
 const models = require('../models/index');
 const commonService = require('../services/common');
 const constants = require('../services/constants');
+const optionService = require('../services/option');
 const {TermTaxonomy, TermRelationship} = models;
 const Op = models.Sequelize.Op;
 
@@ -41,7 +42,7 @@ module.exports = {
             titleArr.push(param.query.keyword, '搜索');
         }
         async.auto({
-            options: commonService.getInitOptions,
+            options: optionService.getInitOptions,
             count: (cb) => {
                 TermTaxonomy.count({
                     where
@@ -68,7 +69,7 @@ module.exports = {
     },
     editTaxonomy(param, cb) {
         let tasks = {
-            options: commonService.getInitOptions
+            options: optionService.getInitOptions
         };
         if (param.action === 'edit') {
             tasks.taxonomy = (cb) => {
