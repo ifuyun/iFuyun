@@ -53,12 +53,6 @@ let http = {
             url: url,
             contentType: 'application/x-www-form-urlencoded',
             transformRequest: function (params) {
-                // let str = [];
-                // let p;
-                // for (p in obj) {// 可以直接调$.param
-                //     str.push(encodeURIComponent(p) + '=' + encodeURIComponent(obj[p]));
-                // }
-                // return str.join('&');
                 return $.param(params);
             },
             data: data

@@ -7,6 +7,7 @@ require('../../vendor/jquery.qrcode.min');
 
 let service;
 const popup = require('../../lib/dialog');
+const logger = require('../../lib/logger');
 const $qrcodeShare = $('#qrcodeShare');
 const $qrcodeReward = $('#qrcodeReward');
 const url = location.href.split('#')[0];
@@ -185,7 +186,7 @@ service = {
     },
     initWxConfig: function () {
         wx.config({
-            debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+            debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
             appId: service.signData.appId, // 必填，公众号的唯一标识
             timestamp: service.signData.timestamp, // 必填，生成签名的时间戳
             nonceStr: service.signData.nonceStr, // 必填，生成签名的随机串
@@ -200,7 +201,7 @@ service = {
             });
         });
         wx.error(function (res) {
-            alert(res.errMsg);
+            logger.log(res.errMsg);
         });
     },
     checkJsApi: function (cb) {
@@ -220,7 +221,7 @@ service = {
             link: url,
             imgUrl: 'http://www.ifuyun.com/logo.png',
             success: function () {
-                alert('已分享');
+                logger.info('已分享');
             }
         };
         if (service.wxApiFlag.updateAppMessageShareData) {
