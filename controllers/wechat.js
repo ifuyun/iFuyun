@@ -85,33 +85,67 @@ const actions = {
         }));
         throw new Error('Fetch jsapi_ticket fail.');
     },
-    async getTokenAndTicket() {
-        const data = await optionService.getOptionsByKeys({
-            optionKeys: [
-                constants.KEY_WX_MP_ACCESS_TOKEN,
-                constants.KEY_WX_MP_ACCESS_TOKEN_TIME,
-                constants.KEY_WX_MP_JSAPI_TICKET,
-                constants.KEY_WX_MP_JSAPI_TICKET_TIME
-            ]
+    async saveTokenAndTicket(data) {
+        await optionService.saveOptions({
+            settings: [{
+                name: constants.KEY_WX_MP_ACCESS_TOKEN,
+                value: data.token
+            }, {
+                name: constants.KEY_WX_MP_ACCESS_TOKEN_TIME,
+                value: data.fetchTime
+            }, {
+                name: constants.KEY_WX_MP_JSAPI_TICKET,
+                value: data.ticket
+            }, {
+                name: constants.KEY_WX_MP_JSAPI_TICKET_TIME,
+                value: data.fetchTime
+            }]
         });
-        let token = data[constants.KEY_WX_MP_ACCESS_TOKEN].optionValue;
-        let tokenStart = +data[constants.KEY_WX_MP_ACCESS_TOKEN_TIME].optionValue || 0;
-        let ticket = data[constants.KEY_WX_MP_JSAPI_TICKET].optionValue;
-        let ticketStart = +data[constants.KEY_WX_MP_JSAPI_TICKET_TIME].optionValue || 0;
-
-        const nowTime = Math.ceil(Date.now() / 1000);
-        if (tokenStart + constants.WX_MP_ACCESS_TOKEN_EXPIRES <= nowTime) {
-            token = await actions.fetchAccessToken();
-        }
-        if (ticketStart + constants.WX_MP_ACCESS_TOKEN_EXPIRES <= nowTime) {
-            ticket = await actions.fetchJsApiTicket({
-                token
+    },
+    async getTokenAndTicket() {
+        try {
+            const data = await optionService.getOptionsByKeys({
+                optionKeys: [
+                    constants.KEY_WX_MP_ACCESS_TOKEN,
+                    constants.KEY_WX_MP_ACCESS_TOKEN_TIME,
+                    constants.KEY_WX_MP_JSAPI_TICKET,
+                    constants.KEY_WX_MP_JSAPI_TICKET_TIME
+                ]
             });
+            let token = data[constants.KEY_WX_MP_ACCESS_TOKEN].optionValue;
+            let tokenStart = +data[constants.KEY_WX_MP_ACCESS_TOKEN_TIME].optionValue || 0;
+            let ticket = data[constants.KEY_WX_MP_JSAPI_TICKET].optionValue;
+            let ticketStart = +data[constants.KEY_WX_MP_JSAPI_TICKET_TIME].optionValue || 0;
+
+            const nowTime = Math.ceil(Date.now() / 1000);
+            let refresh = false;
+            if (tokenStart + constants.WX_MP_ACCESS_TOKEN_EXPIRES <= nowTime) {
+                refresh = true;
+                token = await actions.fetchAccessToken();
+            }
+            if (ticketStart + constants.WX_MP_ACCESS_TOKEN_EXPIRES <= nowTime) {
+                ticket = await actions.fetchJsApiTicket({
+                    token
+                });
+            }
+            if (refresh) {
+                await actions.saveTokenAndTicket({
+                    token,
+                    ticket,
+                    fetchTime: nowTime
+                });
+            }
+            return {
+                token,
+                ticket,
+                fetchTime: nowTime
+            };
+        } catch (e) {
+            return {
+                code: STATUS_CODES.UNKNOWN_ERROR,
+                message: e.message
+            };
         }
-        return {
-            token,
-            ticket
-        };
     }
 };
 module.exports = actions;

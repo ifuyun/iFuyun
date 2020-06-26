@@ -4,7 +4,7 @@
  * @version 3.3.5
  * @since 3.3.5
  */
-const async = require('async');
+const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const models = require('../models/index');
 const {Option} = models;
 const Op = models.Sequelize.Op;
@@ -29,31 +29,38 @@ module.exports = {
             cb(null, tmpObj);
         });
     },
-    saveOptions(param, successCb, errorCb) {
+    async saveOptions(param) {
         const {settings} = param;
-        models.sequelize.transaction((t) =>
-            // 需要返回promise实例
-            new Promise((resolve, reject) => {
-                async.times(settings.length, (i, nextFn) => {
-                    Option.update({
-                        optionValue: settings[i].value
-                    }, {
-                        where: {
-                            optionName: {
-                                [Op.eq]: settings[i].name
-                            }
-                        },
-                        transaction: t
-                    }).then((option) => nextFn(null, option));
-                }, (err, result) => {
-                    if (err) {
-                        reject(new Error(err));
-                    } else {
-                        resolve(result);
-                    }
+        let transaction;
+
+        try {
+            transaction = await models.sequelize.transaction();
+            for (let setting of settings) {
+                await Option.update({
+                    optionValue: setting.value
+                }, {
+                    where: {
+                        optionName: {
+                            [Op.eq]: setting.name
+                        }
+                    },
+                    transaction
                 });
-            })
-        ).then(successCb).catch(errorCb);
+            }
+            await transaction.commit();
+        } catch (err) {
+            logger.error(formatOpLog({
+                fn: 'saveOptions',
+                msg: err.message,
+                data: {
+                    options: JSON.stringify(settings)
+                }
+            }));
+            if (transaction) {
+                await transaction.rollback();
+            }
+            throw err;
+        }
     },
     async getOptionsByKeys(param) {
         let data = await Option.findAll({

@@ -119,7 +119,7 @@ module.exports = {
         }
         optionService.saveOptions({
             settings
-        }, () => {
+        }).then(() => {
             res.type('application/json');
             res.send({
                 code: 0,
@@ -128,7 +128,7 @@ module.exports = {
                     url: '/admin/settings'
                 }
             });
-        }, (err) => {
+        }).catch((err) => {
             next({
                 code: 500,
                 message: err.message || err
