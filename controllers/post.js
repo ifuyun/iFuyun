@@ -42,7 +42,8 @@ module.exports = {
             let resData = {
                 curNav: 'index',
                 showCrumb: false,
-                meta: {}
+                meta: {},
+                token: req.csrfToken()
             };
             const options = result.commonData.options;
             Object.assign(resData, result.commonData);
@@ -235,7 +236,8 @@ module.exports = {
                 curNav: result.subCategories.catPath[0].slug,
                 showCrumb: true,
                 user: {},
-                meta: {}
+                meta: {},
+                token: req.csrfToken()
             };
             const options = result.commonData.options;
             Object.assign(resData, result.commonData);
@@ -287,7 +289,8 @@ module.exports = {
                 curNav: 'tag',
                 showCrumb: true,
                 user: {},
-                meta: {}
+                meta: {},
+                token: req.csrfToken()
             };
             const options = result.commonData.options;
             Object.assign(resData, result.commonData);
@@ -353,7 +356,8 @@ module.exports = {
             let resData = {
                 curNav: 'archive',
                 showCrumb: true,
-                meta: {}
+                meta: {},
+                token: req.csrfToken()
             };
             const options = result.commonData.options;
             Object.assign(resData, result.commonData);
@@ -418,7 +422,8 @@ module.exports = {
             let resData = {
                 curNav: 'archiveDate',
                 showCrumb: true,
-                meta: {}
+                meta: {},
+                token: req.csrfToken()
             };
             const options = result.commonData.options;
             Object.assign(resData, result.commonData);

@@ -1,5 +1,5 @@
-/*global $,hljs*/
-/*jslint nomen:true*/
+/*global $,hljs,wx*/
+/* jslint nomen:true */
 import http from '../../lib/http';
 
 require('../../vendor/jquery.poshytip.min');
@@ -9,8 +9,9 @@ let service;
 const popup = require('../../lib/dialog');
 const $qrcodeShare = $('#qrcodeShare');
 const $qrcodeReward = $('#qrcodeReward');
+const url = location.href.split('#')[0];
 
-function showCaptcha() {
+const showCaptcha = () => {
     http.ajax({
         url: '/captcha',
         cache: true,
@@ -20,9 +21,34 @@ function showCaptcha() {
     }).then((imgData) => {
         $('#captcha').attr('src', imgData);
     });
-}
+};
+const getWxSign = (cb) => {
+    $.ajax({
+        type: 'post',
+        url: '/wechat/sign',
+        data: {
+            url
+        },
+        dataType: 'json',
+        headers: {
+            'x-csrf-token': $('.csrfToken').val()
+        },
+        success: function (d) {
+            $('.csrfToken').val(d.token);
+            if (d.code === 0) {
+                service.signData = d.data;
+                cb();
+            }
+        },
+        error: function () {
+            return false;
+        }
+    });
+};
 
 service = {
+    wxApiFlag: {},
+    signData: null,
     initEvent: function () {
         $('body').on('submit', '.j-form-comment', function () {
             const $that = $(this);
@@ -31,6 +57,9 @@ service = {
                 url: $that.attr('action'),
                 data: $that.serialize(),
                 dataType: 'json',
+                headers: {
+                    'x-csrf-token': $('.csrfToken').val()
+                },
                 success: function (d) {
                     if (d.code === 0) {
                         if (d.data.commentFlag === 'verify') {
@@ -45,7 +74,8 @@ service = {
                         }
                     } else {
                         $('.csrfToken').val(d.token);
-                        if (d.code === 480) {
+                        const invalidCaptcha = 480;
+                        if (d.code === invalidCaptcha) {
                             showCaptcha();
                         }
                         popup.alert(d.message);
@@ -112,7 +142,7 @@ service = {
         }).on('click', '.j-nav-item', function () {
             const $link = $(this).children('a');
             const curIdx = $link.data('index');
-            const $sublist =  $('.j-nav-sublist[data-index="' + curIdx + '"]');
+            const $sublist = $('.j-nav-sublist[data-index="' + curIdx + '"]');
             $(this).addClass('active').siblings().removeClass('active');
             if ($sublist.length > 0) {
                 if ($sublist.is(':visible')) {
@@ -147,15 +177,69 @@ service = {
                     $adsEle.removeClass('f-d-none');
                 }
             });
-            if (count === visibleCount || counter >= 20) {
+            const retry = 20;
+            if (count === visibleCount || counter >= retry) {
                 clearInterval(timer);
             }
         }, 100);
+    },
+    initWxConfig: function () {
+        wx.config({
+            debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+            appId: service.signData.appId, // 必填，公众号的唯一标识
+            timestamp: service.signData.timestamp, // 必填，生成签名的时间戳
+            nonceStr: service.signData.nonceStr, // 必填，生成签名的随机串
+            signature: service.signData.signature, // 必填，签名
+            jsApiList: ['updateAppMessageShareData', 'updateTimelineShareData', 'onMenuShareAppMessage', 'onMenuShareTimeline'] // 必填，需要使用的JS接口列表
+        });
+    },
+    initWxEvent: function () {
+        wx.ready(function () {
+            service.checkJsApi(() => {
+                service.initWxShareEvent();
+            });
+        });
+        wx.error(function (res) {
+            alert(res.errMsg);
+        });
+    },
+    checkJsApi: function (cb) {
+        wx.checkJsApi({
+            jsApiList: ['updateAppMessageShareData', 'updateTimelineShareData', 'onMenuShareAppMessage', 'onMenuShareTimeline'],
+            success: function (res) {
+                // 以键值对的形式返回，可用的api值true，不可用为false
+                service.wxApiFlag = res.checkResult;
+                cb();
+            }
+        });
+    },
+    initWxShareEvent: function () {
+        const shareData = {
+            title: document.title,
+            desc: $('[name="description"]').attr('content'),
+            link: url,
+            imgUrl: 'http://www.ifuyun.com/logo.png',
+            success: function () {
+                alert('已分享');
+            }
+        };
+        if (service.wxApiFlag.updateAppMessageShareData) {
+            wx.updateAppMessageShareData(shareData);
+        }
+        if (service.wxApiFlag.updateTimelineShareData) {
+            wx.updateTimelineShareData(shareData);
+        }
     }
 };
 
 $(function () {
     service.initEvent();
+    getWxSign(() => {
+        if (service.signData) {
+            service.initWxConfig();
+            service.initWxEvent();
+        }
+    });
     if (window.hljs) {
         hljs.initHighlightingOnLoad();
     }
@@ -171,5 +255,6 @@ $(function () {
     service.checkAds();
 });
 
+// eslint-disable-next-line no-empty-function
 module.exports = () => {
 };

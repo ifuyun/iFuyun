@@ -17,6 +17,7 @@ const post = require('../controllers/post');
 const user = require('../controllers/user');
 const comment = require('../controllers/comment');
 const captcha = require('../controllers/captcha');
+const wechat = require('../controllers/wechat');
 const config = require('./core');
 
 module.exports = (app, express) => {
@@ -44,6 +45,7 @@ module.exports = (app, express) => {
 
     app.post('/post/comment/save', comment.saveComment);
     app.post('/post/comment/vote', comment.saveVote);
+    app.post('/wechat/sign', wechat.getSignature);
 
     // app.get('/comment/:postId', comment.listComments);
     // app.get('/comment/:postId/page-:page', comment.listComments);
