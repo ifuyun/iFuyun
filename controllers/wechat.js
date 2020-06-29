@@ -2,7 +2,7 @@
  *
  * @author fuyun
  * @version 3.3.5
- * @since 2020-06-26
+ * @since 3.3.5
  */
 const STATUS_CODES = require('../services/status-codes');
 const wxService = require('../services/wechat');

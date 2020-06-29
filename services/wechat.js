@@ -2,7 +2,7 @@
  * wechat services
  * @author fuyun
  * @version 3.3.5
- * @since 2020-06-25
+ * @since 3.3.5
  */
 const JsSHA = require('jssha');
 const fetch = require('node-fetch');
@@ -36,7 +36,7 @@ const actions = {
      * 签名算法
      * @param {String} ticket 用于签名的 jsapi_ticket
      * @param {String} url 用于签名的 url
-     * @returns {{jsapi_ticket: *, nonceStr: string, url: *, timestamp: string}} 签名结果
+     * @returns {Object} 签名结果
      */
     sign(ticket, url) {
         const argsObj = {

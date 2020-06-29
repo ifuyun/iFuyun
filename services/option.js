@@ -53,7 +53,7 @@ module.exports = {
                 fn: 'saveOptions',
                 msg: err.message,
                 data: {
-                    options: JSON.stringify(settings)
+                    options: settings
                 }
             }));
             if (transaction) {
