@@ -148,9 +148,9 @@ module.exports = {
         /**
          * 递归生成树节点
          * @param {Object} treeData 源数据
-         * @param {String} parentId 父节点ID
+         * @param {string} parentId 父节点ID
          * @param {Object} parentNode 父节点
-         * @param {Number} level 当前层级
+         * @param {number} level 当前层级
          * @return {Undefined} null
          */
         function iterateCategory(treeData, parentId, parentNode, level) {
@@ -430,7 +430,7 @@ module.exports = {
     },
     /**
      * 水印处理
-     * @param {String} imgPath 图片路径
+     * @param {string} imgPath 图片路径
      * @param {Function} cb 回调函数
      * @return {*} null
      */

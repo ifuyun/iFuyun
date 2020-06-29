@@ -34,9 +34,9 @@ const transformArgs = (args) => {
 const actions = {
     /**
      * 签名算法
-     * @param {String} ticket 用于签名的 jsapi_ticket
-     * @param {String} url 用于签名的 url
-     * @returns {Object} 签名结果
+     * @param {string} ticket 用于签名的 jsapi_ticket
+     * @param {string} url 用于签名的 url
+     * @return {Object} 签名结果
      */
     sign(ticket, url) {
         const argsObj = {

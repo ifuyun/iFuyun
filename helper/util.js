@@ -21,9 +21,9 @@ module.exports = {
      * 获取分页数据
      * @method formatPages
      * @static
-     * @param {Number} page 请求页
-     * @param {Number} pages 总页数
-     * @param {Number} pagesOut 每页显示页数
+     * @param {number} page 请求页
+     * @param {number} pages 总页数
+     * @param {number} pagesOut 每页显示页数
      * @return {Object} 分页数据对象
      * @author Fuyun
      * @version 2.0.0
@@ -62,9 +62,9 @@ module.exports = {
      * 生成分页对象
      * @method paginator
      * @static
-     * @param {Number|String} [page=1] 请求页
-     * @param {Number} [pages=1] 总页数
-     * @param {Number} [pagesOut=9] 每页显示页数
+     * @param {number|string} [page=1] 请求页
+     * @param {number} [pages=1] 总页数
+     * @param {number} [pagesOut=9] 每页显示页数
      * @return {Object} 分页对象
      * @author Fuyun
      * @version 3.2.3
@@ -94,7 +94,7 @@ module.exports = {
      * 生成面包屑
      * @param {Array} crumbData 面包屑数据
      * @param {string} separator 分隔符
-     * @returns {string} 面包屑HTML
+     * @return {string} 面包屑HTML
      */
     createCrumb(crumbData, separator) {
         let crumbArr = [];
@@ -120,8 +120,8 @@ module.exports = {
      * 根据月份返回月份名称
      * @method getMonthName
      * @static
-     * @param {Number} [month=1] 月份(1-12)，默认1
-     * @return {String} 月份名称
+     * @param {number} [month=1] 月份(1-12)，默认1
+     * @return {string} 月份名称
      * @author Fuyun
      * @version 1.0.0
      * @since 1.0.0
@@ -152,9 +152,9 @@ module.exports = {
      * 截取字符串为指定长度，超过长度加'...'
      * @method cutStr
      * @static
-     * @param {String} srcStr 源字符串
-     * @param {Number} cutLength 指定长度
-     * @return {String} 截取结果字符串
+     * @param {string} srcStr 源字符串
+     * @param {number} cutLength 指定长度
+     * @return {string} 截取结果字符串
      * @author Fuyun
      * @version 3.2.3
      * @since 1.0.0
@@ -191,8 +191,8 @@ module.exports = {
      * 过滤HTML标签
      * @method filterHtmlTag
      * @static
-     * @param {String} srcStr 源字符串
-     * @return {String} 过滤结果字符串
+     * @param {string} srcStr 源字符串
+     * @return {string} 过滤结果字符串
      * @author Fuyun
      * @version 1.0.0
      * @since 1.0.0
@@ -206,7 +206,7 @@ module.exports = {
      * @method getRemoteIp
      * @static
      * @param {Object} req 请求对象
-     * @return {String} 访问者IP
+     * @return {string} 访问者IP
      * @author Fuyun
      * @version 1.0.0
      * @since 1.0.0
@@ -220,7 +220,7 @@ module.exports = {
      * @method getHttpMethod
      * @static
      * @param {Object} req 请求对象
-     * @return {String} 请求类型
+     * @return {string} 请求类型
      * @author Fuyun
      * @version 1.0.0
      * @since 1.0.0
@@ -233,7 +233,7 @@ module.exports = {
      * @method getUrl
      * @static
      * @param {Object} req 请求对象
-     * @return {String} 请求URL
+     * @return {string} 请求URL
      * @author Fuyun
      * @version 1.0.0
      * @since 1.0.0
@@ -246,7 +246,7 @@ module.exports = {
      * @method getHttpStatus
      * @static
      * @param {Object} res 响应对象
-     * @return {Number} 响应状态码
+     * @return {number} 响应状态码
      * @author Fuyun
      * @version 1.0.0
      * @since 1.0.0
@@ -259,7 +259,7 @@ module.exports = {
      * @method getUserAgent
      * @static
      * @param {Object} req 请求对象
-     * @return {String} UserAgent
+     * @return {string} UserAgent
      * @author Fuyun
      * @version 1.0.0
      * @since 1.0.0
@@ -272,7 +272,7 @@ module.exports = {
      * @method getHttpVersion
      * @static
      * @param {Object} req 请求对象
-     * @return {String} HTTP协议版本
+     * @return {string} HTTP协议版本
      * @author Fuyun
      * @version 1.0.0
      * @since 1.0.0
@@ -285,7 +285,7 @@ module.exports = {
      * @method getReferrer
      * @static
      * @param {Object} req 请求对象
-     * @return {String} 来源页地址
+     * @return {string} 来源页地址
      * @author Fuyun
      * @version 1.0.0
      * @since 1.0.0
@@ -298,7 +298,7 @@ module.exports = {
      * @method getResponseHeader
      * @static
      * @param {Object} res 响应对象
-     * @param {String} field 响应头字段名
+     * @param {string} field 响应头字段名
      * @return {*} 指定的响应头字段值
      * @author Fuyun
      * @version 1.0.0
@@ -316,7 +316,7 @@ module.exports = {
      * @method getContentLength
      * @static
      * @param {Object} res 响应对象
-     * @return {Number} 响应内容长度
+     * @return {number} 响应内容长度
      * @author Fuyun
      * @version 1.0.0
      * @since 1.0.0
@@ -330,7 +330,7 @@ module.exports = {
      * @static
      * @param {Object} req 请求对象
      * @param {Object} res 响应对象
-     * @return {String} 访问日志
+     * @return {string} 访问日志
      * @author Fuyun
      * @version 1.0.0
      * @since 1.0.0
@@ -343,7 +343,7 @@ module.exports = {
      * @method getAccessUser
      * @static
      * @param {Object} req 请求对象
-     * @return {String} 访客信息
+     * @return {string} 访客信息
      * @author Fuyun
      * @version 1.0.0
      * @since 1.0.0
@@ -356,11 +356,11 @@ module.exports = {
      * @method catchError
      * @static
      * @param {Object} msgObj 消息对象
-     *      {Number}[status=404] HTTP状态码
-     *      {Number}[code=404] 错误码
-     *      {String}[message='Page Not Found'] 错误消息
-     *      {String}[messageDetail=null] 错误详细消息
-     *      {String}[data=null] 数据
+     *      {number}[status=404] HTTP状态码
+     *      {number}[code=404] 错误码
+     *      {string}[message='Page Not Found'] 错误消息
+     *      {string}[messageDetail=null] 错误详细消息
+     *      {string}[data=null] 数据
      * @param {Function} next 路由对象
      * @return {Object} 错误对象
      * @author Fuyun
@@ -384,8 +384,8 @@ module.exports = {
      * md5加密字符串
      * @method md5
      * @static
-     * @param {String} str 源字符串
-     * @return {String} 加密结果
+     * @param {string} str 源字符串
+     * @return {string} 加密结果
      * @author Fuyun
      * @version 1.0.0
      * @since 1.0.0
@@ -399,9 +399,9 @@ module.exports = {
      * 拼接标题
      * @method getTitle
      * @static
-     * @param {String|Array} titleArr 标题数组
-     * @param {String} [delimiter=' - '] 分隔符
-     * @return {String} 拼接后的字符串
+     * @param {string|Array} titleArr 标题数组
+     * @param {string} [delimiter=' - '] 分隔符
+     * @return {string} 拼接后的字符串
      * @author Fuyun
      * @version 1.0.0
      * @since 1.0.0
@@ -421,7 +421,7 @@ module.exports = {
      * 生成随机ID字符串：10/11位十六进制时间戳+6/5位十六进制随机数
      * @method getUuid
      * @static
-     * @return {String} ID
+     * @return {string} ID
      * @author Fuyun
      * @version 2.0.0(2014-06-18)
      * @since 1.0.0(2014-06-17)
@@ -446,7 +446,7 @@ module.exports = {
      * @method isEmptyObject
      * @static
      * @param {Object} obj 源对象
-     * @return {Boolean} 判断结果：为空返回true，否则返回false
+     * @return {boolean} 判断结果：为空返回true，否则返回false
      * @author Fuyun
      * @version 1.0.0
      * @since 1.0.0
@@ -465,8 +465,8 @@ module.exports = {
      * @static
      * @param {*} elem 元素
      * @param {Array} arr 数组
-     * @param {Number} i 判断起始位置
-     * @return {Number} 判断结果：找到返回所在位置，否则返回-1
+     * @param {number} i 判断起始位置
+     * @return {number} 判断结果：找到返回所在位置，否则返回-1
      * @author Fuyun
      * @version 1.0.0
      * @since 1.0.0
@@ -492,7 +492,7 @@ module.exports = {
      * @method isArray
      * @static
      * @param {*} obj 任意对象
-     * @return {Boolean} 判断结果：数组返回true，非数组返回false
+     * @return {boolean} 判断结果：数组返回true，非数组返回false
      * @author Fuyun
      * @version 1.0.0
      * @since 1.0.0
@@ -504,8 +504,8 @@ module.exports = {
      * 去除头尾空白字符
      * @method trim
      * @static
-     * @param {String|Undefined} str 源字符串
-     * @return {String} 处理后的字符串
+     * @param {string|Undefined} str 源字符串
+     * @return {string} 处理后的字符串
      * @version 2.0.0
      * @since 2.0.0
      */
@@ -517,7 +517,7 @@ module.exports = {
      * @method isLogin
      * @static
      * @param {Object} user user对象
-     * @return {Boolean} 判断结果：已登录返回true，否则返回false
+     * @return {boolean} 判断结果：已登录返回true，否则返回false
      * @author Fuyun
      * @version 3.0.0
      * @since 1.0.0
@@ -531,7 +531,7 @@ module.exports = {
      * @method isAdminUser
      * @static
      * @param {Object} user user对象
-     * @return {Boolean} 判断结果：是管理员返回true，否则返回false
+     * @return {boolean} 判断结果：是管理员返回true，否则返回false
      * @author Fuyun
      * @version 3.0.0
      * @since 1.0.0
@@ -544,8 +544,8 @@ module.exports = {
      * URL添加来源参数
      * @method setUrlRef
      * @static
-     * @param {String} url URL
-     * @param {String} from 来源
+     * @param {string} url URL
+     * @param {string} from 来源
      * @return {string} 新的URL
      * @author Fuyun
      * @version 2.0.0
@@ -574,8 +574,8 @@ module.exports = {
      * 标签去重
      * @method uniqueTags
      * @static
-     * @param {String} tagStr tag string
-     * @return {String} tag string
+     * @param {string} tagStr tag string
+     * @return {string} tag string
      * @author Fuyun
      * @version 3.3.3
      * @since 3.3.3
@@ -588,10 +588,10 @@ module.exports = {
      * 表单数据预处理
      * @method sanitizeField
      * @static
-     * @param {String} str source string
-     * @param {Boolean} trimFlag should trim
+     * @param {string} str source string
+     * @param {boolean} trimFlag should trim
      * @param {*} defaultValue default value
-     * @returns {String} formatted string
+     * @return {string} formatted string
      * @author Fuyun
      * @version 3.3.3
      * @since 3.3.3

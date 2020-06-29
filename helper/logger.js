@@ -66,7 +66,7 @@ module.exports = Object.assign({}, loggers, {
      * @method formatOpLog
      * @static
      * @param {Object} logObj 日志数据对象
-     *      {String}[fn] 函数名
+     *      {string}[fn] 函数名
      *      {Object}[msg] 日志消息
      *      {Object}[data] 日志数据
      *      {Object}[req] 请求对象

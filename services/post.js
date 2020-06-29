@@ -65,7 +65,7 @@ module.exports = {
      * @param {Object} param 参数对象
      *     {Array}[posts] post对象数组,
      *     {Array}[postIds] post id数组,
-     *     {Boolean}[filterCategory] 是否过滤隐藏分类下的文章
+     *     {boolean}[filterCategory] 是否过滤隐藏分类下的文章
      * @param {Function} cb 回调函数
      * @return {*} null
      * @since 2.0.0
@@ -1212,7 +1212,7 @@ module.exports = {
     /**
      * post保存校验
      * @param {Object} data 数据
-     * @param {String} type post类型
+     * @param {string} type post类型
      * @param {Array} postCategory 分类数组
      * @param {Array} postTag 标签数组
      * @return {*} null
