@@ -3,7 +3,7 @@
     <div class="m-nav f-clearfix">
         <a class="u-logo" href="/" title="<?- options.site_name.optionValue ?>">
             <img src="/style/img/logo.png" width="100%" alt="<?- options.site_name.optionValue ?>" /></a>
-        <ul class="m-nav-main">
+        <ul class="f-list-none m-nav-main">
             <? if(curNav === 'index'){ ?><li class="active"><? } else { ?><li><? } ?><a title="返回<?- options.site_name.optionValue ?>首页" href="/">首页</a></li>
             <? for(var navIdx in categories.catTree){ ?>
             <? var nav = categories.catTree[navIdx]; ?>
@@ -20,7 +20,7 @@
             </li>
             <? } ?>
         </ul>
-        <ul class="m-nav-tool">
+        <ul class="f-list-none m-nav-tool">
             <? quickLinks.forEach(function(link){ ?>
             <li><a title="<?- link.link_description ?>" href="<?= link.link_url ?>"><?- link.link_name ?></a></li>
             <? }) ?>
@@ -42,7 +42,7 @@
         </span>
         <div class="m-nav-wrap f-d-none j-nav-list">
             <div class="u-nav-split"></div>
-            <ul class="m-nav-list">
+            <ul class="f-list-none m-nav-list">
                 <li class="j-nav-item<? if(curNav === 'index'){ ?> active<? } ?>">
                     <a class="j-nav-item" href="javascript:" data-index="home" data-url="/" title="返回<?- options.site_name.optionValue ?>首页">首页</a>
                 </li>
@@ -83,7 +83,7 @@
             <? for(var navIdx in categories.catTree){ ?>
                 <? var nav = categories.catTree[navIdx]; itemIdx ++; ?>
                 <? if(!util.isEmptyObject(nav.children)){ ?>
-                    <ul class="m-nav-sublist j-nav-sublist<? if(nav.slug !== curNav){ ?> f-d-none<? } ?>" data-index="<?- itemIdx ?>">
+                    <ul class="f-list-none m-nav-sublist j-nav-sublist<? if(nav.slug !== curNav){ ?> f-d-none<? } ?>" data-index="<?- itemIdx ?>">
                         <? for(subnavIdx in nav.children){ ?>
                         <? var subnav = nav.children[subnavIdx]; ?>
                         <li><a title="<?- subnav.description ?>" href="/category/<?= subnav.slug ? subnav.slug : subnav.name ?>"><?- subnav.name ?></a></li>
