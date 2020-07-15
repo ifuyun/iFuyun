@@ -235,12 +235,24 @@ service = {
 
 $(function () {
     service.initEvent();
-    getWxSign(() => {
-        if (service.signData) {
-            service.initWxConfig();
-            service.initWxEvent();
+    let counter = 0;
+    const timer = setInterval(function () {
+        counter += 1;
+        const retry = 20;
+        if (wx) {
+            clearInterval(timer);
+            getWxSign(() => {
+                if (service.signData) {
+                    service.initWxConfig();
+                    service.initWxEvent();
+                }
+            });
+            return;
         }
-    });
+        if (counter >= retry) {
+            clearInterval(timer);
+        }
+    }, 100);
     if (window.hljs) {
         hljs.initHighlightingOnLoad();
     }
