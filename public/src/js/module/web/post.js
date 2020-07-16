@@ -7,6 +7,7 @@ require('../../vendor/jquery.qrcode.min');
 
 let service;
 const popup = require('../../lib/dialog');
+const modal = require('../../lib/modal');
 const logger = require('../../lib/logger');
 const $qrcodeShare = $('#qrcodeShare');
 const $qrcodeReward = $('#qrcodeReward');
@@ -122,20 +123,9 @@ service = {
         }).on('click', '#postContent img', function () {
             const $that = $(this);
             const $cloneImg = $that.clone(false).removeAttr('width').removeAttr('height');
-            popup.custom({
-                title: ' ',
+            modal.show({
                 content: $cloneImg,
-                width: '100%',
-                showHeader: true,
-                showFooter: false,
-                quickClose: false,
-                beforeRemove: false,
-                ok: false,
-                cancel: true,
-                cancelValue: '关闭',
-                onclose: function () {
-                    $cloneImg.remove();
-                }
+                width: 'auto'
             });
         }).on('click', '.j-nav-btn', function () {
             $('.j-nav-mask').toggleClass('f-d-none');
@@ -239,7 +229,7 @@ $(function () {
     const timer = setInterval(function () {
         counter += 1;
         const retry = 20;
-        if (wx) {
+        if (window.wx) {
             clearInterval(timer);
             getWxSign(() => {
                 if (service.signData) {
