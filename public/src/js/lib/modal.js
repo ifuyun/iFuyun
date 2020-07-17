@@ -5,6 +5,7 @@
  * @version 1.0.0
  * @since 1.0.0(2020-07-16)
  */
+const popup = require('./dialog');
 const htmlTpl = `
     <div class="g-modal-root">
         <div class="g-mask"></div>
@@ -26,7 +27,7 @@ const htmlTpl = `
 module.exports = {
     show: function (opts) {
         const defaults = {
-            width: 520,
+            width: 320, // iPhone SE/5s
             content: ''
         };
         opts = $.extend(true, {}, defaults, opts);
@@ -42,19 +43,43 @@ module.exports = {
         if (opts.width !== 'auto' && typeof opts.width !== 'number') {
             opts.width = defaults.width;
         }
-        $('.g-modal-root').remove();
         const $body = $('body');
-        $body.css('overflow', 'hidden');
-        $body.append($modal);
-        if (opts.width === 'auto') {
-            const modalWidth = $modal.find('img').width();
-            const bodyWidth = $body.width();
-            if (modalWidth > bodyWidth) {
-                $modal.find('img').css('max-width', '100%');
-            }
-            $modal.find('.g-modal').css('width', Math.min(modalWidth, bodyWidth));
+        if (opts.width === 'auto') { // display first
+            $modal.find('.g-modal').css('width', defaults.width);
         } else {
             $modal.find('.g-modal').css('width', Math.min(opts.width, $body.width()));
+        }
+        $('.g-modal-root').remove();
+        $body.css('overflow', 'hidden');
+        $body.append($modal);
+        if (opts.width === 'auto') { // refresh
+            const $img = $modal.find('img');
+            const refresh = () => {
+                const imgWidth = $img.width();
+                const bodyWidth = $body.width();
+                if (imgWidth > bodyWidth) {
+                    $modal.find('img').css('max-width', '100%');
+                }
+                $modal.find('.g-modal').css('width', Math.min(imgWidth, bodyWidth));
+            };
+            if ($img.width() > 0) {
+                refresh();
+            } else {
+                let counter = 0;
+                const timer = setInterval(function () {
+                    const timeOut = 600; // 60s
+                    counter += 1;
+                    if ($img.width() > 0) {
+                        refresh();
+                        clearInterval(timer);
+                    }
+                    if (counter >= timeOut) {
+                        clearInterval(timer);
+                        $('.g-modal-root').remove();
+                        popup.alert('图片加载超时。');
+                    }
+                }, 100);
+            }
         }
     }
 };
