@@ -1,8 +1,17 @@
 <footer class="m-footer-wrap">
     <div class="m-footer">
-        <p><a href="/aboutme" title="关于抚云">关于抚云</a>&nbsp;&nbsp;<a href="/feedback" title="意见反馈">意见反馈</a>&nbsp;&nbsp;<a href="/contactus" title="联系我们">联系我们</a>&nbsp;&nbsp;<a href="/copyright" title="版权声明">版权声明</a></p>
-        <p><span><?- options.copyright_notice.optionValue ?></span>&nbsp;&nbsp;|&nbsp;&nbsp;<span><?- options.icp_num.optionValue ?></span>&nbsp;&nbsp;|&nbsp;&nbsp;<span id="cnzz_stat_icon_1257388214">&nbsp;</span></p>
-        <p>Powered by node.js, created by Fuyun.</p>
+        <ul>
+            <li><a href="/aboutme" title="关于抚云">关于抚云</a></li>
+            <li><a href="/feedback" title="意见反馈">意见反馈</a></li>
+            <li><a href="/contactus" title="联系我们">联系我们</a></li>
+            <li><a href="/copyright" title="版权声明">版权声明</a></li>
+        </ul>
+        <ul>
+            <li><?- options.copyright_notice.optionValue ?></li>
+            <li>|</li>
+            <li><?- options.icp_num.optionValue ?></li>
+        </ul>
+        <ul><li>Powered by Node.js, created by Fuyun.</li></ul>
     </div>
 </footer>
 <input type="hidden" name="_csrf" class="csrfToken" value="<?- token ?>" />

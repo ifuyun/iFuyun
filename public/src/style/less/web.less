@@ -517,6 +517,15 @@
             text-decoration: underline;
         }
     }
+    ul {
+        list-style: none;
+        li {
+            display: inline-block;
+            + li {
+                margin-left: 6px;
+            }
+        }
+    }
 }
 
 .m-crumb-wrap {
