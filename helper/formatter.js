@@ -57,7 +57,7 @@ module.exports = {
         }
         const copyrightMap = {
             '0': '禁止转载',
-            '1': '禁止无授权转载',
+            '1': '转载需授权',
             '2': 'CC-BY-NC-ND'
         };
         return copyrightMap[type];

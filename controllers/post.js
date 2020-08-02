@@ -642,6 +642,7 @@ module.exports = {
         let postId = util.sanitizeField(param.postId);
         postId = idReg.test(postId) ? postId : '';
         const newPostId = postId || util.getUuid();
+        const postSource = util.trim(xss.sanitize(param.postSource));
 
         // todo: 防纂改
         let data = {
@@ -652,7 +653,7 @@ module.exports = {
             postAuthor: req.session.user.userId,
             postStatus: util.sanitizeField(param.postStatus),
             postPassword: util.trim(param.postPassword),
-            postOriginal: util.sanitizeField(param.postOriginal, true, 1),
+            postOriginal: util.sanitizeField(param.postOriginal, true, '1'),
             commentFlag: util.sanitizeField(param.commentFlag),
             postDate: param.postDate ? new Date(+moment(param.postDate)) : nowTime,
             postType: type
@@ -674,7 +675,8 @@ module.exports = {
             data,
             type,
             postCategory,
-            postTag
+            postTag,
+            postSource
         });
         if (checkResult !== true) {
             return next(checkResult);
@@ -698,7 +700,8 @@ module.exports = {
             postCategory,
             postTag,
             showWechatCard: util.trim(xss.sanitize(param.showWechatCard)),
-            copyrightType: util.trim(xss.sanitize(param.copyrightType))
+            copyrightType: util.trim(xss.sanitize(param.copyrightType)),
+            postSource
         }, () => {
             logger.info(formatOpLog({
                 fn: 'savePost',

@@ -941,14 +941,14 @@ module.exports = {
                                 [Op.eq]: param.newPostId
                             },
                             metaKey: {
-                                [Op.in]: ['show_wechat_card', 'copyright_type']
+                                [Op.in]: ['show_wechat_card', 'copyright_type', 'post_source']
                             }
                         },
                         transaction: t
                     }).then((postMeta) => cb(null, postMeta));
                 }],
                 insertPostMeta: ['removePostMeta', (result, cb) => {
-                    Postmeta.bulkCreate([{
+                    const metaData = [{
                         metaId: util.getUuid(),
                         postId: param.newPostId,
                         metaKey: 'show_wechat_card',
@@ -958,7 +958,16 @@ module.exports = {
                         postId: param.newPostId,
                         metaKey: 'copyright_type',
                         metaValue: param.copyrightType || '1'
-                    }], {
+                    }];
+                    if (param.data.postOriginal !== '1') { // 非原创
+                        metaData.push({
+                            metaId: util.getUuid(),
+                            postId: param.newPostId,
+                            metaKey: 'post_source',
+                            metaValue: param.postSource
+                        });
+                    }
+                    Postmeta.bulkCreate(metaData, {
                         transaction: t
                     }).then((postMeta) => cb(null, postMeta));
                 }]
@@ -1220,9 +1229,10 @@ module.exports = {
      * @param {string} type post类型
      * @param {Array} postCategory 分类数组
      * @param {Array} postTag 标签数组
+     * @param {string} postSource 文章来源
      * @return {*} null
      */
-    validatePostFields({data, type, postCategory, postTag}) {
+    validatePostFields({data, type, postCategory, postTag, postSource}) {
         // TODO: postGuid:/page-,/post/page-,/category/,/archive/,/tag/,/comment/,/user/,/admin/,/post/comment/
         let rules = [{
             rule: !data.postTitle,
@@ -1247,6 +1257,12 @@ module.exports = {
             }, {
                 rule: postTag.length > constants.POST_TAG_LIMIT,
                 message: `标签数应不大于${constants.POST_TAG_LIMIT}个`
+            }, {
+                rule: data.postOriginal.toString() === '0' && !postSource,
+                message: '转载文章请注明来源'
+            }, {
+                rule: postSource.length > constants.POST_SOURCE_LENGTH,
+                message: `文章来源长度应不大于${constants.POST_SOURCE_LENGTH}字符`
             }]);
         } else {
             rules.push({

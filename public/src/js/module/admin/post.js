@@ -38,6 +38,12 @@ const service = {
             } else {
                 $('#post-password-wrap').hide();
             }
+        }).on('click', '.postOriginal', function () {
+            if ($('#post-original-no').is(':checked')) {
+                $('#post-source-wrap').show();
+            } else {
+                $('#post-source-wrap').hide();
+            }
         });
         $('#form-search,#form-filter').on('submit', function () {
             location.href = $(this).attr('action') + '&' + $(this).serialize();
