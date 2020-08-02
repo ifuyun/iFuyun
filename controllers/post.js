@@ -113,7 +113,8 @@ module.exports = {
                 showCrumb: true,
                 user: {},
                 meta: {},
-                token: req.csrfToken()
+                token: req.csrfToken(),
+                formatter
             };
             if (req.session.user) {
                 resData.user.userName = req.session.user.userDisplayName;
@@ -608,7 +609,8 @@ module.exports = {
             resData.postTitle = postTitle;
             resData.meta.title = util.getTitle(title.concat('管理后台', result.options.site_name.optionValue));
             resData.postMeta = {
-                'show_wechat_card': '0'
+                'show_wechat_card': '0',
+                'copyright_type': '1'
             };
             if (result.post && result.post.Postmeta) {
                 result.post.Postmeta.forEach((meta) => {
@@ -695,7 +697,8 @@ module.exports = {
             type,
             postCategory,
             postTag,
-            showWechatCard: util.trim(xss.sanitize(param.showWechatCard))
+            showWechatCard: util.trim(xss.sanitize(param.showWechatCard)),
+            copyrightType: util.trim(xss.sanitize(param.copyrightType))
         }, () => {
             logger.info(formatOpLog({
                 fn: 'savePost',

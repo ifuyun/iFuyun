@@ -1,7 +1,7 @@
 /**
  * 数据转换函数库
  * @author fuyun
- * @version 3.0.0
+ * @version 3.3.7
  * @since 1.1.0(2017/06/05)
  */
 module.exports = {
@@ -45,5 +45,21 @@ module.exports = {
             _self: '当前页'
         };
         return visibleMap[visible];
+    },
+    copyrightType(type) {
+        const defaultType = '1';
+        if (typeof type !== 'number' && typeof type !== 'string') {
+            type = defaultType;
+        }
+        type = type.toString();
+        if (!['0', '1', '2'].includes(type)) {
+            type = defaultType;
+        }
+        const copyrightMap = {
+            '0': '禁止转载',
+            '1': '禁止无授权转载',
+            '2': 'CC-BY-NC-ND'
+        };
+        return copyrightMap[type];
     }
 };

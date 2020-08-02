@@ -63,6 +63,14 @@
                                         <label><input type="radio" name="postOriginal" value="0"<? if(post.postOriginal === 0){ ?> checked="checked" <? } ?> />&nbsp;转载</label>
                                     </div>
                                 </div>
+                                <div class="form-field-box-sub">
+                                    <div class="form-field-text">允许转载</div>
+                                    <div class="form-field-input">
+                                        <label><input type="radio" name="copyrightType" value="0"<? if(postMeta.copyright_type === '0'){ ?> checked="checked" <? } ?> />&nbsp;禁止转载</label><br />
+                                        <label><input type="radio" name="copyrightType" value="1"<? if(postMeta.copyright_type === '1'){ ?> checked="checked" <? } ?> />&nbsp;禁止无授权转载</label><br />
+                                        <label><input type="radio" name="copyrightType" value="2"<? if(postMeta.copyright_type === '2'){ ?> checked="checked" <? } ?> />&nbsp;CC-BY-NC-ND</label>
+                                    </div>
+                                </div>
                                 <? } ?>
                                 <div class="form-field-box-sub">
                                     <div class="form-field-text">评论状态</div>

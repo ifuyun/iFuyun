@@ -941,19 +941,24 @@ module.exports = {
                                 [Op.eq]: param.newPostId
                             },
                             metaKey: {
-                                [Op.eq]: 'show_wechat_card'
+                                [Op.in]: ['show_wechat_card', 'copyright_type']
                             }
                         },
                         transaction: t
                     }).then((postMeta) => cb(null, postMeta));
                 }],
                 insertPostMeta: ['removePostMeta', (result, cb) => {
-                    Postmeta.create({
+                    Postmeta.bulkCreate([{
                         metaId: util.getUuid(),
                         postId: param.newPostId,
                         metaKey: 'show_wechat_card',
                         metaValue: param.showWechatCard || '0'
                     }, {
+                        metaId: util.getUuid(),
+                        postId: param.newPostId,
+                        metaKey: 'copyright_type',
+                        metaValue: param.copyrightType || '1'
+                    }], {
                         transaction: t
                     }).then((postMeta) => cb(null, postMeta));
                 }]
