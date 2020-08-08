@@ -503,6 +503,17 @@ module.exports = {
                     data.titleArr.concat([data.where.postType === 'page' ? '页面列表' : '文章列表', '管理后台', result.options.site_name.optionValue]));
             }
 
+            result.posts.forEach((post) => {
+                post.comment = {};
+                for (let pid of Object.keys(result.comments)) {
+                    if (post.post.postId === pid) {
+                        post.comment.count = result.comments[pid];
+                        break;
+                    }
+                }
+                post.comment.count = post.comment.count || 0;
+            });
+
             result.typeCount.forEach((item) => {
                 resData.count.all += item.get('count');
 

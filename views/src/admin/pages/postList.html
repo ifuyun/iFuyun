@@ -82,8 +82,8 @@
                                 <td title="<?= moment(post.postModified).format('YYYY-MM-DD HH:mm:ss') ?>"><?= moment(post.postModified).format('YYYY-MM-DD HH:mm:ss') ?></td>
                                 <td title="<?= moment(post.postCreated).format('YYYY-MM-DD HH:mm:ss') ?>"><?= moment(post.postCreated).format('YYYY-MM-DD HH:mm:ss') ?></td>
                                 <td class="column-count"><?= post.postViewCount ?></td>
-                                <td class="column-count"><?= post.commentCount ?></td>
-                                <td><a rel="author" href="/admin/post?author=<?= post.postAuthor ?>"><?- post.User.userDisplayName ?></a></td>
+                                <td class="column-count"><?= postItem.comment.count ?></td>
+                                <td><a rel="author" href="/admin/post?author=<?= post.postAuthor ?>"><?- post.meta.postAuthor ?></a></td>
                                 <td><a href="/admin/post?status=<?= post.postStatus ?>"><?= formatter.postStatus(post.postStatus) ?></a></td>
                                 <td class="m-col-operate">
                                     <a href="/admin/post/item?action=edit&type=<?= type ?>&postId=<?= post.postId ?>">编辑</a><a class="btn-delete" href="javascript:">删除</a>
