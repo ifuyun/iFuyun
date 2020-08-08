@@ -48,15 +48,16 @@
                         <thead>
                             <tr>
                                 <th width="2%" class="column-check"><input type="checkbox" class="checkAll" /></th>
-                                <th width="18%">标题</th>
+                                <th width="15%">标题</th>
                                 <th width="8%">日期</th>
-                                <th width="10%">分类目录</th>
+                                <th width="8%">分类目录</th>
                                 <th width="16%">标签</th>
                                 <th width="8%">修改时间</th>
                                 <th width="8%">创建时间</th>
                                 <th width="5%" class="column-count">访问</th>
                                 <th width="5%" class="column-count">评论</th>
                                 <th width="5%">作者</th>
+                                <th width="5%">发布者</th>
                                 <th width="5%">状态</th>
                                 <th width="10%">操作</th>
                             </tr>
@@ -83,7 +84,8 @@
                                 <td title="<?= moment(post.postCreated).format('YYYY-MM-DD HH:mm:ss') ?>"><?= moment(post.postCreated).format('YYYY-MM-DD HH:mm:ss') ?></td>
                                 <td class="column-count"><?= post.postViewCount ?></td>
                                 <td class="column-count"><?= postItem.comment.count ?></td>
-                                <td><a rel="author" href="/admin/post?author=<?= post.postAuthor ?>"><?- post.meta.postAuthor ?></a></td>
+                                <td><?- post.meta.postAuthor ?></td>
+                                <td><a rel="author" href="/admin/post?author=<?= post.postAuthor ?>"><?- post.User.userDisplayName ?></a></td>
                                 <td><a href="/admin/post?status=<?= post.postStatus ?>"><?= formatter.postStatus(post.postStatus) ?></a></td>
                                 <td class="m-col-operate">
                                     <a href="/admin/post/item?action=edit&type=<?= type ?>&postId=<?= post.postId ?>">编辑</a><a class="btn-delete" href="javascript:">删除</a>
