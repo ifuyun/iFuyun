@@ -41,8 +41,10 @@ const service = {
         }).on('click', '.postOriginal', function () {
             if ($('#post-original-no').is(':checked')) {
                 $('#post-source-wrap').show();
+                $('#post-author-wrap').show();
             } else {
                 $('#post-source-wrap').hide();
+                $('#post-author-wrap').hide();
             }
         });
         $('#form-search,#form-filter').on('submit', function () {

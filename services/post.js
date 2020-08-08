@@ -1,7 +1,7 @@
 /**
  * post services
  * @author fuyun
- * @version 3.3.5
+ * @version 3.3.7
  * @since 3.0.0
  */
 const async = require('async');
@@ -68,6 +68,7 @@ module.exports = {
      *     {boolean}[filterCategory] 是否过滤隐藏分类下的文章
      * @param {Function} cb 回调函数
      * @return {*} null
+     * @version 3.3.7
      * @since 2.0.0
      */
     queryPostsByIds(param, cb) {
@@ -102,31 +103,51 @@ module.exports = {
                 [Op.eq]: 1
             };
         }
-        TermTaxonomy.findAll({
-            attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'status', 'count'],
-            include: [{
-                model: models.TermRelationship,
-                attributes: ['objectId', 'termTaxonomyId'],
-                where: {
-                    objectId: {
-                        [Op.in]: postIds
+        async.auto({
+            taxonomy: (cb) => {
+                TermTaxonomy.findAll({
+                    attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'status', 'count'],
+                    include: [{
+                        model: models.TermRelationship,
+                        attributes: ['objectId', 'termTaxonomyId'],
+                        where: {
+                            objectId: {
+                                [Op.in]: postIds
+                            }
+                        }
+                    }],
+                    where,
+                    order: [['termOrder', 'asc']]
+                }).then((data) => cb(null, data));
+            },
+            postMeta: (cb) => {
+                Postmeta.findAll({
+                    attributes: ['postId', 'metaKey', 'metaValue'],
+                    where: {
+                        postId: {
+                            [Op.in]: postIds
+                        }
                     }
-                }
-            }],
-            where,
-            order: [['termOrder', 'asc']]
-        }).then((data) => {
-            let result = [];
+                }).then((data) => cb(null, data));
+            }
+        }, (err, result) => {
+            if (err) {
+                return cb(err);
+            }
+            let postList = [];
             posts.forEach((post) => {
+                post.meta = {};
+                result.postMeta.forEach((u) => {
+                    // todo: optimize iterate times
+                    if (u.postId === post.postId) {
+                        post.meta[u.metaKey] = u.metaValue;
+                    }
+                });
+                post.meta.postAuthor = post.meta.post_author || post.User.userDisplayName;
+
                 let tags = [];
                 let categories = [];
-                if (post.Postmeta) {
-                    post.meta = {};
-                    post.Postmeta.forEach((u) => {
-                        post.meta[u.metaKey] = u.metaValue;
-                    });
-                }
-                data.forEach((u) => {
+                result.taxonomy.forEach((u) => {
                     if (u.taxonomy === 'tag') {
                         u.TermRelationships.forEach((v) => {
                             if (v.objectId === post.postId) {
@@ -141,13 +162,13 @@ module.exports = {
                         });
                     }
                 });
-                result.push({
+                postList.push({
                     post,
                     tags,
                     categories
                 });
             });
-            cb(null, result);
+            cb(null, postList);
         });
     },
     /**
@@ -155,6 +176,7 @@ module.exports = {
      * @param {Object} param 参数对象
      * @param {Function} cb 回调函数
      * @return {*} null
+     * @version 3.3.7
      * @since 2.0.0
      */
     queryPosts(param, cb) {
@@ -167,9 +189,6 @@ module.exports = {
             include: [{
                 model: User,
                 attributes: ['userDisplayName']
-            }, {
-                model: Postmeta,
-                attributes: ['metaKey', 'metaValue']
             }],
             order: [['postCreated', 'desc'], ['postDate', 'desc']],
             limit: 10,
@@ -941,7 +960,7 @@ module.exports = {
                                 [Op.eq]: param.newPostId
                             },
                             metaKey: {
-                                [Op.in]: ['show_wechat_card', 'copyright_type', 'post_source']
+                                [Op.in]: ['show_wechat_card', 'copyright_type', 'post_source', 'post_author']
                             }
                         },
                         transaction: t
@@ -965,6 +984,12 @@ module.exports = {
                             postId: param.newPostId,
                             metaKey: 'post_source',
                             metaValue: param.postSource
+                        });
+                        metaData.push({
+                            metaId: util.getUuid(),
+                            postId: param.newPostId,
+                            metaKey: 'post_author',
+                            metaValue: param.postAuthor
                         });
                     }
                     Postmeta.bulkCreate(metaData, {
@@ -1230,9 +1255,10 @@ module.exports = {
      * @param {Array} postCategory 分类数组
      * @param {Array} postTag 标签数组
      * @param {string} postSource 文章来源
+     * @param {string} postAuthor 作者
      * @return {*} null
      */
-    validatePostFields({data, type, postCategory, postTag, postSource}) {
+    validatePostFields({data, type, postCategory, postTag, postSource, postAuthor}) {
         // TODO: postGuid:/page-,/post/page-,/category/,/archive/,/tag/,/comment/,/user/,/admin/,/post/comment/
         let rules = [{
             rule: !data.postTitle,
@@ -1263,6 +1289,12 @@ module.exports = {
             }, {
                 rule: postSource.length > constants.POST_SOURCE_LENGTH,
                 message: `文章来源长度应不大于${constants.POST_SOURCE_LENGTH}字符`
+            }, {
+                rule: data.postOriginal.toString() === '0' && !postAuthor,
+                message: '转载文章请注明作者'
+            }, {
+                rule: postAuthor.length > constants.POST_AUTHOR_LENGTH,
+                message: `文章作者长度应不大于${constants.POST_AUTHOR_LENGTH}字符`
             }]);
         } else {
             rules.push({

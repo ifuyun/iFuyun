@@ -139,18 +139,19 @@ module.exports = {
             });
             keywords.push(options.site_keywords.optionValue);
 
-            resData.postMeta = {};
+            resData.post = result.post;
+            resData.post.meta = {};
             if (result.post.Postmeta) {
                 result.post.Postmeta.forEach((meta) => {
-                    resData.postMeta[meta.metaKey] = meta.metaValue;
+                    resData.post.meta[meta.metaKey] = meta.metaValue;
                 });
             }
+            resData.post.meta.postAuthor = resData.post.meta.post_author || result.post.User.userDisplayName;
 
             resData.meta.title = util.getTitle([result.post.postTitle, options.site_name.optionValue]);
             resData.meta.description = result.post.postExcerpt || util.cutStr(util.filterHtmlTag(result.post.postContent), constants.POST_SUMMARY_LENGTH);
             resData.meta.keywords = util.uniqueTags(keywords.join(','));
             resData.meta.author = options.site_author.optionValue;
-            resData.post = result.post;
             resData.prevPost = result.prevPost;
             resData.nextPost = result.nextPost;
             resData.comments = result.comments;
@@ -610,7 +611,9 @@ module.exports = {
             resData.meta.title = util.getTitle(title.concat('管理后台', result.options.site_name.optionValue));
             resData.postMeta = {
                 'show_wechat_card': '0',
-                'copyright_type': '1'
+                'copyright_type': '1',
+                'post_source': '',
+                'post_author': ''
             };
             if (result.post && result.post.Postmeta) {
                 result.post.Postmeta.forEach((meta) => {
@@ -643,6 +646,7 @@ module.exports = {
         postId = idReg.test(postId) ? postId : '';
         const newPostId = postId || util.getUuid();
         const postSource = util.trim(xss.sanitize(param.postSource));
+        const postAuthor = util.trim(xss.sanitize(param.postAuthor));
 
         // todo: 防纂改
         let data = {
@@ -676,7 +680,8 @@ module.exports = {
             type,
             postCategory,
             postTag,
-            postSource
+            postSource,
+            postAuthor
         });
         if (checkResult !== true) {
             return next(checkResult);
@@ -701,7 +706,8 @@ module.exports = {
             postTag,
             showWechatCard: util.trim(xss.sanitize(param.showWechatCard)),
             copyrightType: util.trim(xss.sanitize(param.copyrightType)),
-            postSource
+            postSource,
+            postAuthor
         }, () => {
             logger.info(formatOpLog({
                 fn: 'savePost',

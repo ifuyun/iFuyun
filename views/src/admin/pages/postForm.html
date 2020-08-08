@@ -61,7 +61,8 @@
                                     <div class="form-field-input">
                                         <label><input type="radio" name="postOriginal" class="postOriginal" id="post-original-yes" value="1"<? if(post.postOriginal === 1){ ?> checked="checked" <? } ?> />&nbsp;原创</label><br />
                                         <label><input type="radio" name="postOriginal" class="postOriginal" id="post-original-no" value="0"<? if(post.postOriginal === 0){ ?> checked="checked" <? } ?> />&nbsp;转载</label>
-                                        <label id="post-source-wrap"<? if(post.postOriginal !== 0){ ?> class="f-d-none" <? } ?>><br /><input type="text" class="input" name="postSource" id="post-source" maxlength="200" value="<?= postMeta.post_source ?>" /></label>
+                                        <label id="post-source-wrap"<? if(post.postOriginal !== 0){ ?> class="f-d-none" <? } ?>><br /><input type="text" class="input" name="postSource" id="post-source" value="<?= postMeta.post_source ?>" maxlength="200" placeholder="来源" /></label>
+                                        <label id="post-author-wrap"<? if(post.postOriginal !== 0){ ?> class="f-d-none" <? } ?>><br /><input type="text" class="input" name="postAuthor" id="post-author" value="<?= postMeta.post_author ?>" maxlength="50" placeholder="作者" /></label>
                                     </div>
                                 </div>
                                 <div class="form-field-box-sub">
