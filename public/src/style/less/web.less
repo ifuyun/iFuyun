@@ -1,7 +1,6 @@
 @charset "UTF-8";
 @import "variables";
 @import "reset";
-@import "iconfont";
 @import "functional";
 @import "modal";
 
@@ -276,22 +275,26 @@
                 }
             }
         }
+        .u-icon-comment {
+            margin-right: 3px;
+            margin-bottom: 1px;
+            vertical-align: text-bottom;
+        }
     }
     .m-excerpt-meta {
         color: #888;
         padding: 10px 0;
-        &, .glyphicon {
-            font-size: 12px;
-        }
-        .glyphicon {
-            top: 3px;
-            margin-right: 5px;
-        }
+        font-size: 12px;
         a {
             color: #888;
             + a {
                 margin-left: 10px;
             }
+        }
+        .u-icon-meta {
+            margin-right: 3px;
+            margin-bottom: 1px;
+            vertical-align: text-bottom;
         }
     }
     .m-excerpt-meta-post {
@@ -467,10 +470,6 @@
         line-height: 24px;
         margin-bottom: 10px;
     }
-    .glyphicon {
-        margin-right: 6px;
-        color: #6a6a6a;
-    }
     > ul > li {
         overflow: hidden;
         white-space: nowrap;
@@ -490,6 +489,11 @@
         &:hover {
             color: @theme-color-text;
         }
+    }
+    .u-icon-widget {
+        margin-right: 4px;
+        margin-bottom: 1px;
+        vertical-align: text-bottom;
     }
     .m-qrcode-wx {
         width: 240px;
