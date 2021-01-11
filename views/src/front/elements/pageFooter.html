@@ -8,10 +8,14 @@
         </ul>
         <ul>
             <li><?- options.copyright_notice.optionValue ?></li>
-            <li>|</li>
-            <li><a href="https://beian.miit.gov.cn/" target="_blank" rel="nofollow"><?- options.icp_num.optionValue ?></a></li>
         </ul>
-        <ul><li>Powered by Node.js, created by Fuyun.</li></ul>
+        <ul>
+            <li><a href="https://beian.miit.gov.cn/" target="_blank" rel="nofollow"><?- options.icp_num.optionValue ?></a></li>
+            <li>|</li>
+            <li><a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=<?- options.beian_num.optionValue ?>" target="_blank" rel="nofollow">
+                <img src="http://www.beian.gov.cn/img/new/gongan.png" alt="gongan" style="margin-top: -2px;margin-right: 2px;"/><?- options.beian_prefix.optionValue ?>&nbsp;<?- options.beian_num.optionValue ?>号</a>
+            </li>
+        </ul>
     </div>
 </footer>
 <input type="hidden" name="_csrf" class="csrfToken" value="<?- token ?>" />
