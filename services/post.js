@@ -20,6 +20,8 @@ module.exports = {
     /**
      * 查询公共数据
      * @param {Object} param 参数对象
+     *      {string}[from] 区分来源，取值：['list', 'post', 'page', 'tag', 'category', 'archive'],
+     *      {boolean}[filterCategory] 是否过滤隐藏分类
      * @param {Function} cb 回调函数
      * @return {*} null
      * @since 2.0.0

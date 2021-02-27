@@ -429,6 +429,14 @@ module.exports = {
             };
             const options = result.commonData.options;
             Object.assign(resData, result.commonData);
+            resData.archiveDateList = {};
+            (resData.archiveDates || []).forEach((item, idx) => {
+                const data = item.get();
+                const year = data.linkDate.split('/')[0];
+                resData.archiveDateList[year] = resData.archiveDateList[year] || [];
+                resData.archiveDateList[year].push(data);
+            });
+            resData.archiveDateYears = Object.keys(resData.archiveDateList).sort((a, b) => a < b ? 1 : -1);
 
             let crumbData = [{
                 'title': '文章归档',

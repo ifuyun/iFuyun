@@ -11,9 +11,12 @@
                         </h1>
                     </header>
                     <div class="m-archive">
+                        <? archiveDateYears.forEach(function(year){ ?>
+                        <h2 class="m-post-header"><?- year ?>年</h2>
                         <ul class="m-archive-list f-clearfix">
-                            <? archiveDates.forEach(function(archive, rowIdx){ archive = archive.get(); ?><li><a href="/archive/<?= archive.linkDate ?>" title="<?= archive.displayDate ?>"><?= archive.displayDate ?>(<?= archive.count ?>)</a></li><? }) ?>
+                            <? archiveDateList[year].forEach(function(item){ ?><li><a href="/archive/<?= item.linkDate ?>" title="<?= item.displayDate ?>"><?= item.displayDate ?>(<?= item.count ?>)</a></li><? }) ?>
                         </ul>
+                        <? }) ?>
                     </div>
                 </div>
             </div>
