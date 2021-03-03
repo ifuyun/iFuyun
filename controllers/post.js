@@ -1,7 +1,7 @@
 /**
  * 文章
  * @author fuyun
- * @version 3.3.5
+ * @version 3.3.7
  * @since 1.0.0(2017/04/12)
  */
 const fs = require('fs');
@@ -433,8 +433,11 @@ module.exports = {
             (resData.archiveDates || []).forEach((item, idx) => {
                 const data = item.get();
                 const year = data.linkDate.split('/')[0];
-                resData.archiveDateList[year] = resData.archiveDateList[year] || [];
-                resData.archiveDateList[year].push(data);
+                resData.archiveDateList[year] = resData.archiveDateList[year] || {};
+                resData.archiveDateList[year].list = resData.archiveDateList[year].list || [];
+                resData.archiveDateList[year].list.push(data);
+                resData.archiveDateList[year].postCount = resData.archiveDateList[year].postCount || 0;
+                resData.archiveDateList[year].postCount += data.count;
             });
             resData.archiveDateYears = Object.keys(resData.archiveDateList).sort((a, b) => a < b ? 1 : -1);
 
