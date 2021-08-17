@@ -7,12 +7,13 @@
  * @param {Object} express express对象
  * @return {void}
  * @author Fuyun
- * @version 3.3.4
+ * @version 3.4.0
  * @since 1.0.0
  */
 const path = require('path');
 const routesBase = require('./routes-base');
 const routesAdmin = require('./routes-admin');
+const routesFuture = require('./routes-future');
 const post = require('../controllers/post');
 const user = require('../controllers/user');
 const comment = require('../controllers/comment');
@@ -23,6 +24,7 @@ const config = require('./core');
 module.exports = (app, express) => {
     const router = express.Router();
     const admin = routesAdmin(app, router);
+    const future = routesFuture(app, router);
     // 静态文件(若先路由后静态文件，将导致session丢失)
     app.use(express.static(path.join(__dirname, '..', 'public', 'static')));
     app.use(express.static(path.join(__dirname, '..', 'public', config.isDev ? 'dev' : 'dist')));
@@ -53,6 +55,8 @@ module.exports = (app, express) => {
     app.post('/user/login', user.login);
     app.get('/user/logout', user.logout);
 
+    // 工具路由
+    app.use('/future', future);
     // 后台路由
     app.use('/admin', admin);
     // 独立页面

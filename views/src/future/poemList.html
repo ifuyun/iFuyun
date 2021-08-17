@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Poem List</title>
+</head>
+<body>
+<table>
+    <tr>
+        <th>序号</th>
+        <th>作者</th>
+        <th>标题</th>
+    </tr>
+    <? poemData.forEach(function(poem){ ?>
+    <tr>
+        <td><?- poem[0] ?></td>
+        <td><?- poem[2] ?></td>
+        <td><?- poem[1] ?></td>
+    </tr>
+    <? }) ?>
+</table>
+</body>
+</html>
