@@ -37,7 +37,6 @@ module.exports = {
                     }
                 }
             }
-            // res.send(booksData);
             bookService.saveBooks({
                 data: booksData.slice(1)
             }, () => {

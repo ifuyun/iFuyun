@@ -28,17 +28,17 @@ module.exports = function (sequelize, DataTypes) {
             defaultValue: '',
             field: 'material_translator'
         },
-        materialPress: {
-            type: DataTypes.STRING(255),
-            allowNull: false,
-            defaultValue: '',
-            field: 'material_press'
-        },
         materialSource: {
             type: DataTypes.STRING(255),
             allowNull: false,
             defaultValue: '',
             field: 'material_source'
+        },
+        materialPress: {
+            type: DataTypes.STRING(255),
+            allowNull: false,
+            defaultValue: '',
+            field: 'material_press'
         },
         materialStatus: {
             type: DataTypes.ENUM('normal', 'trash'),

@@ -13,7 +13,7 @@ const commonService = require('../services/common');
 const constants = require('../services/constants');
 const optionService = require('../services/option');
 const STATUS_CODES = require('./status-codes');
-const {Post, User, Postmeta, TermTaxonomy, VTagVisibleTaxonomy} = models;
+const {Post, User, PostMeta, TermTaxonomy, VTagVisibleTaxonomy} = models;
 const Op = models.Sequelize.Op;
 
 module.exports = {
@@ -123,7 +123,7 @@ module.exports = {
                 }).then((data) => cb(null, data));
             },
             postMeta: (cb) => {
-                Postmeta.findAll({
+                PostMeta.findAll({
                     attributes: ['postId', 'metaKey', 'metaValue'],
                     where: {
                         postId: {
@@ -321,7 +321,7 @@ module.exports = {
                         attributes: ['taxonomyId', 'taxonomy', 'name', 'slug', 'description', 'parent', 'termOrder', 'status', 'count'],
                         where
                     }, {
-                        model: Postmeta,
+                        model: PostMeta,
                         attributes: ['metaKey', 'metaValue']
                     }]
                 }).then((post) => {
@@ -431,7 +431,7 @@ module.exports = {
                         model: User,
                         attributes: ['userDisplayName']
                     }, {
-                        model: Postmeta,
+                        model: PostMeta,
                         attributes: ['metaKey', 'metaValue']
                     }],
                     where: {
@@ -858,7 +858,7 @@ module.exports = {
                 model: User,
                 attributes: ['userDisplayName']
             }, {
-                model: Postmeta,
+                model: PostMeta,
                 attributes: ['metaKey', 'metaValue']
             }];
             if (param.query.type !== 'page') {
@@ -956,7 +956,7 @@ module.exports = {
                     }
                 }],
                 removePostMeta: ['post', (result, cb) => {
-                    Postmeta.destroy({
+                    PostMeta.destroy({
                         where: {
                             postId: {
                                 [Op.eq]: param.newPostId
@@ -994,7 +994,7 @@ module.exports = {
                             metaValue: param.postAuthor
                         });
                     }
-                    Postmeta.bulkCreate(metaData, {
+                    PostMeta.bulkCreate(metaData, {
                         transaction: t
                     }).then((postMeta) => cb(null, postMeta));
                 }]

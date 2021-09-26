@@ -5,7 +5,7 @@
  * @since 3.0.0
  */
 const models = require('../models/index');
-const {User, Usermeta} = models;
+const {User, UserMeta} = models;
 const Op = models.Sequelize.Op;
 
 module.exports = {
@@ -13,7 +13,7 @@ module.exports = {
         User.findOne({
             attributes: ['userId', 'userLogin', 'userNicename', 'userEmail', 'userLink', 'userRegistered', 'userStatus', 'userDisplayName'],
             include: [{
-                model: Usermeta,
+                model: UserMeta,
                 attributes: ['metaId', 'userId', 'metaKey', 'metaValue']
             }],
             where: {

@@ -57,15 +57,15 @@ module.exports = {
             }
             let metaObj = {};
             let user = {};
-            if (result && result.Usermeta) {
-                result.Usermeta.forEach((item) => {
+            if (result && result.UserMeta) {
+                result.UserMeta.forEach((item) => {
                     metaObj[item.metaKey] = item.metaValue;
                 });
             }
             Object.assign(user, result.get({
                 plain: true
             }));
-            delete user.Usermeta;
+            delete user.UserMeta;
             user.usermeta = metaObj;
 
             const referer = req.session.loginReferer;

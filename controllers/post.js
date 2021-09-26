@@ -141,8 +141,8 @@ module.exports = {
 
             resData.post = result.post;
             resData.post.meta = {};
-            if (result.post.Postmeta) {
-                result.post.Postmeta.forEach((meta) => {
+            if (result.post.PostMeta) {
+                result.post.PostMeta.forEach((meta) => {
                     resData.post.meta[meta.metaKey] = meta.metaValue;
                 });
             }
@@ -197,8 +197,8 @@ module.exports = {
             Object.assign(resData, result.commonData);
 
             resData.postMeta = {};
-            if (result.post.Postmeta) {
-                result.post.Postmeta.forEach((meta) => {
+            if (result.post.PostMeta) {
+                result.post.PostMeta.forEach((meta) => {
                     resData.postMeta[meta.metaKey] = meta.metaValue;
                 });
             }
@@ -637,8 +637,8 @@ module.exports = {
                 'post_source': '',
                 'post_author': ''
             };
-            if (result.post && result.post.Postmeta) {
-                result.post.Postmeta.forEach((meta) => {
+            if (result.post && result.post.PostMeta) {
+                result.post.PostMeta.forEach((meta) => {
                     resData.postMeta[meta.metaKey] = meta.metaValue;
                 });
             }

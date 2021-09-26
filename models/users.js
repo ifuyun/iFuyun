@@ -79,7 +79,7 @@ module.exports = function (sequelize, DataTypes) {
             foreignKey: 'postAuthor',
             sourceKey: 'userId'
         });
-        User.hasMany(models.Usermeta, {
+        User.hasMany(models.UserMeta, {
             foreignKey: 'userId',
             sourceKey: 'userId'
         });
