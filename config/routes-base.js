@@ -1,10 +1,9 @@
-/*global console*/
 /**
  * 全局控制器
  * @module c_base
  * @static
  * @author Fuyun
- * @version 3.3.5
+ * @version 3.5.0
  * @since 1.0.0
  */
 const domain = require('domain');
@@ -108,6 +107,7 @@ module.exports = {
      * @author Fuyun
      * @version 2.0.0
      * @since 2.0.0
+     * @deprecated
      */
     globalError(server) {
         return (req, res, next) => {

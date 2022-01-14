@@ -1,4 +1,3 @@
-/*global console*/
 /**
  * 后台路由
  * @module cfg_routes_admin

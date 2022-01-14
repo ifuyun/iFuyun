@@ -1,5 +1,4 @@
 /* jslint nomen:true es5:true */
-/* global console,process,__dirname */
 /**
  * 非集群模式入口
  * @module server

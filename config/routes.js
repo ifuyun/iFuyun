@@ -1,5 +1,4 @@
 /* jslint nomen:true es5:true */
-/* global console,__dirname */
 /**
  * 路由定义，含错误路由
  * @module cfg_routes

@@ -1,12 +1,11 @@
 /* jslint nomen:true es5:true */
-/* global console,process,__dirname */
 /**
  * 网站总入口（默认）
  * @module index
  * @main index
  * @requires redis, core, routes
  * @author Fuyun
- * @version 3.0.0
+ * @version 3.5.0
  * @since 1.0.0
  */
 const express = require('express');
@@ -29,7 +28,7 @@ const redisCfg = require('./config/redis');
 const redisClient = redis.createClient(redisCfg.port, redisCfg.host, {'auth_pass': redisCfg.passwd});
 const config = require('./config/core');
 const routes = require('./config/routes');
-const routesBase = require('./config/routes-base');
+// const routesBase = require('./config/routes-base');
 const {sysLog, threadLog, accessLog, formatOpLog, updateContext} = require('./helper/logger');
 
 if (cluster.isMaster) {
@@ -59,7 +58,7 @@ if (cluster.isMaster) {
     app.set('view engine', 'html');
     ejs.delimiter = '?';
     app.engine('.html', ejs.__express);
-    app.use(routesBase.globalError(server));
+    // app.use(routesBase.globalError(server));
     app.use(log4js.connectLogger(accessLog, {
         level: log4js.levels.INFO,
         format: ':remote-addr - :method :status HTTP/:http-version :url - [:response-time ms/:content-length B] ":referrer" ":user-agent"'

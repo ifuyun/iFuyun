@@ -5,6 +5,11 @@
         "es6": true,
         "browser": true
     },
+    "parserOptions": {
+        "ecmaVersion": 8,
+        "sourceType": "module",
+        "allowImportExportEverywhere": true
+    },
     "rules": {
         //0:off, 1:warn, 2:error
         // 禁止条件表达式中出现赋值操作符
@@ -516,9 +521,5 @@
         "template-curly-spacing": 1,
         // 强制在 yield* 表达式中 * 周围使用空格
         "yield-star-spacing": 2
-    },
-    "parserOptions": {
-        "ecmaVersion": 8,
-        "sourceType": "module"
     }
 }

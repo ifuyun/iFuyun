@@ -1,11 +1,12 @@
 /**
  * wechat services
  * @author fuyun
- * @version 3.3.5
+ * @version 3.5.0
  * @since 3.3.5
  */
 const JsSHA = require('jssha');
 const fetch = require('node-fetch');
+// const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const credentials = require('../config/credentials');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
 const constants = require('./constants');

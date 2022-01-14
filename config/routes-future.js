@@ -1,4 +1,3 @@
-/*global console*/
 /**
  * 实验工具路由
  * @module cfg_routes_tool
