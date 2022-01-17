@@ -1,4 +1,3 @@
-/*global process*/
 /**
  * 数据库配置
  * @module cfg_database

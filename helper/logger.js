@@ -1,5 +1,4 @@
 /* jslint nomen:true es5:true */
-/*global module*/
 /**
  * 日志工具类
  * @module logger

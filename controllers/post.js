@@ -632,7 +632,7 @@ module.exports = {
             resData.postTitle = postTitle;
             resData.meta.title = util.getTitle(title.concat('管理后台', result.options.site_name.optionValue));
             resData.postMeta = {
-                'show_wechat_card': '0',
+                'show_wechat_card': '1',
                 'copyright_type': '1',
                 'post_source': '',
                 'post_author': ''
