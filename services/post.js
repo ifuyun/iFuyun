@@ -41,13 +41,10 @@ module.exports = {
             friendLinks: (cb) => commonService.getLinks('friendlink', param.from !== 'list' || param.page > 1 ? ['site'] : ['homepage', 'site'], cb),
             quickLinks: (cb) => commonService.getLinks('quicklink', ['homepage', 'site'], cb),
             categories: (cb) => {
-                commonService.getCategoryTree(cb, param.filterCategory === true ? {
-                    status: [1]
-                } : {
-                    status: [0, 1]
+                commonService.getCategoryTree(cb, {
+                    status: param.filterCategory ? [1] : [0, 1]
                 });
             },
-            mainNavs: commonService.mainNavs,
             options: optionService.getInitOptions
         }, (err, result) => {
             if (err) {
@@ -395,6 +392,7 @@ module.exports = {
             }],
             postViewCount: (cb) => {
                 const viewCount = models.sequelize.literal('post_view_count + 1');
+                // todo: Post.increment
                 Post.update({
                     postViewCount: viewCount
                 }, {
@@ -482,7 +480,7 @@ module.exports = {
         }, cb);
     },
     listByCategory(param, cb) {
-        let page = parseInt(param.page, 10) || 1;
+        let page = param.page;
         let where = {
             postStatus: {
                 [Op.eq]: 'publish'
@@ -496,7 +494,10 @@ module.exports = {
             attributes: ['taxonomyId', 'status'],
             where: {
                 status: {
-                    [Op.eq]: 1
+                    [Op.in]: param.isAdmin ? [0, 1] : [1]
+                },
+                taxonomy: {
+                    [Op.eq]: 'post'
                 }
             }
         }];
@@ -508,10 +509,12 @@ module.exports = {
                     filterCategory: !param.isAdmin
                 }, cb);
             },
+            // todo: redundant, can accessed commonData.categories directly
             categories: commonService.getCategoryTree.bind(commonService),
             subCategories: ['categories', (result, cb) => {
                 commonService.getSubCategoriesBySlug({
                     catData: result.categories.catData,
+                    catTree: result.categories.catTree,
                     slug: param.category,
                     filterCategory: !param.isAdmin
                 }, cb);
@@ -542,8 +545,7 @@ module.exports = {
                     page,
                     where,
                     includeOpt,
-                    filterCategory: !param.isAdmin,
-                    from: 'category'
+                    filterCategory: !param.isAdmin
                 }, cb);
             }],
             comments: ['posts', (result, cb) => commonService.getCommentCountByPosts(result.posts, cb)]
@@ -774,6 +776,7 @@ module.exports = {
 
                     commonService.getSubCategoriesBySlug({
                         catData: result.categories.catData,
+                        catTree: result.categories.catTree,
                         slug: param.query.category
                     }, (err, data) => {
                         if (err) {
@@ -797,7 +800,7 @@ module.exports = {
                                 }
                             }
                         });
-                        titleArr.push(data.catRoot.name, '分类');
+                        titleArr.push(data.catPath[data.catPath.length - 1].title, '分类');
                         cb(null);
                     });
                 } else {
@@ -1261,7 +1264,7 @@ module.exports = {
      * @return {*} null
      */
     validatePostFields({data, type, postCategory, postTag, postSource, postAuthor}) {
-        // TODO: postGuid:/page-,/post/page-,/category/,/archive/,/tag/,/comment/,/user/,/admin/,/post/comment/
+        // TODO: postGuid:/page-,/post/page-,/category/,/archive/,/tag/,/comment/,/user/,/admin/
         let rules = [{
             rule: !data.postTitle,
             message: '标题不能为空'

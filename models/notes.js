@@ -9,16 +9,19 @@ module.exports = function (sequelize, DataTypes) {
         noteContent: {
             type: DataTypes.TEXT,
             allowNull: false,
+            defaultValue: '',
             field: 'note_content'
         },
         noteBookId: {
             type: DataTypes.CHAR(16),
             allowNull: false,
+            defaultValue: '',
             field: 'note_book_id'
         },
         noteBookPage: {
             type: DataTypes.STRING(255),
             allowNull: false,
+            defaultValue: '',
             field: 'note_book_page'
         },
         noteStatus: {

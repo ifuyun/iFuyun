@@ -97,7 +97,7 @@ module.exports = {
                             messageDetail: `[Forbidden]${post.postId}:${post.postTitle} is not allowed comment.`
                         }));
                     }
-                    if (post.commentFlag === 'open' || param.isAdmin) {
+                    if (post.commentFlag === 'open') {
                         param.data.commentStatus = 'normal';
                     }
                     cb(null, post);

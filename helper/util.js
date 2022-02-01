@@ -523,8 +523,7 @@ module.exports = {
      * @since 1.0.0
      */
     isLogin(user) {
-        // const curUser = req.session.user;
-        return user ? !!user : false;
+        return !!user;
     },
     /**
      * 判断登录用户是否管理员
@@ -542,7 +541,7 @@ module.exports = {
     },
     /**
      * URL添加来源参数
-     * @method setUrlRef
+     * @method appendUrlRef
      * @static
      * @param {string} url URL
      * @param {string} from 来源
@@ -551,7 +550,7 @@ module.exports = {
      * @version 2.0.0
      * @since 2.0.0
      */
-    setUrlRef(url, from) {
+    appendUrlRef(url, from) {
         const split = url.indexOf('?') >= 0 ? '&' : '?';
         return url + split + 'ref=' + from;
     },

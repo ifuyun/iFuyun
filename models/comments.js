@@ -15,6 +15,7 @@ module.exports = function (sequelize, DataTypes) {
         commentContent: {
             type: DataTypes.TEXT,
             allowNull: false,
+            defaultValue: '',
             field: 'comment_content'
         },
         commentStatus: {

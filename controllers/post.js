@@ -155,7 +155,7 @@ module.exports = {
             resData.prevPost = result.prevPost;
             resData.nextPost = result.nextPost;
             resData.comments = result.comments;
-            resData.urlShare = util.setUrlRef(options.site_url.optionValue + result.post.postGuid, 'qrcode');
+            resData.urlShare = util.appendUrlRef(options.site_url.optionValue + result.post.postGuid, 'qrcode');
             resData.util = util;
             resData.moment = moment;
             res.render(`${appConfig.pathViews}/front/pages/post`, resData);
@@ -222,7 +222,7 @@ module.exports = {
 
         postService.listByCategory({
             isAdmin,
-            page: req.params.page,
+            page,
             category
         }, (err, result, logData) => {
             if (err) {

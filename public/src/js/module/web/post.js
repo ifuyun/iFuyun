@@ -1,7 +1,5 @@
 /*global $,hljs,wx*/
 /* jslint nomen:true */
-import http from '../../lib/http';
-
 require('../../vendor/jquery.poshytip.min');
 require('../../vendor/jquery.qrcode.min');
 
@@ -12,18 +10,6 @@ const logger = require('../../lib/logger');
 const $qrcodeShare = $('#qrcodeShare');
 const $qrcodeReward = $('#qrcodeReward');
 const url = location.href.split('#')[0];
-
-const showCaptcha = () => {
-    http.ajax({
-        url: '/captcha',
-        cache: true,
-        data: {
-            r: Math.random()
-        }
-    }).then((imgData) => {
-        $('#captcha').attr('src', imgData);
-    });
-};
 const getWxSign = (cb) => {
     $.ajax({
         type: 'post',
@@ -84,7 +70,7 @@ service = {
                     }
                 },
                 error: function () {
-                    return false;
+                    popup.alert('未知错误，请刷新页面重试。');
                 }
             });
             return false;
@@ -92,10 +78,10 @@ service = {
             const that = this;
             $.ajax({
                 type: 'post',
-                url: '/post/comment/vote',
+                url: '/vote/save',
                 data: {
-                    commentId: $(this).attr('data-comment'),
-                    type: 'up',
+                    objectId: $(this).attr('data-comment'),
+                    type: 'like',
                     _csrf: $('.csrfToken').val()
                 },
                 dataType: 'json',
@@ -225,24 +211,26 @@ service = {
 
 $(function () {
     service.initEvent();
-    let counter = 0;
-    const timer = setInterval(function () {
-        counter += 1;
-        const retry = 20;
-        if (window.wx) {
-            clearInterval(timer);
-            getWxSign(() => {
-                if (service.signData) {
-                    service.initWxConfig();
-                    service.initWxEvent();
-                }
-            });
-            return;
-        }
-        if (counter >= retry) {
-            clearInterval(timer);
-        }
-    }, 100);
+    if ($('#wxSdkFlag').val() === '1') {
+        let counter = 0;
+        const timer = setInterval(function () {
+            counter += 1;
+            const retry = 20;
+            if (window.wx) {
+                clearInterval(timer);
+                getWxSign(() => {
+                    if (service.signData) {
+                        service.initWxConfig();
+                        service.initWxEvent();
+                    }
+                });
+                return;
+            }
+            if (counter >= retry) {
+                clearInterval(timer);
+            }
+        }, 100);
+    }
     if (window.hljs) {
         hljs.initHighlightingOnLoad();
     }
@@ -254,7 +242,6 @@ $(function () {
         text: $qrcodeShare.attr('data-url')
     });
 
-    showCaptcha();
     service.checkAds();
 });
 

@@ -3,6 +3,7 @@ module.exports = function (sequelize, DataTypes) {
         materialId: {
             type: DataTypes.CHAR(16),
             allowNull: false,
+            primaryKey: true,
             field: 'material_id'
         },
         materialTitle: {
@@ -14,6 +15,7 @@ module.exports = function (sequelize, DataTypes) {
         materialContent: {
             type: DataTypes.TEXT,
             allowNull: false,
+            defaultValue: '',
             field: 'material_content'
         },
         materialAuthor: {

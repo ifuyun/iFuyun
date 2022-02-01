@@ -31,11 +31,13 @@ module.exports = function (sequelize, DataTypes) {
         userIp: {
             type: DataTypes.STRING(100),
             allowNull: false,
+            defaultValue: '',
             field: 'user_ip'
         },
         userAgent: {
             type: DataTypes.STRING(255),
             allowNull: false,
+            defaultValue: '',
             field: 'user_agent'
         }
     }, {

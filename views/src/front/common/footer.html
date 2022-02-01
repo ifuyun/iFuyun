@@ -1,4 +1,5 @@
-    <script type="text/javascript" src="//res.wx.qq.com/open/js/jweixin-1.6.0.js" async="async" defer="defer"></script>
+    <input type="hidden" id="wxSdkFlag" value="<?- enableWxSdk ? 1 : 0 ?>" />
+    <? if(enableWxSdk) { ?><script type="text/javascript" src="//res.wx.qq.com/open/js/jweixin-1.6.0.js" async="async" defer="defer"></script><? } ?>
     <script type="text/javascript" src="//cpro.baidustatic.com/cpro/ui/c.js" async="async" defer="defer"></script>
     <script type="text/javascript" src="//cpro.baidustatic.com/cpro/ui/cm.js" async="async" defer="defer"></script>
     <script type="text/javascript">

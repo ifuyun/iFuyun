@@ -22,5 +22,6 @@ module.exports = {
     domain: 'www.ifuyun.com',
     pathViews: isDev ? 'src' : 'dist',
     logLevel: isDev ? 'TRACE' : 'INFO',
-    isDev
+    isDev,
+    enableWxSdk: false
 };

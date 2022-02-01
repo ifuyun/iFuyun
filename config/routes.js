@@ -6,7 +6,7 @@
  * @param {Object} express express对象
  * @return {void}
  * @author Fuyun
- * @version 3.4.0
+ * @version 3.5.1
  * @since 1.0.0
  */
 const path = require('path');
@@ -30,22 +30,22 @@ module.exports = (app, express) => {
 
     app.use(routesBase.init);
     app.get('/', post.listPosts);
-    app.get('/page-:page', post.listPosts);
+    // app.get('/page-:page', post.listPosts);
     app.get('/post/page-:page', post.listPosts);
     app.get('/post/:postId', post.showPost);
     app.get('/category/:category', post.listByCategory);
     app.get('/category/:category/page-:page', post.listByCategory);
+    app.get('/tag/:tag', post.listByTag);
+    app.get('/tag/:tag/page-:page', post.listByTag);
     app.get('/archive', post.listArchiveDate);
     app.get('/archive/:year', post.listByDate);
     app.get('/archive/:year/page-:page', post.listByDate);
     app.get('/archive/:year/:month', post.listByDate);
     app.get('/archive/:year/:month/page-:page', post.listByDate);
-    app.get('/tag/:tag', post.listByTag);
-    app.get('/tag/:tag/page-:page', post.listByTag);
     app.get('/captcha', captcha.create);
 
-    app.post('/post/comment/save', comment.saveComment);
-    app.post('/post/comment/vote', comment.saveVote);
+    app.post('/comment/save', comment.saveComment);
+    app.post('/vote/save', comment.saveVote);
     app.post('/wechat/sign', wechat.getSignature);
 
     // app.get('/comment/:postId', comment.listComments);

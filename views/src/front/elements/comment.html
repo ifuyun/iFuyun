@@ -22,7 +22,7 @@
 <? } ?>
 <div class="m-diag">&nbsp;</div>
 <div class="m-comment-form" id="respond">
-    <form method="post" action="/post/comment/save" class="j-form-comment">
+    <form method="post" action="/comment/save" class="j-form-comment">
         <p class="m-row">
             <input type="text" class="u-input" name="commentUser" maxlength="8" placeholder="昵称" value="<?= user.userName ?>" /><span class="u-label-required">*</span>
         </p>
@@ -34,7 +34,7 @@
         <!--</p>-->
         <p class="m-row">
             <input type="text" class="u-input" name="captchaCode" maxlength="4" placeholder="验证码" /><span class="u-label-required">*</span>
-            <img id="captcha" alt="验证码" />
+            <img id="captcha" class="u-captcha" src="/captcha" title="点击刷新验证码" alt="验证码" onclick="this.src='/captcha?r='+Math.random()" />
         </p>
         <p class="m-row">
             <textarea class="u-input u-textarea-comment" name="commentContent" maxlength="400" placeholder="评论内容"></textarea><span class="u-label-required">*</span>

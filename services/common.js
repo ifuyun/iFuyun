@@ -19,7 +19,7 @@ module.exports = {
         // 查询count时根据link_date、visible分组，其他情况只查询唯一的link_date
         const postType = param.postType || 'post';
         let queryOpt = {
-            attributes: ['postDate', 'linkDate', 'displayDate'],
+            attributes: ['linkDate', 'displayDate'],
             where: {
                 postStatus: {
                     [Op.eq]: 'publish'
@@ -262,8 +262,8 @@ module.exports = {
         }
         return catPath;
     },
-    getSubCategoriesBySlug({catData, slug, filterCategory}, cb) {
-        const catTree = this.createCategoryTree(catData);
+    getSubCategoriesBySlug({catData, catTree, slug, filterCategory}, cb) {
+        // const catTree = this.createCategoryTree(catData);
         let subCatIds = [];
         // 循环获取子分类ID：父->子
         const iterateCatTree = (curNode) => {
@@ -310,8 +310,7 @@ module.exports = {
                 catPath: this.getCategoryPath({
                     catData,
                     slug
-                }),
-                catRoot: rootNode || {}
+                })
             });
         } else {
             logger.error(formatOpLog({
@@ -325,24 +324,6 @@ module.exports = {
             }));
             cb('分类不存在');
         }
-    },
-    mainNavs(cb) {
-        TermTaxonomy.findAll({
-            attributes: ['name', 'description', 'slug', 'count', 'taxonomyId'],
-            where: {
-                taxonomy: {
-                    [Op.eq]: 'post'
-                },
-                parent: {
-                    [Op.eq]: ''
-                }
-            },
-            order: [
-                ['termOrder', 'asc']
-            ]
-        }).then((data) => {
-            cb(null, data);
-        });
     },
     getCommentCountByPosts(posts, cb) {
         let postIds = [];

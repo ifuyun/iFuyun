@@ -11,9 +11,7 @@ const cluster = require('cluster');
 const appConfig = require('./core');
 const util = require('../helper/util');
 const {sysLog: logger, formatOpLog} = require('../helper/logger');
-const codeSuccess = 200;
-const codeError = 500;
-const codeNotFound = 404;
+const STATUS_CODES = require('../services/status-codes');
 
 module.exports = {
     /**
@@ -30,8 +28,9 @@ module.exports = {
      */
     init(req, res, next) {
         const rememberMe = req.cookies.rememberMe;
-        const curUser = req.session.user;
-        res.locals.isLogin = !!curUser;
+        const user = req.session.user;
+        res.locals.isLogin = !!user;
+        res.locals.enableWxSdk = appConfig.enableWxSdk;
         // for copyright
         res.locals.curYear = new Date().getFullYear();
         if (res.locals.isLogin && rememberMe && rememberMe === '1') {// 2015-07-28：不能regenerate，否则将导致后续请求无法设置session
@@ -52,13 +51,14 @@ module.exports = {
      * @param {Function} next 路由对象
      * @return {*} null
      * @author Fuyun
-     * @version 2.0.0
+     * @version 3.5.1
      * @since 1.0.0
+     * @deprecated
      */
     last(req, res, next) {
         return util.catchError({
-            status: codeNotFound,
-            code: codeNotFound,
+            status: STATUS_CODES.PAGE_NOT_FOUND,
+            code: STATUS_CODES.PAGE_NOT_FOUND,
             message: 'Page Not Found'
         }, next);
     },
@@ -72,7 +72,7 @@ module.exports = {
      * @param {Function} next 路由对象
      * @return {void}
      * @author Fuyun
-     * @version 2.0.0
+     * @version 3.5.1
      * @since 1.0.0
      */
     error(err, req, res, next) {// TODO: IE can not custom page
@@ -84,17 +84,17 @@ module.exports = {
         }
         const message = err.message || err || 'Unknown Error.';
         if (req.xhr) {
-            res.status(err.status || codeSuccess).type('application/json');
+            res.status(err.status || STATUS_CODES.HTTP_SUCCESS).type('application/json');
             res.send({
-                code: err.code || codeError,
+                code: err.code || STATUS_CODES.SERVER_ERROR,
                 message,
                 token: req.csrfToken()
             });
         } else {
-            const status = err.status || codeNotFound;
+            const status = err.status || STATUS_CODES.PAGE_NOT_FOUND;
             res.status(status).type('text/html');
             res.render(`${appConfig.pathViews}/error/${status}`, {
-                code: err.code || codeNotFound,
+                code: err.code || STATUS_CODES.PAGE_NOT_FOUND,
                 status,
                 message
             });
@@ -107,7 +107,7 @@ module.exports = {
      * @param {Server} server, we need to close it and stop taking new requests.
      * @return {Function} middleware fn.
      * @author Fuyun
-     * @version 2.0.0
+     * @version 3.5.1
      * @since 2.0.0
      * @deprecated
      */
@@ -146,8 +146,8 @@ module.exports = {
                 }
 
                 try {
-                    err.status = codeError;
-                    err.code = codeError;
+                    err.status = STATUS_CODES.SERVER_ERROR;
+                    err.code = STATUS_CODES.SERVER_ERROR;
                     err.output = false;
                     next(err);
                 } catch (nextErr) {
