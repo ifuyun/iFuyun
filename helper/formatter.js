@@ -39,12 +39,12 @@ module.exports = {
         return visibleMap[visible];
     },
     linkTarget(visible) {
-        const visibleMap = {
+        const targetMap = {
             _blank: '新页面',
             _top: '父页面',
             _self: '当前页'
         };
-        return visibleMap[visible];
+        return targetMap[visible];
     },
     copyrightType(type) {
         const defaultType = '1';

@@ -4,7 +4,7 @@ $(function () {
     function sendAction(action, commentId) {
         $.ajax({
             type: 'post',
-            url: '/admin/comment/status',
+            url: '/admin/comment/audit',
             data: {
                 action: action,
                 commentId: commentId
@@ -27,7 +27,7 @@ $(function () {
     }
 
     $('.btn-approve').on('click', function () {
-        sendAction('approve', $(this).attr('data-id'));
+        sendAction('normal', $(this).attr('data-id'));
         return false;
     });
     $('.btn-reject').on('click', function () {
@@ -39,7 +39,7 @@ $(function () {
         return false;
     });
     $('.btn-delete').on('click', function () {
-        sendAction('delete', $(this).attr('data-id'));
+        sendAction('trash', $(this).attr('data-id'));
         return false;
     });
 

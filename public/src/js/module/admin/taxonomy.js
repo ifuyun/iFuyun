@@ -51,7 +51,7 @@ $(function () {
         });
         return false;
     });
-    $('#form-search').on('submit', function () {
+    $('#form-search,#form-filter').on('submit', function () {
         location.href = $(this).attr('action') + '&' + $(this).serialize();
         return false;
     });

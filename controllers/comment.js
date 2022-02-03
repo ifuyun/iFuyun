@@ -21,7 +21,7 @@ module.exports = {
         let user = req.session.user || {};
         let data = {};
         const isAdmin = util.isAdminUser(req.session.user);
-        let commentId = util.trim(xss.sanitize(param.commentId));
+        let commentId = param.commentId = util.trim(xss.sanitize(param.commentId));
         let parentId = util.trim(xss.sanitize(param.parentId));
         const shouldCheckCaptcha = !isAdmin || !commentId && !parentId;
 
@@ -256,11 +256,10 @@ module.exports = {
     },
     updateStatus(req, res, next) {
         let param = req.body;
-        let data = {};
         const commentId = xss.sanitize(param.commentId.trim()) || '';
 
         param.action = (param.action || '').toLowerCase();
-        if (!['approve', 'reject', 'spam', 'delete'].includes(param.action)) {
+        if (!['normal', 'reject', 'spam', 'trash'].includes(param.action)) {
             logger.error(formatOpLog({
                 fn: 'updateStatus',
                 msg: `Operate: ${param.action} is not allowed.`,
@@ -279,13 +278,9 @@ module.exports = {
                 message: '参数错误'
             }, next);
         }
-        const statusMap = {
-            approve: 'normal',
-            reject: 'reject',
-            spam: 'spam',
-            delete: 'trash'
+        let data = {
+            commentStatus: param.action
         };
-        data.commentStatus = statusMap[param.action];
 
         commentService.updateStatus({
             data,

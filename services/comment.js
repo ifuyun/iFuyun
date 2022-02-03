@@ -17,18 +17,24 @@ const Op = models.Sequelize.Op;
 module.exports = {
     wrapCommentData({param, user, isAdmin, req}) {
         // 避免undefined问题
-        return {
-            commentContent: util.trim(xss.sanitize(param.commentContent)),
+        let commentData = {
+            commentId: param.commentId,
             parentId: util.trim(xss.sanitize(param.parentId)),
             postId: util.trim(xss.sanitize(param.postId)),
-            commentAuthor: util.trim(xss.sanitize(param.commentUser)) || user.userDisplayName || '',
-            commentAuthorEmail: util.trim(xss.sanitize(param.commentEmail)) || user.userEmail || '',
-            // commentAuthorLink: util.trim(xss.sanitize(param.commentLink)),
-            commentStatus: isAdmin ? 'normal' : 'pending',
-            commentIp: util.getRemoteIp(req),
-            commentAgent: req.headers['user-agent'],
-            userId: user.userId || ''
+            commentContent: util.trim(xss.sanitize(param.commentContent)),
         };
+        if (!commentData.commentId) {
+            commentData = {
+                ...commentData,
+                commentAuthor: util.trim(xss.sanitize(param.commentUser)) || user.userDisplayName || '',
+                commentAuthorEmail: util.trim(xss.sanitize(param.commentEmail)) || user.userEmail || '',
+                commentStatus: isAdmin ? 'normal' : 'pending',
+                commentIp: util.getRemoteIp(req),
+                commentAgent: req.headers['user-agent'],
+                userId: user.userId || ''
+            };
+        }
+        return commentData;
     },
     validateCaptcha({param, shouldCheckCaptcha, req}) {
         if (shouldCheckCaptcha && (!param.captchaCode || !req.session.captcha)) {
@@ -53,10 +59,10 @@ module.exports = {
             message: '评论文章不存在',
             messageDetail: `comment's post: ${data.postId} is not exist.`
         }, {
-            rule: !data.commentAuthor,
+            rule: !data.commentId && !data.commentAuthor,
             message: '昵称不能为空'
         }, {
-            rule: !/^[\da-zA-Z]+[\da-zA-Z_.\-]*@[\da-zA-Z_\-]+\.[\da-zA-Z_\-]+$/i.test(data.commentAuthorEmail),
+            rule: !data.commentId && !/^[\da-zA-Z]+[\da-zA-Z_.\-]*@[\da-zA-Z_\-]+\.[\da-zA-Z_\-]+$/i.test(data.commentAuthorEmail),
             message: 'Email输入不正确'
         }, {
             rule: !data.commentContent.trim(),
@@ -176,10 +182,6 @@ module.exports = {
             };
             paramArr.push(`status=${param.query.status}`);
             titleArr.push(param.query.status, '状态');
-        } else {
-            where.commentStatus = {
-                [Op.in]: ['normal', 'pending', 'spam', 'trash', 'reject']
-            };
         }
         if (param.query.keyword) {
             where.commentContent = {
