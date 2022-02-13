@@ -33,7 +33,6 @@ module.exports = {
                 page: 'link',
                 token: req.csrfToken(),
                 options: result.options,
-                categories: result.categories,
                 util,
                 moment,
                 formatter
@@ -68,7 +67,7 @@ module.exports = {
                 message: '不支持该操作'
             }, next);
         }
-        const linkId = req.query.linkId;
+        const linkId = req.query.id;
         if (action === 'edit' && !idReg.test(linkId)) {
             return util.catchError({
                 status: 404,
@@ -106,7 +105,6 @@ module.exports = {
                 page: 'link',
                 token: req.csrfToken(),
                 title,
-                action,
                 link: {
                     TermTaxonomies: [{}]
                 }
@@ -198,7 +196,7 @@ module.exports = {
         let linkIds = req.body.linkIds;
         if (typeof linkIds === 'string') {
             linkIds = xss.sanitize(linkIds).split(',');
-        } else if (!util.isArray(linkIds)) {
+        } else if (!Array.isArray(linkIds)) {
             logger.error(formatOpLog({
                 fn: 'removeLinks',
                 msg: 'invalid parameters',

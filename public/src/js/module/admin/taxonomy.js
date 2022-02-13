@@ -7,7 +7,7 @@ $(function () {
             type: 'post',
             url: '/admin/taxonomy/remove?type=' + $that.data('type'),
             data: {
-                taxonomyIds: $that.data('taxonomy')
+                taxonomyIds: [$that.data('taxonomy')]
             },
             headers: {
                 'X-CSRF-Token': $('#csrfToken').val()

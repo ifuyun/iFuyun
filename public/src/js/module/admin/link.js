@@ -7,7 +7,7 @@ $(function () {
             type: 'post',
             url: '/admin/link/remove',
             data: {
-                linkIds: $that.attr('data-id')
+                linkIds: [$that.attr('data-id')]
             },
             headers: {
                 'X-CSRF-Token': $('#csrfToken').val()

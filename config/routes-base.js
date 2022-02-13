@@ -33,7 +33,7 @@ module.exports = {
         res.locals.enableWxSdk = appConfig.enableWxSdk;
         // for copyright
         res.locals.curYear = new Date().getFullYear();
-        if (res.locals.isLogin && rememberMe && rememberMe === '1') {// 2015-07-28：不能regenerate，否则将导致后续请求无法设置session
+        if (res.locals.isLogin && rememberMe === '1') {// 2015-07-28：不能regenerate，否则将导致后续请求无法设置session
             req.session.cookie.expires = new Date(Date.now() + appConfig.cookieExpires);
             req.session.cookie.maxAge = appConfig.cookieExpires;
             req.session.save();

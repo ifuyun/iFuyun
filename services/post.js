@@ -1229,7 +1229,7 @@ module.exports = {
                     if (result.checkGuid > 0) {
                         return cb('URL已存在');
                     }
-                    param.fileData.postGuid = result.options.upload_path.optionValue + param.fileData.postGuid;
+                    param.fileData.postGuid = result.options.upload_path_prefix.optionValue + param.fileData.postGuid;
                     Post.create(param.fileData, {
                         transaction: t
                     }).then((post) => cb(null, post));

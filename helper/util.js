@@ -488,19 +488,6 @@ module.exports = {
         return -1;
     },
     /**
-     * 判断是否数组
-     * @method isArray
-     * @static
-     * @param {*} obj 任意对象
-     * @return {boolean} 判断结果：数组返回true，非数组返回false
-     * @author Fuyun
-     * @version 1.0.0
-     * @since 1.0.0
-     */
-    isArray(obj) {
-        return Object.prototype.toString.call(obj) === '[object Array]';
-    },
-    /**
      * 去除头尾空白字符
      * @method trim
      * @static

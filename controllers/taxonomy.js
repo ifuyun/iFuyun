@@ -282,7 +282,7 @@ module.exports = {
         }
         if (typeof taxonomyIds === 'string') {
             taxonomyIds = xss.sanitize(taxonomyIds).split(',');
-        } else if (!util.isArray(taxonomyIds)) {
+        } else if (!Array.isArray(taxonomyIds)) {
             logger.error(formatOpLog({
                 fn: 'removeTaxonomies',
                 msg: 'invalid parameters',

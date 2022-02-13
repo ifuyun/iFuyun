@@ -99,7 +99,7 @@ module.exports = {
         data.userIp = util.getRemoteIp(req);
         data.userAgent = req.headers['user-agent'];
         data.userId = user.userId || '';
-        data.objectId = param.commentId.trim();
+        data.objectId = param.objectId.trim();
 
         if (!idReg.test(data.objectId)) {
             logger.warn(formatOpLog({

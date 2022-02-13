@@ -43,7 +43,7 @@
                                 <td><?= link.linkRating ?></td>
                                 <td><?= moment(link.linkCreated).format('YYYY-MM-DD') ?></td>
                                 <td class="m-col-operate">
-                                    <a href="/admin/link/item?action=edit&linkId=<?= link.linkId ?>">编辑</a><a class="btn-delete" href="javascript:" data-id="<?= link.linkId ?>">删除</a>
+                                    <a href="/admin/link/item?action=edit&id=<?= link.linkId ?>">编辑</a><a class="btn-delete" href="javascript:" data-id="<?= link.linkId ?>">删除</a>
                                 </td>
                             </tr>
                             <? }) ?>

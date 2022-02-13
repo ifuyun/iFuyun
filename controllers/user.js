@@ -84,7 +84,7 @@ module.exports = {
                     domain: 'ifuyun.com',
                     maxAge: appConfig.cookieExpires
                 });
-                if (params.rememberMe && params.rememberMe === '1') {
+                if (params.rememberMe === '1') {
                     res.cookie('rememberMe', 1, {
                         path: '/',
                         domain: 'ifuyun.com',

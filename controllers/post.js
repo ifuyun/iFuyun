@@ -690,7 +690,7 @@ module.exports = {
             } else if (typeof param === 'string') {
                 param = param.split(/[,\s]/i);
             } else {
-                param = util.isArray(param) ? param : [];
+                param = Array.isArray(param) ? param : [];
             }
             return param;
         };

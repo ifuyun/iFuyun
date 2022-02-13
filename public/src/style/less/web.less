@@ -180,6 +180,7 @@
     margin-right: 300px;
 }
 .m-content-box {
+    border-radius: @box-border-radius;
     -webkit-box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
     -moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
     -o-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
@@ -194,7 +195,9 @@
 }
 .m-sticky {
     position: relative;
+    border-radius: @box-border-radius;
     li {
+        border-radius: @box-border-radius;
         overflow: hidden;
         img {
             /*max-width: none;*/
@@ -228,6 +231,7 @@
 }
 .m-excerpt, .m-pagination {
     margin-top: 15px;
+    border-radius: @box-border-radius;
 }
 .m-excerpt {
     padding: 10px 20px;
@@ -426,6 +430,7 @@
 .u-input-search {
     border-right: none;
     height: 20px;
+    border-radius: @box-border-radius;
 }
 .u-textarea-comment {
     width: 400px;
@@ -451,6 +456,8 @@
     background-color: @theme-color-dark;
 }
 .u-btn-submit {
+    border-top-right-radius: @box-border-radius;
+    border-bottom-right-radius: @box-border-radius;
     color: #fff;
     background-color: @theme-color-bg;
     letter-spacing: 1px;
@@ -463,6 +470,7 @@
 .m-widget, .m-ads-widget {
     margin-top: 15px;
     border: 1px solid transparent;
+    border-radius: @box-border-radius;
     background-color: #fff;
     -webkit-box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
     -moz-box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
@@ -543,6 +551,7 @@
 .m-crumb-wrap {
     margin-bottom: 15px;
     padding: 10px 25px;
+    border-radius: @box-border-radius;
 }
 .m-crumb, .m-crumb a {
     color: #333;
